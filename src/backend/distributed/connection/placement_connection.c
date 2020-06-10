@@ -191,8 +191,6 @@ static ConnectionPlacementHashEntry * FindOrCreatePlacementEntry(
 	ShardPlacement *placement);
 static bool CanUseExistingConnection(uint32 flags, const char *userName,
 									 ConnectionReference *placementConnection);
-static bool ConnectionAccessedDifferentPlacement(MultiConnection *connection,
-												 ShardPlacement *placement);
 static void AssociatePlacementWithShard(ConnectionPlacementHashEntry *placementEntry,
 										ShardPlacement *placement);
 static bool CheckShardPlacements(ConnectionShardHashEntry *shardEntry);
@@ -308,29 +306,6 @@ StartPlacementListConnection(uint32 flags, List *placementAccessList,
 			Assert((flags & OPTIONAL_CONNECTION));
 
 			return NULL;
-		}
-
-		if ((flags & CONNECTION_PER_PLACEMENT) &&
-			ConnectionAccessedDifferentPlacement(chosenConnection, placement))
-		{
-			/*
-			 * Cached connection accessed a non-co-located placement in the same
-			 * table or co-location group, while the caller asked for a connection
-			 * per placement. Open a new connection instead.
-			 *
-			 * We use this for situations in which we want to use a different
-			 * connection for every placement, such as COPY. If we blindly returned
-			 * a cached conection that already modified a different, non-co-located
-			 * placement B in the same table or in a table with the same co-location
-			 * ID as the current placement, then we'd no longer able to write to
-			 * placement B later in the COPY.
-			 */
-			chosenConnection = StartNodeUserDatabaseConnection(flags |
-															   FORCE_NEW_CONNECTION,
-															   nodeName, nodePort,
-															   userName, NULL);
-
-			Assert(!ConnectionAccessedDifferentPlacement(chosenConnection, placement));
 		}
 	}
 
@@ -772,43 +747,6 @@ CanUseExistingConnection(uint32 flags, const char *userName,
 	{
 		return true;
 	}
-}
-
-
-/*
- * ConnectionAccessedDifferentPlacement returns true if the connection accessed another
- * placement in the same colocation group with a different representative value,
- * meaning it's not strictly colocated.
- */
-static bool
-ConnectionAccessedDifferentPlacement(MultiConnection *connection,
-									 ShardPlacement *placement)
-{
-	dlist_iter placementIter;
-
-	dlist_foreach(placementIter, &connection->referencedPlacements)
-	{
-		ConnectionReference *connectionReference =
-			dlist_container(ConnectionReference, connectionNode, placementIter.cur);
-
-		/* handle append and range distributed tables */
-		if (placement->partitionMethod != DISTRIBUTE_BY_HASH &&
-			placement->placementId != connectionReference->placementId)
-		{
-			return true;
-		}
-
-		/* handle hash distributed tables */
-		if (placement->colocationGroupId != INVALID_COLOCATION_ID &&
-			placement->colocationGroupId == connectionReference->colocationGroupId &&
-			placement->representativeValue != connectionReference->representativeValue)
-		{
-			/* non-co-located placements from the same co-location group */
-			return true;
-		}
-	}
-
-	return false;
 }
 
 

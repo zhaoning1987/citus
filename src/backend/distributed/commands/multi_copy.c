@@ -3610,17 +3610,6 @@ CopyGetPlacementConnection(HTAB *connectionStateHash, ShardPlacement *placement,
 		AdaptiveConnectionManagementFlag(list_length(copyConnectionStateList));
 	connectionFlags |= adaptiveConnectionManagementFlag;
 
-	/*
-	 * For placements that haven't been assigned a connection by a previous command
-	 * in the current transaction, we use a separate connection per placement for
-	 * hash-distributed tables in order to get the maximum performance.
-	 */
-	if (placement->partitionMethod == DISTRIBUTE_BY_HASH &&
-		MultiShardConnectionType != SEQUENTIAL_CONNECTION)
-	{
-		connectionFlags |= CONNECTION_PER_PLACEMENT;
-	}
-
 	connection = GetPlacementConnection(connectionFlags, placement, nodeUser);
 	if (connection == NULL)
 	{
