@@ -143,7 +143,7 @@ BEGIN;
 DELETE FROM artists;
 SAVEPOINT s1;
 INSERT INTO artists SELECT i, NULL FROM generate_series(1, 5) i;
-ERROR:  null value in column "name" violates not-null constraint
+ERROR:  cannot perform query, because modifications were made over a connection that cannot be used at this time. This is most likely a Citus bug so please report it
 ROLLBACK TO s1;
 INSERT INTO artists VALUES (10, 'Mahmoud Farshchian');
 COMMIT;
@@ -221,14 +221,14 @@ with r AS (
     insert into t2 select i, i+1 from generate_series(-10,-5) i
     returning *
 ) insert into t1 select * from r;
-ERROR:  new row for relation "t2_xxxxxxx" violates check constraint "t2_b_check"
+ERROR:  cannot perform query, because modifications were made over a connection that cannot be used at this time. This is most likely a Citus bug so please report it
 rollback to savepoint s3;
 savepoint s4;
 with r AS (
     insert into t1 select i, i+1 from generate_series(-10,-5) i
     returning *
 ) insert into t2 select * from r;
-ERROR:  new row for relation "t2_xxxxxxx" violates check constraint "t2_b_check"
+ERROR:  cannot perform query, because modifications were made over a connection that cannot be used at this time. This is most likely a Citus bug so please report it
 rollback to savepoint s4;
 with r AS (
     update t2 set b = b + 1

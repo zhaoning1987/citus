@@ -222,11 +222,15 @@ BEGIN;
 INSERT INTO researchers VALUES (2, 1, 'Knuth Donald');
 INSERT INTO researchers VALUES (10, 6, 'Lamport Leslie');
 \copy researchers from stdin delimiter ','
+ERROR:  cannot perform query, because modifications were made over a connection that cannot be used at this time. This is most likely a Citus bug so please report it
+CONTEXT:  COPY researchers, line 2: "10,6,Lesport Lampie"
 ROLLBACK;
 -- COPY can be performed after a multi-row INSERT that uses one connection
 BEGIN;
 INSERT INTO researchers VALUES (2, 1, 'Knuth Donald'), (10, 6, 'Lamport Leslie');
 \copy researchers from stdin delimiter ','
+ERROR:  cannot perform query, because modifications were made over a connection that cannot be used at this time. This is most likely a Citus bug so please report it
+CONTEXT:  COPY researchers, line 2: "10,6,Lesport Lampie"
 ROLLBACK;
 -- after a COPY you can modify multiple shards, since they'll use different connections
 BEGIN;
@@ -1423,6 +1427,7 @@ BEGIN;
 INSERT INTO users VALUES (2, 'burak');
 INSERT INTO users VALUES (3, 'burak');
 \COPY items FROM STDIN WITH CSV
+ERROR:  cannot perform query, because modifications were made over a connection that cannot be used at this time. This is most likely a Citus bug so please report it
 ROLLBACK;
 -- perform parallel DDL after a co-located table has been read over 1 connection
 BEGIN;

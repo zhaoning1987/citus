@@ -3582,6 +3582,15 @@ CopyGetPlacementConnection(HTAB *connectionStateHash, ShardPlacement *placement,
 		 */
 		MarkRemoteTransactionCritical(connection);
 
+		/*
+		 * The connection should be used exclusively by the copy commands unless
+		 * we plan to send all copy statements on this connection sequentially
+		 */
+		if (MultiShardConnectionType != SEQUENTIAL_CONNECTION)
+		{
+			ClaimConnectionExclusively(connection);
+		}
+
 		return connection;
 	}
 
