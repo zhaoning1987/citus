@@ -33,6 +33,7 @@
 #include "distributed/commands.h"
 #include "distributed/listutils.h"
 #include "distributed/metadata_cache.h"
+#include "distributed/multi_partitioning_utils.h"
 #include "distributed/relay_utility.h"
 #include "distributed/version_compat.h"
 #include "lib/stringinfo.h"
@@ -127,7 +128,11 @@ RelayEventExtendNames(Node *parseTree, char *schemaName, uint64 shardId)
 						AppendShardIdToName(indexName, shardId);
 					}
 
-					AppendShardIdToName(constraintName, shardId);
+					/* do not append shardId to constraint names for partitioned tables */
+					if (!PartitionedTable(relationId))
+					{
+						AppendShardIdToName(constraintName, shardId);
+					}
 				}
 				else if (command->subtype == AT_DropConstraint ||
 						 command->subtype == AT_ValidateConstraint)
