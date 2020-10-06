@@ -8,7 +8,8 @@ SELECT attrelid::regclass, attname, atthasmissing, attmissingval
 FROM pg_attribute
 WHERE atthasmissing AND attrelid NOT IN ('pg_dist_node'::regclass)
 ORDER BY attrelid, attname;
- attrelid | attname | atthasmissing | attmissingval
+                          attrelid                           |                          attname                           | atthasmissing | attmissingval
 ---------------------------------------------------------------------
-(0 rows)
+ name_len_12345678901234567890123456789012345678901234567890 | int_col_12345678901234567890123456789012345678901234567890 | t             | {1}
+(1 row)
 

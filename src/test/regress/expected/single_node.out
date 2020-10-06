@@ -109,11 +109,8 @@ CREATE TABLE upsert_test
 );
 -- distribute the table
 SELECT create_distributed_table('upsert_test', 'part_key');
- create_distributed_table
----------------------------------------------------------------------
-
-(1 row)
-
+ERROR:  relation "upsert_test_part_key_key" already exists
+CONTEXT:  while executing command on localhost:xxxxx
 -- do a regular insert
 INSERT INTO upsert_test (part_key, other_col) VALUES (1, 1), (2, 2) RETURNING *;
  part_key | other_col | third_col
@@ -125,21 +122,18 @@ INSERT INTO upsert_test (part_key, other_col) VALUES (1, 1), (2, 2) RETURNING *;
 SET citus.log_remote_commands to true;
 -- observe that there is a conflict and the following query does nothing
 INSERT INTO upsert_test (part_key, other_col) VALUES (1, 1) ON CONFLICT DO NOTHING RETURNING *;
-NOTICE:  executing the command locally: INSERT INTO single_node.upsert_test_90630513 AS citus_table_alias (part_key, other_col) VALUES (1, 1) ON CONFLICT DO NOTHING RETURNING part_key, other_col, third_col
  part_key | other_col | third_col
 ---------------------------------------------------------------------
 (0 rows)
 
 -- same as the above with different syntax
 INSERT INTO upsert_test (part_key, other_col) VALUES (1, 1) ON CONFLICT (part_key) DO NOTHING RETURNING *;
-NOTICE:  executing the command locally: INSERT INTO single_node.upsert_test_90630513 AS citus_table_alias (part_key, other_col) VALUES (1, 1) ON CONFLICT(part_key) DO NOTHING RETURNING part_key, other_col, third_col
  part_key | other_col | third_col
 ---------------------------------------------------------------------
 (0 rows)
 
 -- again the same query with another syntax
 INSERT INTO upsert_test (part_key, other_col) VALUES (1, 1) ON CONFLICT ON CONSTRAINT upsert_test_part_key_key DO NOTHING RETURNING *;
-NOTICE:  executing the command locally: INSERT INTO single_node.upsert_test_90630513 AS citus_table_alias (part_key, other_col) VALUES (1, 1) ON CONFLICT ON CONSTRAINT upsert_test_part_key_key_90630513 DO NOTHING RETURNING part_key, other_col, third_col
  part_key | other_col | third_col
 ---------------------------------------------------------------------
 (0 rows)
@@ -147,7 +141,6 @@ NOTICE:  executing the command locally: INSERT INTO single_node.upsert_test_9063
 BEGIN;
 -- force local execution
 SELECT count(*) FROM upsert_test WHERE part_key = 1;
-NOTICE:  executing the command locally: SELECT count(*) AS count FROM single_node.upsert_test_90630513 upsert_test WHERE (part_key OPERATOR(pg_catalog.=) 1)
  count
 ---------------------------------------------------------------------
      1
@@ -169,15 +162,8 @@ INSERT INTO upsert_test (part_key, other_col) SELECT part_key, other_col FROM up
 COMMIT;
 -- to test citus local tables
 select undistribute_table('upsert_test');
-NOTICE:  creating a new local table for single_node.upsert_test
-NOTICE:  Moving the data of single_node.upsert_test
-NOTICE:  Dropping the old single_node.upsert_test
-NOTICE:  Renaming the new table to single_node.upsert_test
- undistribute_table
----------------------------------------------------------------------
-
-(1 row)
-
+ERROR:  cannot undistribute table
+DETAIL:  because the table is not distributed
 -- create citus local table
 select create_citus_local_table('upsert_test');
  create_citus_local_table
@@ -204,11 +190,8 @@ CREATE TABLE "long_constraint_upsert\_test"
 NOTICE:  identifier "looo oooo ooooo ooooooooooooooooo oooooooo oooooooo ng quoted  \aconstraint" will be truncated to "looo oooo ooooo ooooooooooooooooo oooooooo oooooooo ng quoted  "
 -- distribute the table and create shards
 SELECT create_distributed_table('"long_constraint_upsert\_test"', 'part_key');
- create_distributed_table
----------------------------------------------------------------------
-
-(1 row)
-
+ERROR:  relation "looo oooo ooooo ooooooooooooooooo oooooooo oooooooo ng quoted  " already exists
+CONTEXT:  while executing command on localhost:xxxxx
 INSERT INTO "long_constraint_upsert\_test" (part_key, other_col) VALUES (1, 1) ON CONFLICT ON CONSTRAINT  "looo oooo ooooo ooooooooooooooooo oooooooo oooooooo ng quoted  \aconstraint" DO NOTHING RETURNING *;
 NOTICE:  identifier "looo oooo ooooo ooooooooooooooooo oooooooo oooooooo ng quoted  \aconstraint" will be truncated to "looo oooo ooooo ooooooooooooooooo oooooooo oooooooo ng quoted  "
  part_key | other_col | third_col
@@ -227,16 +210,10 @@ NOTICE:  identifier "looo oooo ooooo ooooooooooooooooo oooooooo oooooooo ng quot
 -- make sure that the following query also works fine
 ALTER TABLE simple_table_name RENAME CONSTRAINT "looo oooo ooooo ooooooooooooooooo oooooooo oooooooo ng quoted  \aconstraint"  TO simple_constraint_name;
 NOTICE:  identifier "looo oooo ooooo ooooooooooooooooo oooooooo oooooooo ng quoted  \aconstraint" will be truncated to "looo oooo ooooo ooooooooooooooooo oooooooo oooooooo ng quoted  "
-ERROR:  renaming constraints belonging to distributed tables is currently unsupported
 --INSERT INTO simple_table_name (part_key, other_col) VALUES (1, 1) ON CONFLICT ON CONSTRAINT  simple_constraint_name DO NOTHING RETURNING *;
 SET search_path TO single_node;
 DROP SCHEMA  "Quoed.Schema" CASCADE;
-NOTICE:  drop cascades to 5 other objects
-DETAIL:  drop cascades to table "Quoed.Schema".simple_table_name
-drop cascades to table "Quoed.Schema".simple_table_name_90630518
-drop cascades to table "Quoed.Schema".simple_table_name_90630519
-drop cascades to table "Quoed.Schema".simple_table_name_90630520
-drop cascades to table "Quoed.Schema".simple_table_name_90630521
+NOTICE:  drop cascades to table "Quoed.Schema".simple_table_name
 -- test citus size functions in transaction with modification
 CREATE TABLE test_citus_size_func (a int);
 SELECT create_distributed_table('test_citus_size_func', 'a');
@@ -508,11 +485,8 @@ CREATE TABLE collections_list (
 	PRIMARY KEY(key, collection_id)
 ) PARTITION BY LIST (collection_id );
 SELECT create_distributed_table('collections_list', 'key');
- create_distributed_table
----------------------------------------------------------------------
-
-(1 row)
-
+ERROR:  relation "collections_list_pkey" already exists
+CONTEXT:  while executing command on localhost:xxxxx
 CREATE TABLE collections_list_0
 	PARTITION OF collections_list (key, ts, collection_id, value)
 	FOR VALUES IN ( 0 );
@@ -630,7 +604,9 @@ LIMIT 1;
 
 -- make sure that foreign keys work fine
 ALTER TABLE test_2 ADD CONSTRAINT first_pkey PRIMARY KEY (x);
+ERROR:  canceling the transaction since it was involved in a distributed deadlock
 ALTER TABLE test ADD CONSTRAINT foreign_key FOREIGN KEY (x) REFERENCES test_2(x) ON DELETE CASCADE;
+ERROR:  there is no unique constraint matching given keys for referenced table "test_2"
 -- show that delete on test_2 cascades to test
 SELECT * FROM test WHERE x = 5;
  x | y
@@ -642,7 +618,8 @@ DELETE FROM test_2 WHERE x = 5;
 SELECT * FROM test WHERE x = 5;
  x | y
 ---------------------------------------------------------------------
-(0 rows)
+ 5 | 6
+(1 row)
 
 INSERT INTO test_2 VALUES (5 ,2, (91, 'citus9.1')::new_type);
 INSERT INTO test VALUES (5, 6);
@@ -666,7 +643,8 @@ SELECT * FROM test, ref WHERE x = a ORDER BY x;
 ---------------------------------------------------------------------
  1 | 2 | 1 | 2
  5 | 6 | 5 | 6
-(2 rows)
+ 5 | 6 | 5 | 6
+(3 rows)
 
 INSERT INTO local VALUES (1, 2), (3, 4), (7, 8);
 SELECT count(*) FROM local;
@@ -698,7 +676,8 @@ SELECT * FROM test t1, test t2 WHERE t1.x = t2.y ORDER BY t1.x;
  2 | 7 | 1 | 2
  4 | 5 | 3 | 4
  5 | 6 | 4 | 5
-(3 rows)
+ 5 | 6 | 4 | 5
+(4 rows)
 
 SET citus.enable_single_hash_repartition_joins TO ON;
 SELECT * FROM test t1, test t2 WHERE t1.x = t2.y ORDER BY t1.x;
@@ -707,7 +686,8 @@ SELECT * FROM test t1, test t2 WHERE t1.x = t2.y ORDER BY t1.x;
  2 | 7 | 1 | 2
  4 | 5 | 3 | 4
  5 | 6 | 4 | 5
-(3 rows)
+ 5 | 6 | 4 | 5
+(4 rows)
 
 SET search_path TO public;
 SET citus.enable_single_hash_repartition_joins TO OFF;
@@ -717,7 +697,8 @@ SELECT * FROM single_node.test t1, single_node.test t2 WHERE t1.x = t2.y ORDER B
  2 | 7 | 1 | 2
  4 | 5 | 3 | 4
  5 | 6 | 4 | 5
-(3 rows)
+ 5 | 6 | 4 | 5
+(4 rows)
 
 SET citus.enable_single_hash_repartition_joins TO ON;
 SELECT * FROM single_node.test t1, single_node.test t2 WHERE t1.x = t2.y ORDER BY t1.x;
@@ -726,7 +707,8 @@ SELECT * FROM single_node.test t1, single_node.test t2 WHERE t1.x = t2.y ORDER B
  2 | 7 | 1 | 2
  4 | 5 | 3 | 4
  5 | 6 | 4 | 5
-(3 rows)
+ 5 | 6 | 4 | 5
+(4 rows)
 
 SET search_path TO single_node;
 SET citus.task_assignment_policy TO 'round-robin';
@@ -737,7 +719,8 @@ SELECT * FROM test t1, test t2 WHERE t1.x = t2.y ORDER BY t1.x;
  2 | 7 | 1 | 2
  4 | 5 | 3 | 4
  5 | 6 | 4 | 5
-(3 rows)
+ 5 | 6 | 4 | 5
+(4 rows)
 
 SET citus.task_assignment_policy TO 'greedy';
 SELECT * FROM test t1, test t2 WHERE t1.x = t2.y ORDER BY t1.x;
@@ -746,7 +729,8 @@ SELECT * FROM test t1, test t2 WHERE t1.x = t2.y ORDER BY t1.x;
  2 | 7 | 1 | 2
  4 | 5 | 3 | 4
  5 | 6 | 4 | 5
-(3 rows)
+ 5 | 6 | 4 | 5
+(4 rows)
 
 SET citus.task_assignment_policy TO 'first-replica';
 SELECT * FROM test t1, test t2 WHERE t1.x = t2.y ORDER BY t1.x;
@@ -755,7 +739,8 @@ SELECT * FROM test t1, test t2 WHERE t1.x = t2.y ORDER BY t1.x;
  2 | 7 | 1 | 2
  4 | 5 | 3 | 4
  5 | 6 | 4 | 5
-(3 rows)
+ 5 | 6 | 4 | 5
+(4 rows)
 
 RESET citus.enable_repartition_joins;
 RESET citus.enable_single_hash_repartition_joins;
@@ -765,7 +750,7 @@ INSERT INTO test(x, y) SELECT x, y FROM test WHERE x = 1;
 SELECT count(*) from test;
  count
 ---------------------------------------------------------------------
-     6
+     7
 (1 row)
 
 ROLLBACK;
@@ -775,7 +760,7 @@ INSERT INTO test(x, y) SELECT x, y FROM test;
 SELECT count(*) from test;
  count
 ---------------------------------------------------------------------
-    10
+    12
 (1 row)
 
 ROLLBACK;
@@ -785,7 +770,7 @@ INSERT INTO test(x, y) SELECT count(x), max(y) FROM test;
 SELECT count(*) from test;
  count
 ---------------------------------------------------------------------
-     6
+     7
 (1 row)
 
 ROLLBACK;
@@ -795,7 +780,7 @@ INSERT INTO test(x, y) SELECT y, x FROM test;
 SELECT count(*) from test;
  count
 ---------------------------------------------------------------------
-    10
+    12
 (1 row)
 
 ROLLBACK;
@@ -805,7 +790,7 @@ INSERT INTO test(x, y) SELECT a, b FROM ref;
 SELECT count(*) from test;
  count
 ---------------------------------------------------------------------
-     8
+     9
 (1 row)
 
 ROLLBACK;
@@ -815,7 +800,7 @@ INSERT INTO test(x, y) SELECT c, d FROM local;
 SELECT count(*) from test;
  count
 ---------------------------------------------------------------------
-     8
+     9
 (1 row)
 
 ROLLBACK;
@@ -825,7 +810,7 @@ INSERT INTO ref(a, b) SELECT x, y FROM test;
 SELECT count(*) from ref;
  count
 ---------------------------------------------------------------------
-     8
+     9
 (1 row)
 
 ROLLBACK;
@@ -845,7 +830,7 @@ INSERT INTO local(c, d) SELECT x, y FROM test;
 SELECT count(*) from local;
  count
 ---------------------------------------------------------------------
-     8
+     9
 (1 row)
 
 ROLLBACK;
@@ -888,7 +873,7 @@ RESET citus.task_assignment_policy;
 SELECT count(*) FROM test;
  count
 ---------------------------------------------------------------------
-     5
+     6
 (1 row)
 
 -- INSERT SELECT from distributed table to local table
@@ -897,7 +882,7 @@ INSERT INTO ref(a, b) SELECT x, y FROM test;
 SELECT count(*) from ref;
  count
 ---------------------------------------------------------------------
-     8
+     9
 (1 row)
 
 ROLLBACK;
@@ -917,7 +902,7 @@ INSERT INTO local(c, d) SELECT x, y FROM test;
 SELECT count(*) from local;
  count
 ---------------------------------------------------------------------
-     8
+     9
 (1 row)
 
 ROLLBACK;
@@ -974,6 +959,7 @@ SELECT pg_reload_conf();
 RESET citus.task_executor_type;
 -- make sure undistribute table works fine
 ALTER TABLE test DROP CONSTRAINT foreign_key;
+ERROR:  constraint "foreign_key" of relation "test" does not exist
 SELECT undistribute_table('test_2');
 NOTICE:  creating a new local table for single_node.test_2
 NOTICE:  Moving the data of single_node.test_2

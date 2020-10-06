@@ -154,20 +154,17 @@ HINT:  Run the query on the parent table "collections" instead.
 -- foreign key creation is disallowed due to replication factor > 1
 CREATE TABLE fkey_test (key bigint PRIMARY KEY);
 SELECT create_distributed_table('fkey_test', 'key');
- create_distributed_table
----------------------------------------------------------------------
-
-(1 row)
-
+ERROR:  relation "fkey_test_pkey" already exists
+CONTEXT:  while executing command on localhost:xxxxx
 ALTER TABLE
 	collections_5
 ADD CONSTRAINT
 	fkey_delete FOREIGN KEY(key)
 REFERENCES
 	fkey_test(key) ON DELETE CASCADE;
-ERROR:  cannot create foreign key constraint
-DETAIL:  Citus currently supports foreign key constraints only for "citus.shard_replication_factor = 1".
-HINT:  Please change "citus.shard_replication_factor to 1". To learn more about using foreign keys with other replication factors, please contact us at https://citusdata.com/about/contact_us.
+ERROR:  referenced table "fkey_test" must be a distributed table or a reference table
+DETAIL:  To enforce foreign keys, the referencing and referenced rows need to be stored on the same node.
+HINT:  You could use SELECT create_reference_table('fkey_test') to replicate the referenced table to all nodes
 -- we should be able to attach and detach partitions
 -- given that those DDLs are on the parent table
 CREATE TABLE collections_6

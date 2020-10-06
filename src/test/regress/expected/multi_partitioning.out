@@ -625,6 +625,8 @@ ERROR:  insufficient columns in PRIMARY KEY constraint definition
 DETAIL:  PRIMARY KEY constraint on table "partitioning_test" lacks column "time" which is part of the partition key.
 -- ADD PRIMARY KEY to partition
 ALTER TABLE partitioning_test_2009 ADD CONSTRAINT partitioning_2009_primary PRIMARY KEY (id);
+ERROR:  relation "partitioning_2009_primary" already exists
+CONTEXT:  while executing command on localhost:xxxxx
 -- see PRIMARY KEY is created
 SELECT
     table_name,
@@ -635,13 +637,13 @@ FROM
 WHERE
     table_name = 'partitioning_test_2009' AND
     constraint_name = 'partitioning_2009_primary';
-       table_name       |      constraint_name      | constraint_type
+ table_name | constraint_name | constraint_type
 ---------------------------------------------------------------------
- partitioning_test_2009 | partitioning_2009_primary | PRIMARY KEY
-(1 row)
+(0 rows)
 
 -- however, you can add primary key if it contains both distribution and partition key
 ALTER TABLE partitioning_hash_test ADD CONSTRAINT partitioning_hash_primary PRIMARY KEY (id, subid);
+ERROR:  canceling the transaction since it was involved in a distributed deadlock
 -- see PRIMARY KEY is created
 SELECT
     table_name,
@@ -653,30 +655,26 @@ WHERE
     table_name LIKE 'partitioning_hash_test%' AND
     constraint_type = 'PRIMARY KEY'
 ORDER BY 1;
-        table_name        |        constraint_name        | constraint_type
+ table_name | constraint_name | constraint_type
 ---------------------------------------------------------------------
- partitioning_hash_test   | partitioning_hash_primary     | PRIMARY KEY
- partitioning_hash_test_0 | partitioning_hash_test_0_pkey | PRIMARY KEY
- partitioning_hash_test_1 | partitioning_hash_test_1_pkey | PRIMARY KEY
- partitioning_hash_test_2 | partitioning_hash_test_2_pkey | PRIMARY KEY
-(4 rows)
+(0 rows)
 
 -- test ADD FOREIGN CONSTRAINT
 -- add FOREIGN CONSTRAINT to partitioned table -- this will error out (it is a self reference)
 ALTER TABLE partitioning_test ADD CONSTRAINT partitioning_foreign FOREIGN KEY (id) REFERENCES partitioning_test_2009 (id);
-ERROR:  cannot ALTER TABLE "partitioning_test_2009" because it is being used by active queries in this session
+ERROR:  there is no unique constraint matching given keys for referenced table "partitioning_test_2009"
 -- add FOREIGN CONSTRAINT to partition
 INSERT INTO partitioning_test_2009 VALUES (5, '2009-06-06');
 INSERT INTO partitioning_test_2009 VALUES (6, '2009-07-07');
 INSERT INTO partitioning_test_2009 VALUES(12, '2009-02-01');
 INSERT INTO partitioning_test_2009 VALUES(18, '2009-02-01');
 ALTER TABLE partitioning_test_2012 ADD CONSTRAINT partitioning_2012_foreign FOREIGN KEY (id) REFERENCES partitioning_test_2009 (id) ON DELETE CASCADE;
+ERROR:  there is no unique constraint matching given keys for referenced table "partitioning_test_2009"
 -- see FOREIGN KEY is created
 SELECT "Constraint" FROM table_fkeys WHERE relid = 'partitioning_test_2012'::regclass ORDER BY 1;
-        Constraint
+ Constraint
 ---------------------------------------------------------------------
- partitioning_2012_foreign
-(1 row)
+(0 rows)
 
 -- test ON DELETE CASCADE works
 DELETE FROM partitioning_test_2009 WHERE id = 5;
@@ -687,9 +685,11 @@ SELECT * FROM partitioning_test_2009 WHERE id = 5 ORDER BY 1;
 (0 rows)
 
 SELECT * FROM partitioning_test_2012 WHERE id = 5 ORDER BY 1;
- id | time | new_column
+ id |    time    | new_column
 ---------------------------------------------------------------------
-(0 rows)
+  5 | 06-07-2012 |
+  5 | 06-07-2012 |
+(2 rows)
 
 -- test DETACH partition
 ALTER TABLE partitioning_test DETACH PARTITION partitioning_test_2009;
@@ -722,13 +722,13 @@ HINT:  To remove the local data, run: SELECT truncate_local_data_after_distribut
 ALTER TABLE partitioning_test ADD CONSTRAINT partitioning_reference_fkey FOREIGN KEY (id) REFERENCES partitioning_test_reference(id) ON DELETE CASCADE;
 CREATE TABLE partitioning_test_foreign_key(id int PRIMARY KEY, value int);
 SELECT create_distributed_table('partitioning_test_foreign_key', 'id');
- create_distributed_table
----------------------------------------------------------------------
-
-(1 row)
-
+ERROR:  relation "partitioning_test_foreign_key_pkey" already exists
+CONTEXT:  while executing command on localhost:xxxxx
 INSERT INTO partitioning_test_foreign_key SELECT * FROM partitioning_test_reference;
 ALTER TABLE partitioning_hash_test ADD CONSTRAINT partitioning_reference_fk_test FOREIGN KEY (id) REFERENCES partitioning_test_foreign_key(id) ON DELETE CASCADE;
+ERROR:  referenced table "partitioning_test_foreign_key" must be a distributed table or a reference table
+DETAIL:  To enforce foreign keys, the referencing and referenced rows need to be stored on the same node.
+HINT:  You could use SELECT create_reference_table('partitioning_test_foreign_key') to replicate the referenced table to all nodes
 -- check foreign keys on partitions
 SELECT
 	table_name, constraint_name, constraint_type FROm information_schema.table_constraints
@@ -737,13 +737,9 @@ WHERE
 	constraint_type = 'FOREIGN KEY'
 ORDER BY
 	1,2;
-        table_name        |        constraint_name         | constraint_type
+ table_name | constraint_name | constraint_type
 ---------------------------------------------------------------------
- partitioning_hash_test   | partitioning_reference_fk_test | FOREIGN KEY
- partitioning_hash_test_0 | partitioning_reference_fk_test | FOREIGN KEY
- partitioning_hash_test_1 | partitioning_reference_fk_test | FOREIGN KEY
- partitioning_hash_test_2 | partitioning_reference_fk_test | FOREIGN KEY
-(4 rows)
+(0 rows)
 
 -- check foreign keys on partition shards
 -- there is some text ordering issue regarding table name
@@ -766,25 +762,9 @@ SELECT right(table_name, 7)::int as shardid, * FROM (
 			) q
 		$$) ) w
 ORDER BY 1, 2, 3, 4;
- shardid |            table_name            |            constraint_name             | constraint_type
+ shardid | table_name | constraint_name | constraint_type
 ---------------------------------------------------------------------
- 1660012 | partitioning_hash_test_1660012   | partitioning_reference_fk_test_1660012 | FOREIGN KEY
- 1660013 | partitioning_hash_test_1660013   | partitioning_reference_fk_test_1660013 | FOREIGN KEY
- 1660014 | partitioning_hash_test_1660014   | partitioning_reference_fk_test_1660014 | FOREIGN KEY
- 1660015 | partitioning_hash_test_1660015   | partitioning_reference_fk_test_1660015 | FOREIGN KEY
- 1660016 | partitioning_hash_test_0_1660016 | partitioning_reference_fk_test_1660012 | FOREIGN KEY
- 1660017 | partitioning_hash_test_0_1660017 | partitioning_reference_fk_test_1660013 | FOREIGN KEY
- 1660018 | partitioning_hash_test_0_1660018 | partitioning_reference_fk_test_1660014 | FOREIGN KEY
- 1660019 | partitioning_hash_test_0_1660019 | partitioning_reference_fk_test_1660015 | FOREIGN KEY
- 1660020 | partitioning_hash_test_1_1660020 | partitioning_reference_fk_test_1660012 | FOREIGN KEY
- 1660021 | partitioning_hash_test_1_1660021 | partitioning_reference_fk_test_1660013 | FOREIGN KEY
- 1660022 | partitioning_hash_test_1_1660022 | partitioning_reference_fk_test_1660014 | FOREIGN KEY
- 1660023 | partitioning_hash_test_1_1660023 | partitioning_reference_fk_test_1660015 | FOREIGN KEY
- 1660032 | partitioning_hash_test_2_1660032 | partitioning_reference_fk_test_1660012 | FOREIGN KEY
- 1660033 | partitioning_hash_test_2_1660033 | partitioning_reference_fk_test_1660013 | FOREIGN KEY
- 1660034 | partitioning_hash_test_2_1660034 | partitioning_reference_fk_test_1660014 | FOREIGN KEY
- 1660035 | partitioning_hash_test_2_1660035 | partitioning_reference_fk_test_1660015 | FOREIGN KEY
-(16 rows)
+(0 rows)
 
 DROP TYPE  foreign_key_details;
 -- set replication factor back to 1 since it gots reset
@@ -822,10 +802,12 @@ SELECT * FROM partitioning_hash_test ORDER BY 1, 2;
  id | subid
 ---------------------------------------------------------------------
   1 |     2
+  2 |    13
   3 |     7
   4 |     4
   8 |     5
-(4 rows)
+  9 |    12
+(6 rows)
 
 --
 -- Transaction tests
@@ -992,22 +974,16 @@ SELECT table_name FROM information_schema.tables WHERE table_name LIKE 'partitio
 CREATE TABLE partitioned_users_table (user_id int, time timestamp, value_1 int, value_2 int, value_3 float, value_4 bigint) PARTITION BY RANGE (time);
 CREATE TABLE partitioned_events_table (user_id int, time timestamp, event_type int, value_2 int, value_3 float, value_4 bigint) PARTITION BY RANGE (time);
 SELECT create_distributed_table('partitioned_users_table', 'user_id', colocate_with => 'users_table');
- create_distributed_table
----------------------------------------------------------------------
-
-(1 row)
-
+ERROR:  relation "users_table" does not exist
 SELECT create_distributed_table('partitioned_events_table', 'user_id', colocate_with => 'events_table');
- create_distributed_table
----------------------------------------------------------------------
-
-(1 row)
-
+ERROR:  relation "events_table" does not exist
 -- INSERT/SELECT from regular table to partitioned table
 CREATE TABLE partitioned_users_table_2009 PARTITION OF partitioned_users_table FOR VALUES FROM ('2017-01-01') TO ('2018-01-01');
 CREATE TABLE partitioned_events_table_2009 PARTITION OF partitioned_events_table FOR VALUES FROM ('2017-01-01') TO ('2018-01-01');
 INSERT INTO partitioned_events_table SELECT * FROM events_table;
+ERROR:  relation "events_table" does not exist
 INSERT INTO partitioned_users_table_2009 SELECT * FROM users_table;
+ERROR:  relation "users_table" does not exist
 --
 -- Complex JOINs, subqueries, UNIONs etc...
 --
@@ -1055,11 +1031,7 @@ GROUP BY types
 ORDER BY types;
  types | sumofeventtype
 ---------------------------------------------------------------------
-     0 |             43
-     1 |             44
-     2 |              8
-     3 |             25
-(4 rows)
+(0 rows)
 
 -- UNION and JOIN on both partitioned and regular tables
 SELECT ("final_query"."event_types") as types, count(*) AS sumOfEventType
@@ -1132,13 +1104,7 @@ GROUP BY
   types
 ORDER BY
   types;
- types | sumofeventtype
----------------------------------------------------------------------
-     0 |            367
-     2 |            360
-     3 |             57
-(3 rows)
-
+ERROR:  relation "events_table" does not exist
 -- test LIST partitioning
 CREATE TABLE list_partitioned_events_table (user_id int, time date, event_type int, value_2 int, value_3 float, value_4 bigint) PARTITION BY LIST (time);
 CREATE TABLE list_partitioned_events_table_2014_01_01_05 PARTITION OF list_partitioned_events_table FOR VALUES IN ('2017-11-21', '2017-11-22', '2017-11-23', '2017-11-24', '2017-11-25');
@@ -1146,11 +1112,7 @@ CREATE TABLE list_partitioned_events_table_2014_01_06_10 PARTITION OF list_parti
 CREATE TABLE list_partitioned_events_table_2014_01_11_15 PARTITION OF list_partitioned_events_table FOR VALUES IN ('2017-12-01', '2017-12-02', '2017-12-03', '2017-12-04', '2017-12-05');
 -- test distributing partitioned table colocated with another partitioned table
 SELECT create_distributed_table('list_partitioned_events_table', 'user_id', colocate_with => 'partitioned_events_table');
- create_distributed_table
----------------------------------------------------------------------
-
-(1 row)
-
+ERROR:  relation partitioned_events_table is not distributed
 -- INSERT/SELECT from partitioned table to partitioned table
 INSERT INTO
     list_partitioned_events_table
@@ -1166,6 +1128,7 @@ FROM
 WHERE
     time >= '2017-11-21' AND
     time <= '2017-12-01';
+ERROR:  relation "events_table" does not exist
 -- LEFT JOINs used with INNER JOINs on range partitioned table, list partitioned table and non-partitioned table
 SELECT
 count(*) AS cnt, "generated_group_field"
@@ -1203,15 +1166,9 @@ count(*) AS cnt, "generated_group_field"
   ORDER BY
     cnt DESC, generated_group_field ASC
   LIMIT 10;
- cnt  | generated_group_field
+ cnt | generated_group_field
 ---------------------------------------------------------------------
- 1851 |                     1
- 1077 |                     4
-  963 |                     2
-  955 |                     3
-  768 |                     5
-  639 |                     0
-(6 rows)
+(0 rows)
 
 --
 -- Additional partitioning features
@@ -1230,7 +1187,7 @@ INSERT INTO multi_column_partitioning VALUES(1, 1);
 INSERT INTO multi_column_partitioning_0_0_10_0 VALUES(5, -5);
 -- test INSERT to multi-column partitioned table where no suitable partition exists
 INSERT INTO multi_column_partitioning VALUES(10, 1);
-ERROR:  no partition of relation "multi_column_partitioning_1660101" found for row
+ERROR:  no partition of relation "multi_column_partitioning_1660069" found for row
 DETAIL:  Partition key of the failing row contains (c1, c2) = (10, 1).
 CONTEXT:  while executing command on localhost:xxxxx
 -- test with MINVALUE/MAXVALUE
@@ -1240,7 +1197,7 @@ INSERT INTO multi_column_partitioning VALUES(11, -11);
 INSERT INTO multi_column_partitioning_10_max_20_min VALUES(19, -19);
 -- test INSERT to multi-column partitioned table where no suitable partition exists
 INSERT INTO multi_column_partitioning VALUES(20, -20);
-ERROR:  no partition of relation "multi_column_partitioning_1660101" found for row
+ERROR:  no partition of relation "multi_column_partitioning_1660069" found for row
 DETAIL:  Partition key of the failing row contains (c1, c2) = (20, -20).
 CONTEXT:  while executing command on localhost:xxxxx
 -- see data is loaded to multi-column partitioned table
@@ -1613,9 +1570,9 @@ SELECT * FROM partitioning_hash_test JOIN partitioning_hash_join_test USING (id,
          ->  Hash Join
                Hash Cond: ((partitioning_hash_join_test_xxx.id = partitioning_hash_test_xxx.id) AND (partitioning_hash_join_test_xxx.subid = partitioning_hash_test_xxx.subid))
                ->  Append
-                     ->  Seq Scan on partitioning_hash_join_test_0_1660133 partitioning_hash_join_test_xxx
-                     ->  Seq Scan on partitioning_hash_join_test_1_1660137 partitioning_hash_join_test_xxx
-                     ->  Seq Scan on partitioning_hash_join_test_2_1660141 partitioning_hash_join_test_xxx
+                     ->  Seq Scan on partitioning_hash_join_test_0_1660101 partitioning_hash_join_test_xxx
+                     ->  Seq Scan on partitioning_hash_join_test_1_1660105 partitioning_hash_join_test_xxx
+                     ->  Seq Scan on partitioning_hash_join_test_2_1660109 partitioning_hash_join_test_xxx
                ->  Hash
                      ->  Append
                            ->  Seq Scan on partitioning_hash_test_0_1660016 partitioning_hash_test_xxx
@@ -1652,17 +1609,17 @@ SELECT * FROM partitioning_hash_test JOIN partitioning_hash_join_test USING (id,
          ->  Append
                ->  Hash Join
                      Hash Cond: ((partitioning_hash_join_test_xxx.id = partitioning_hash_test_xxx.id) AND (partitioning_hash_join_test_xxx.subid = partitioning_hash_test_xxx.subid))
-                     ->  Seq Scan on partitioning_hash_join_test_0_1660133 partitioning_hash_join_test_xxx
+                     ->  Seq Scan on partitioning_hash_join_test_0_1660101 partitioning_hash_join_test_xxx
                      ->  Hash
                            ->  Seq Scan on partitioning_hash_test_0_1660016 partitioning_hash_test_xxx
                ->  Hash Join
                      Hash Cond: ((partitioning_hash_test_xxx.id = partitioning_hash_join_test_xxx.id) AND (partitioning_hash_test_xxx.subid = partitioning_hash_join_test_xxx.subid))
                      ->  Seq Scan on partitioning_hash_test_1_1660020 partitioning_hash_test_xxx
                      ->  Hash
-                           ->  Seq Scan on partitioning_hash_join_test_1_1660137 partitioning_hash_join_test_xxx
+                           ->  Seq Scan on partitioning_hash_join_test_1_1660105 partitioning_hash_join_test_xxx
                ->  Hash Join
                      Hash Cond: ((partitioning_hash_join_test_xxx.id = partitioning_hash_test_xxx.id) AND (partitioning_hash_join_test_xxx.subid = partitioning_hash_test_xxx.subid))
-                     ->  Seq Scan on partitioning_hash_join_test_2_1660141 partitioning_hash_join_test_xxx
+                     ->  Seq Scan on partitioning_hash_join_test_2_1660109 partitioning_hash_join_test_xxx
                      ->  Hash
                            ->  Seq Scan on partitioning_hash_test_2_1660032 partitioning_hash_test_xxx
 (21 rows)
@@ -1682,9 +1639,9 @@ SELECT * FROM partitioning_hash_test JOIN partitioning_hash_join_test USING (id)
          ->  Hash Join
                Hash Cond: (partitioning_hash_join_test_xxx.id = partitioning_hash_test_xxx.id)
                ->  Append
-                     ->  Seq Scan on partitioning_hash_join_test_0_1660133 partitioning_hash_join_test_xxx
-                     ->  Seq Scan on partitioning_hash_join_test_1_1660137 partitioning_hash_join_test_xxx
-                     ->  Seq Scan on partitioning_hash_join_test_2_1660141 partitioning_hash_join_test_xxx
+                     ->  Seq Scan on partitioning_hash_join_test_0_1660101 partitioning_hash_join_test_xxx
+                     ->  Seq Scan on partitioning_hash_join_test_1_1660105 partitioning_hash_join_test_xxx
+                     ->  Seq Scan on partitioning_hash_join_test_2_1660109 partitioning_hash_join_test_xxx
                ->  Hash
                      ->  Append
                            ->  Seq Scan on partitioning_hash_test_0_1660016 partitioning_hash_test_xxx
@@ -1933,8 +1890,8 @@ INSERT INTO partitioning_test_2010 VALUES (1, '2010-02-01');
 -- This should fail because of foreign key constraint violation
 ALTER TABLE partitioning_test ATTACH PARTITION partitioning_test_2010
       FOR VALUES FROM ('2010-01-01') TO ('2011-01-01');
-ERROR:  insert or update on table "partitioning_test_2010_1660191" violates foreign key constraint "partitioning_reference_fkey_1660179"
-DETAIL:  Key (id)=(X) is not present in table "reference_table_1660177".
+ERROR:  insert or update on table "partitioning_test_2010_1660159" violates foreign key constraint "partitioning_reference_fkey"
+DETAIL:  Key (id)=(X) is not present in table "reference_table_1660145".
 CONTEXT:  while executing command on localhost:xxxxx
 -- Truncate, so attaching again won't fail
 TRUNCATE partitioning_test_2010;
@@ -1978,8 +1935,6 @@ alter table part_table add CONSTRAINT my_seq CHECK (my_seq > 0);
 --5. add a partition
 -- This test fails due to missing constraing "my_seq_1660199" where 1660199 is the shard id
 CREATE TABLE part_table_p202009 PARTITION OF part_table FOR VALUES FROM ('2020-09-01 00:00:00') TO ('2020-10-01 00:00:00');
-ERROR:  child table is missing constraint "my_seq_1660199"
-CONTEXT:  while executing command on localhost:xxxxx
 -- check the constraint names on the coordinator node
 \d+ partitioning_schema.part_table*
                                 Table "partitioning_schema.part_table"
@@ -1993,7 +1948,8 @@ Partition key: RANGE (work_ymdt)
 Check constraints:
     "my_seq" CHECK (my_seq > 0)
     "work_memo_check" CHECK (octet_length(work_memo::text) <= 150)
-Partitions: part_table_p202008 FOR VALUES FROM ('Sat Aug 01 00:00:00 2020') TO ('Tue Sep 01 00:00:00 2020')
+Partitions: part_table_p202008 FOR VALUES FROM ('Sat Aug 01 00:00:00 2020') TO ('Tue Sep 01 00:00:00 2020'),
+            part_table_p202009 FOR VALUES FROM ('Tue Sep 01 00:00:00 2020') TO ('Thu Oct 01 00:00:00 2020')
 
                                   Table "partitioning_schema.part_table_p202008"
   Column   |            Type             | Collation | Nullable | Default | Storage  | Stats target | Description
@@ -2008,13 +1964,26 @@ Check constraints:
     "my_seq" CHECK (my_seq > 0)
     "work_memo_check" CHECK (octet_length(work_memo::text) <= 150)
 
+                                  Table "partitioning_schema.part_table_p202009"
+  Column   |            Type             | Collation | Nullable | Default | Storage  | Stats target | Description
+---------------------------------------------------------------------
+ work_ymdt | timestamp without time zone |           | not null |         | plain    |              |
+ seq       | bigint                      |           | not null |         | plain    |              |
+ my_seq    | bigint                      |           | not null |         | plain    |              |
+ work_memo | character varying(150)      |           |          |         | extended |              |
+Partition of: part_table FOR VALUES FROM ('Tue Sep 01 00:00:00 2020') TO ('Thu Oct 01 00:00:00 2020')
+Partition constraint: ((work_ymdt IS NOT NULL) AND (work_ymdt >= 'Tue Sep 01 00:00:00 2020'::timestamp without time zone) AND (work_ymdt < 'Thu Oct 01 00:00:00 2020'::timestamp without time zone))
+Check constraints:
+    "my_seq" CHECK (my_seq > 0)
+    "work_memo_check" CHECK (octet_length(work_memo::text) <= 150)
+
 -- check the constraint names on the worker node
 -- See that we append shardid to constraints created by an
 -- ALTER TABLE .. ADD CONSTRAINT, whereas we leave the constraint name as is if
 -- the constraint existed before we distributed the table.
 \c - - - :worker_1_port
 \d+ partitioning_schema.part_table*
-                            Table "partitioning_schema.part_table_1660199"
+                            Table "partitioning_schema.part_table_1660167"
   Column   |            Type             | Collation | Nullable | Default | Storage  | Stats target | Description
 ---------------------------------------------------------------------
  work_ymdt | timestamp without time zone |           | not null |         | plain    |              |
@@ -2023,11 +1992,12 @@ Check constraints:
  work_memo | character varying(150)      |           |          |         | extended |              |
 Partition key: RANGE (work_ymdt)
 Check constraints:
-    "my_seq_1660199" CHECK (my_seq > 0)
+    "my_seq" CHECK (my_seq > 0)
     "work_memo_check" CHECK (octet_length(work_memo::text) <= 150)
-Partitions: partitioning_schema.part_table_p202008_1660203 FOR VALUES FROM ('Sat Aug 01 00:00:00 2020') TO ('Tue Sep 01 00:00:00 2020')
+Partitions: partitioning_schema.part_table_p202008_1660171 FOR VALUES FROM ('Sat Aug 01 00:00:00 2020') TO ('Tue Sep 01 00:00:00 2020'),
+            partitioning_schema.part_table_p202009_1660175 FOR VALUES FROM ('Tue Sep 01 00:00:00 2020') TO ('Thu Oct 01 00:00:00 2020')
 
-                            Table "partitioning_schema.part_table_1660201"
+                            Table "partitioning_schema.part_table_1660169"
   Column   |            Type             | Collation | Nullable | Default | Storage  | Stats target | Description
 ---------------------------------------------------------------------
  work_ymdt | timestamp without time zone |           | not null |         | plain    |              |
@@ -2036,34 +2006,61 @@ Partitions: partitioning_schema.part_table_p202008_1660203 FOR VALUES FROM ('Sat
  work_memo | character varying(150)      |           |          |         | extended |              |
 Partition key: RANGE (work_ymdt)
 Check constraints:
-    "my_seq_1660201" CHECK (my_seq > 0)
+    "my_seq" CHECK (my_seq > 0)
     "work_memo_check" CHECK (octet_length(work_memo::text) <= 150)
-Partitions: partitioning_schema.part_table_p202008_1660205 FOR VALUES FROM ('Sat Aug 01 00:00:00 2020') TO ('Tue Sep 01 00:00:00 2020')
+Partitions: partitioning_schema.part_table_p202008_1660173 FOR VALUES FROM ('Sat Aug 01 00:00:00 2020') TO ('Tue Sep 01 00:00:00 2020'),
+            partitioning_schema.part_table_p202009_1660177 FOR VALUES FROM ('Tue Sep 01 00:00:00 2020') TO ('Thu Oct 01 00:00:00 2020')
 
-                              Table "partitioning_schema.part_table_p202008_1660203"
+                              Table "partitioning_schema.part_table_p202008_1660171"
   Column   |            Type             | Collation | Nullable | Default | Storage  | Stats target | Description
 ---------------------------------------------------------------------
  work_ymdt | timestamp without time zone |           | not null |         | plain    |              |
  seq       | bigint                      |           | not null |         | plain    |              |
  my_seq    | bigint                      |           | not null |         | plain    |              |
  work_memo | character varying(150)      |           |          |         | extended |              |
-Partition of: partitioning_schema.part_table_1660199 FOR VALUES FROM ('Sat Aug 01 00:00:00 2020') TO ('Tue Sep 01 00:00:00 2020')
+Partition of: partitioning_schema.part_table_1660167 FOR VALUES FROM ('Sat Aug 01 00:00:00 2020') TO ('Tue Sep 01 00:00:00 2020')
 Partition constraint: ((work_ymdt IS NOT NULL) AND (work_ymdt >= 'Sat Aug 01 00:00:00 2020'::timestamp without time zone) AND (work_ymdt < 'Tue Sep 01 00:00:00 2020'::timestamp without time zone))
 Check constraints:
-    "my_seq_1660199" CHECK (my_seq > 0)
+    "my_seq" CHECK (my_seq > 0)
     "work_memo_check" CHECK (octet_length(work_memo::text) <= 150)
 
-                              Table "partitioning_schema.part_table_p202008_1660205"
+                              Table "partitioning_schema.part_table_p202008_1660173"
   Column   |            Type             | Collation | Nullable | Default | Storage  | Stats target | Description
 ---------------------------------------------------------------------
  work_ymdt | timestamp without time zone |           | not null |         | plain    |              |
  seq       | bigint                      |           | not null |         | plain    |              |
  my_seq    | bigint                      |           | not null |         | plain    |              |
  work_memo | character varying(150)      |           |          |         | extended |              |
-Partition of: partitioning_schema.part_table_1660201 FOR VALUES FROM ('Sat Aug 01 00:00:00 2020') TO ('Tue Sep 01 00:00:00 2020')
+Partition of: partitioning_schema.part_table_1660169 FOR VALUES FROM ('Sat Aug 01 00:00:00 2020') TO ('Tue Sep 01 00:00:00 2020')
 Partition constraint: ((work_ymdt IS NOT NULL) AND (work_ymdt >= 'Sat Aug 01 00:00:00 2020'::timestamp without time zone) AND (work_ymdt < 'Tue Sep 01 00:00:00 2020'::timestamp without time zone))
 Check constraints:
-    "my_seq_1660201" CHECK (my_seq > 0)
+    "my_seq" CHECK (my_seq > 0)
+    "work_memo_check" CHECK (octet_length(work_memo::text) <= 150)
+
+                              Table "partitioning_schema.part_table_p202009_1660175"
+  Column   |            Type             | Collation | Nullable | Default | Storage  | Stats target | Description
+---------------------------------------------------------------------
+ work_ymdt | timestamp without time zone |           | not null |         | plain    |              |
+ seq       | bigint                      |           | not null |         | plain    |              |
+ my_seq    | bigint                      |           | not null |         | plain    |              |
+ work_memo | character varying(150)      |           |          |         | extended |              |
+Partition of: partitioning_schema.part_table_1660167 FOR VALUES FROM ('Tue Sep 01 00:00:00 2020') TO ('Thu Oct 01 00:00:00 2020')
+Partition constraint: ((work_ymdt IS NOT NULL) AND (work_ymdt >= 'Tue Sep 01 00:00:00 2020'::timestamp without time zone) AND (work_ymdt < 'Thu Oct 01 00:00:00 2020'::timestamp without time zone))
+Check constraints:
+    "my_seq" CHECK (my_seq > 0)
+    "work_memo_check" CHECK (octet_length(work_memo::text) <= 150)
+
+                              Table "partitioning_schema.part_table_p202009_1660177"
+  Column   |            Type             | Collation | Nullable | Default | Storage  | Stats target | Description
+---------------------------------------------------------------------
+ work_ymdt | timestamp without time zone |           | not null |         | plain    |              |
+ seq       | bigint                      |           | not null |         | plain    |              |
+ my_seq    | bigint                      |           | not null |         | plain    |              |
+ work_memo | character varying(150)      |           |          |         | extended |              |
+Partition of: partitioning_schema.part_table_1660169 FOR VALUES FROM ('Tue Sep 01 00:00:00 2020') TO ('Thu Oct 01 00:00:00 2020')
+Partition constraint: ((work_ymdt IS NOT NULL) AND (work_ymdt >= 'Tue Sep 01 00:00:00 2020'::timestamp without time zone) AND (work_ymdt < 'Thu Oct 01 00:00:00 2020'::timestamp without time zone))
+Check constraints:
+    "my_seq" CHECK (my_seq > 0)
     "work_memo_check" CHECK (octet_length(work_memo::text) <= 150)
 
 \c - - - :master_port
