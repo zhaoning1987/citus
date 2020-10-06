@@ -120,18 +120,11 @@ RelayEventExtendNames(Node *parseTree, char *schemaName, uint64 shardId)
 				if (command->subtype == AT_AddConstraint)
 				{
 					Constraint *constraint = (Constraint *) command->def;
-					char **constraintName = &(constraint->conname);
 
 					if (constraint->contype == CONSTR_PRIMARY && constraint->indexname)
 					{
 						char **indexName = &(constraint->indexname);
 						AppendShardIdToName(indexName, shardId);
-					}
-
-					/* do not append shardId to constraint names for partitioned tables */
-					if (!PartitionedTable(relationId))
-					{
-						AppendShardIdToName(constraintName, shardId);
 					}
 				}
 				else if (command->subtype == AT_DropConstraint ||
