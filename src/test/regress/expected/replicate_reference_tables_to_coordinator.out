@@ -162,7 +162,7 @@ END;
 $$;
 NOTICE:  executing the command locally: SELECT local_table.a, numbers.a FROM (replicate_ref_to_coordinator.local_table JOIN replicate_ref_to_coordinator.numbers_8000001 numbers(a) USING (a))
 CONTEXT:  SQL statement "SELECT local_table.a, numbers.a FROM local_table NATURAL JOIN numbers"
-PL/pgSQL function inline_code_block line 3 at PERFORM
+PL/pgSQL function inline_code_block line XX at PERFORM
 -- test plpgsql function
 CREATE FUNCTION test_reference_local_join_plpgsql_func()
 RETURNS void AS $$

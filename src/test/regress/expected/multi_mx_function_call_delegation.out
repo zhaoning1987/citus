@@ -645,7 +645,7 @@ PL/pgSQL function mx_call_func(integer,integer) line 8 at assignment
 DO $$ BEGIN perform mx_call_func_tbl(40); END; $$;
 DEBUG:  not pushing down function calls in a multi-statement transaction
 CONTEXT:  SQL statement "SELECT mx_call_func_tbl(40)"
-PL/pgSQL function inline_code_block line 1 at PERFORM
+PL/pgSQL function inline_code_block line XX at PERFORM
 SELECT * FROM mx_call_dist_table_1 WHERE id >= 40 ORDER BY id, val;
  id | val
 ---------------------------------------------------------------------

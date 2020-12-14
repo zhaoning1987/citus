@@ -193,3 +193,6 @@ s/relation with OID [0-9]+ does not exist/relation with OID XXXX does not exist/
 
 # normalize storage id of columnar tables
 s/^storage id: [0-9]+$/storage id: xxxxx/g
+
+# ignore PL/pgSQL line numbers that differ on Mac builds
+s/(CONTEXT:  PL\/pgSQL function inline_code_block line )([0-9]+)/\1XX/g
