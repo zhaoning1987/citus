@@ -214,24 +214,27 @@ PostprocessCreateTableStmtPartitionOf(CreateStmt *createStatement, const
 
 	Assert(parentRelationId != InvalidOid);
 
+	Oid relationId = RangeVarGetRelid(createStatement->relation, NoLock, missingOk);
+
 	/*
 	 * If a partition is being created and if its parent is a distributed
 	 * table, we will distribute this table as well.
+	 * In case of an IF NOT EXISTS statement, we also should make sure that:
+	 * the relation is a partition, the partition is not already distributed,
+	 * and that partition's parent is the current parent from parentRelationId
 	 */
-	if (IsCitusTable(parentRelationId))
+	if (IsCitusTable(parentRelationId) && !IsCitusTable(relationId) &&
+		PartitionTable(relationId) && (PartitionParentOid(relationId) ==
+									   parentRelationId))
 	{
-		Oid relationId = RangeVarGetRelid(createStatement->relation, NoLock, missingOk);
 		Var *parentDistributionColumn = DistPartitionKeyOrError(parentRelationId);
 		char parentDistributionMethod = DISTRIBUTE_BY_HASH;
 		char *parentRelationName = generate_qualified_relation_name(parentRelationId);
 		bool viaDeprecatedAPI = false;
 
-		if (!(IsCitusTable(relationId) && (createStatement->if_not_exists)))
-		{
-			CreateDistributedTable(relationId, parentDistributionColumn,
-								   parentDistributionMethod, ShardCount,
-								   parentRelationName, viaDeprecatedAPI);
-		}
+		CreateDistributedTable(relationId, parentDistributionColumn,
+							   parentDistributionMethod, ShardCount,
+							   parentRelationName, viaDeprecatedAPI);
 	}
 }
 
