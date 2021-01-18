@@ -216,16 +216,38 @@ PostprocessCreateTableStmtPartitionOf(CreateStmt *createStatement, const
 
 	Oid relationId = RangeVarGetRelid(createStatement->relation, NoLock, missingOk);
 
+	if (createStatement->if_not_exists)
+	{
+		if (IsCitusTable(relationId))
+		{
+			/*
+			 * If NOT EXISTS is tricky because Postgres lets it pass through the
+			 * standardProcess_Utility, and gets into this Post-process hook by
+			 * ignoring the statement if the table already exists. Thus, Citus
+			 * should behave similarly.
+			 */
+			return;
+		}
+		else if (!PartitionTable(relationId) ||
+				 PartitionParentOid(relationId) != parentRelationId)
+		{
+			/*
+			 * Again, we should be careful with IF NOT EXISTS clause if the
+			 * user provides a relation which is not a partition or not the
+			 * child of the specified partition, we should ignore.
+			 */
+			return;
+		}
+	}
+
+
 	/*
 	 * If a partition is being created and if its parent is a distributed
 	 * table, we will distribute this table as well.
-	 * In case of an IF NOT EXISTS statement, we also should make sure that:
-	 * the relation is a partition, the partition is not already distributed,
-	 * and that partition's parent is the current parent from parentRelationId
+	 * In case of an IF NOT EXISTS statement, the partition should not not already
+	 * distributed.
 	 */
-	if (IsCitusTable(parentRelationId) && !IsCitusTable(relationId) &&
-		PartitionTable(relationId) && (PartitionParentOid(relationId) ==
-									   parentRelationId))
+	if (IsCitusTable(parentRelationId))
 	{
 		Var *parentDistributionColumn = DistPartitionKeyOrError(parentRelationId);
 		char parentDistributionMethod = DISTRIBUTE_BY_HASH;
