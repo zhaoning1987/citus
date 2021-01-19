@@ -78,7 +78,7 @@ static bool ConstraintDropped = false;
 
 
 /* Local functions forward declarations for helper functions */
-static void citus_ProcessUtility(PlannedStmt *pstmt,
+static bool citus_ProcessUtility(PlannedStmt *pstmt,
 								 const char *queryString,
 								 ProcessUtilityContext context,
 								 ParamListInfo params,
@@ -177,14 +177,15 @@ multi_ProcessUtility(PlannedStmt *pstmt,
 	}
 
 	static int utilityHookLevel = 0;
-
 	PG_TRY();
 	{
 		utilityHookLevel++;
 
-		citus_ProcessUtility(pstmt, queryString, context, params,
+
+		bool distQuery = citus_ProcessUtility(pstmt, queryString, context, params,
 							 queryEnv, dest, completionTag);
 
+		if (distQuery)
 		UndistributeCitusLocalTablesIfNeeded(utilityHookLevel);
 	}
 	PG_CATCH();
@@ -198,7 +199,7 @@ multi_ProcessUtility(PlannedStmt *pstmt,
 }
 
 
-static void
+static bool
 citus_ProcessUtility(PlannedStmt *pstmt,
 					 const char *queryString,
 					 ProcessUtilityContext context,
@@ -270,7 +271,7 @@ citus_ProcessUtility(PlannedStmt *pstmt,
 		if (context == PROCESS_UTILITY_TOPLEVEL &&
 			CallDistributedProcedureRemotely(callStmt, dest))
 		{
-			return;
+			return false;
 		}
 
 		/*
@@ -297,7 +298,7 @@ citus_ProcessUtility(PlannedStmt *pstmt,
 		}
 		PG_END_TRY();
 
-		return;
+		return false;
 	}
 
 	if (IsA(parsetree, DoStmt))
@@ -322,7 +323,7 @@ citus_ProcessUtility(PlannedStmt *pstmt,
 		}
 		PG_END_TRY();
 
-		return;
+		return false;
 	}
 
 	/* process SET LOCAL stmts of allowed GUCs in multi-stmt xacts */
@@ -373,7 +374,7 @@ citus_ProcessUtility(PlannedStmt *pstmt,
 		}
 
 		/* Don't execute the faux copy statement */
-		return;
+		return false;
 	}
 
 	if (IsA(parsetree, CopyStmt))
@@ -385,7 +386,7 @@ citus_ProcessUtility(PlannedStmt *pstmt,
 
 		if (parsetree == NULL)
 		{
-			return;
+			return false;
 		}
 
 		MemoryContext previousContext = MemoryContextSwitchTo(planContext);
@@ -658,6 +659,11 @@ citus_ProcessUtility(PlannedStmt *pstmt,
 		 */
 		CitusHasBeenLoaded();
 	}
+
+	if (ddlJobs != NIL)
+		return true;
+
+	return false;
 }
 
 

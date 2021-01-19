@@ -59,11 +59,6 @@ CascadeOperationForConnectedRelations(Oid relationId, LOCKMODE lockMode,
 									  CascadeOperationType
 									  cascadeOperationType)
 {
-	/*
-	 * As we will operate on foreign key connected relations, here we
-	 * invalidate foreign key graph to be on the safe side.
-	 */
-	InvalidateForeignKeyGraph();
 
 	List *fKeyConnectedRelationIdList = GetForeignKeyConnectedRelationIdList(relationId);
 	LockRelationsWithLockMode(fKeyConnectedRelationIdList, lockMode);
@@ -351,6 +346,13 @@ ExecuteCascadeOperationForRelationIdList(List *relationIdList,
 	Oid relationId = InvalidOid;
 	foreach_oid(relationId, relationIdList)
 	{
+
+		/*
+		 * As we will operate on foreign key connected relations, here we
+		 * invalidate foreign key graph to be on the safe side.
+		 */
+		InvalidateForeignKeyGraph();
+
 		/*
 		 * The reason behind skipping certain table types in below loop is
 		 * that we support some sort of foreign keys between postgres tables
