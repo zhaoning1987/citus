@@ -41,6 +41,7 @@
 #include "distributed/deparser.h"
 #include "distributed/distribution_column.h"
 #include "distributed/listutils.h"
+#include "distributed/local_executor.h"
 #include "distributed/metadata/dependency.h"
 #include "distributed/metadata_cache.h"
 #include "distributed/metadata_sync.h"
@@ -487,6 +488,8 @@ AlterTableSetAccessMethod(TableConversionParameters *params)
 TableConversionReturn *
 ConvertTable(TableConversionState *con)
 {
+	SetLocalExecutionStatus(LOCAL_EXECUTION_REQUIRED);
+
 	if (con->conversionType == UNDISTRIBUTE_TABLE && con->cascadeViaForeignKeys &&
 		(TableReferencing(con->relationId) || TableReferenced(con->relationId)))
 	{
