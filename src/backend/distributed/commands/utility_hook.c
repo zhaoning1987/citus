@@ -75,6 +75,13 @@ static int activeDropSchemaOrDBs = 0;
 
 
 /* Local functions forward declarations for helper functions */
+static void citus_ProcessUtility(PlannedStmt *pstmt,
+								 const char *queryString,
+								 ProcessUtilityContext context,
+								 ParamListInfo params,
+								 struct QueryEnvironment *queryEnv,
+								 DestReceiver *dest,
+								 QueryCompletionCompat *completionTag);
 static char * SetSearchPathToCurrentSearchPathCommand(void);
 static char * CurrentSearchPath(void);
 static void IncrementUtilityHookCountersIfNecessary(Node *parsetree);
@@ -164,6 +171,31 @@ multi_ProcessUtility(PlannedStmt *pstmt,
 
 		return;
 	}
+
+	PG_TRY();
+	{
+		citus_ProcessUtility(pstmt, queryString, context, params,
+							 queryEnv, dest, completionTag);
+	}
+	PG_CATCH();
+	{
+		PG_RE_THROW();
+	}
+	PG_END_TRY();
+}
+
+
+static void
+citus_ProcessUtility(PlannedStmt *pstmt,
+					 const char *queryString,
+					 ProcessUtilityContext context,
+					 ParamListInfo params,
+					 struct QueryEnvironment *queryEnv,
+					 DestReceiver *dest,
+					 QueryCompletionCompat *completionTag)
+{
+	Node *parsetree = pstmt->utilityStmt;
+	List *ddlJobs = NIL;
 
 	if (IsA(parsetree, ExplainStmt) &&
 		IsA(((ExplainStmt *) parsetree)->query, Query))
@@ -473,8 +505,9 @@ multi_ProcessUtility(PlannedStmt *pstmt,
 		 * the available version is different than the current version of Citus. In this case,
 		 * ALTER EXTENSION citus UPDATE command can actually update Citus to a new version.
 		 */
-		bool isAlterExtensionUpdateCitusStmt = isCreateAlterExtensionUpdateCitusStmt &&
-											   IsA(parsetree, AlterExtensionStmt);
+		bool isAlterExtensionUpdateCitusStmt =
+			IsCreateAlterExtensionUpdateCitusStmt(parsetree) &&
+			IsA(parsetree, AlterExtensionStmt);
 
 		bool citusCanBeUpdatedToAvailableVersion = false;
 
