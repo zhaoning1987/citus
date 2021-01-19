@@ -510,11 +510,22 @@ GetFKeyCreationCommandsRelationInvolved(Oid relationId)
 static Oid
 DropFKeysAndUndistributeTable(Oid relationId)
 {
-	DropFKeysRelationInvolved(relationId);
-
 	/* store them before calling UndistributeTable as it changes relationId */
 	char *relationName = get_rel_name(relationId);
 	Oid schemaId = get_rel_namespace(relationId);
+
+	DropFKeysRelationInvolved(relationId);
+
+	/*
+	 * Dropping all foreign keys that a citus local table involved would already
+	 * undistribute it, so re-fetch relationId.
+	 */
+	relationId = get_relname_relid(relationName, schemaId);
+	if (!IsCitusTable(relationId))
+	{
+		/* relation is already undistributed when dropping foreign keys */
+		return relationId;
+	}
 
 	TableConversionParameters params = {
 		.relationId = relationId,
@@ -522,15 +533,16 @@ DropFKeysAndUndistributeTable(Oid relationId)
 	};
 	UndistributeTable(&params);
 
-	Oid newRelationId = get_relname_relid(relationName, schemaId);
+	/* as now we undistributed relation, re-fetch relationId */
+	relationId = get_relname_relid(relationName, schemaId);
 
 	/*
 	 * We don't expect this to happen but to be on the safe side let's error
 	 * out here.
 	 */
-	EnsureRelationExists(newRelationId);
+	EnsureRelationExists(relationId);
 
-	return newRelationId;
+	return relationId;
 }
 
 
