@@ -481,6 +481,7 @@ extern void CascadeOperationForConnectedRelations(Oid relationId, LOCKMODE relLo
 												  cascadeOperationType);
 extern void ErrorIfAnyPartitionRelationInvolvedInNonInheritedFKey(List *relationIdList);
 extern void DropRelationForeignKeys(Oid relationId, int flags);
+extern void LockRelationsWithLockMode(List *relationIdList, LOCKMODE lockMode);
 extern void ExecuteAndLogDDLCommandList(List *ddlCommandList);
 extern void ExecuteAndLogDDLCommand(const char *commandString);
 extern void ExecuteForeignKeyCreateCommandList(List *ddlCommandList,

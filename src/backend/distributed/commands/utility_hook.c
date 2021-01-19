@@ -46,6 +46,7 @@
 #include "distributed/commands/utility_hook.h" /* IWYU pragma: keep */
 #include "distributed/deparser.h"
 #include "distributed/deparse_shard_query.h"
+#include "distributed/foreign_key_relationship.h"
 #include "distributed/listutils.h"
 #include "distributed/local_executor.h"
 #include "distributed/maintenanced.h"
@@ -55,6 +56,7 @@
 #include "distributed/multi_executor.h"
 #include "distributed/multi_explain.h"
 #include "distributed/multi_physical_planner.h"
+#include "distributed/reference_table_utils.h"
 #include "distributed/resource_lock.h"
 #include "distributed/transmit.h"
 #include "distributed/version_compat.h"
@@ -72,6 +74,7 @@ PropSetCmdBehavior PropagateSetCommands = PROPSETCMD_NONE; /* SET prop off */
 static bool shouldInvalidateForeignKeyGraph = false;
 static int activeAlterTables = 0;
 static int activeDropSchemaOrDBs = 0;
+static bool ConstraintDropped = false;
 
 
 /* Local functions forward declarations for helper functions */
@@ -88,6 +91,8 @@ static void IncrementUtilityHookCountersIfNecessary(Node *parsetree);
 static void PostStandardProcessUtility(Node *parsetree);
 static void DecrementUtilityHookCountersIfNecessary(Node *parsetree);
 static bool IsDropSchemaOrDB(Node *parsetree);
+static void UndistributeCitusLocalTablesIfNeeded(int utilityHookLevel);
+static bool ShouldUndistributeCitusLocalTables(int utilityHookLevel);
 
 
 /*
@@ -127,7 +132,6 @@ multi_ProcessUtility(PlannedStmt *pstmt,
 					 QueryCompletionCompat *completionTag)
 {
 	Node *parsetree = pstmt->utilityStmt;
-	List *ddlJobs = NIL;
 
 	if (IsA(parsetree, TransactionStmt) ||
 		IsA(parsetree, LockStmt) ||
@@ -172,16 +176,25 @@ multi_ProcessUtility(PlannedStmt *pstmt,
 		return;
 	}
 
+	static int utilityHookLevel = 0;
+
 	PG_TRY();
 	{
+		utilityHookLevel++;
+
 		citus_ProcessUtility(pstmt, queryString, context, params,
 							 queryEnv, dest, completionTag);
+
+		UndistributeCitusLocalTablesIfNeeded(utilityHookLevel);
 	}
 	PG_CATCH();
 	{
+		utilityHookLevel--;
 		PG_RE_THROW();
 	}
 	PG_END_TRY();
+
+	utilityHookLevel--;
 }
 
 
@@ -645,6 +658,140 @@ citus_ProcessUtility(PlannedStmt *pstmt,
 		 */
 		CitusHasBeenLoaded();
 	}
+}
+
+
+/*
+ * UndistributeCitusLocalTablesIfNeeded undistributes citus local tables that
+ * are not connected to any reference tables via their individual foreign key
+ * subgraphs.
+ */
+static void
+UndistributeCitusLocalTablesIfNeeded(int utilityHookLevel)
+{
+	if (!ShouldUndistributeCitusLocalTables(utilityHookLevel))
+	{
+		return;
+	}
+
+	List *citusLocalTableIdList = CitusTableTypeIdList(CITUS_LOCAL_TABLE);
+	citusLocalTableIdList = SortList(citusLocalTableIdList, CompareOids);
+
+	/* acquire ExclusiveLock as UndistributeTable does */
+	LockRelationsWithLockMode(citusLocalTableIdList, ExclusiveLock);
+
+	Oid citusLocalTableId = InvalidOid;
+	foreach_oid(citusLocalTableId, citusLocalTableIdList)
+	{
+		HeapTuple heapTuple =
+			SearchSysCache1(RELOID, ObjectIdGetDatum(citusLocalTableId));
+		if (!HeapTupleIsValid(heapTuple))
+		{
+			/*
+			 * UndistributeTable drops relation, skip if already undistributed
+			 * via cascade.
+			 */
+			continue;
+		}
+		ReleaseSysCache(heapTuple);
+
+		if (ConnectedToReferenceTableViaFKey(citusLocalTableId))
+		{
+			/* still connected to a reference table, skip it */
+			continue;
+		}
+
+		/*
+		 * Citus local table is not connected to any reference table, then
+		 * undistribute it via cascade.
+		 */
+		TableConversionParameters params = {
+			.relationId = citusLocalTableId,
+			.cascadeViaForeignKeys = true
+		};
+		UndistributeTable(&params);
+	}
+}
+
+
+/*
+ * ShouldUndistributeCitusLocalTables returns true if we might need to check
+ * citus local tables for their connectivity to reference tables.
+ */
+static bool
+ShouldUndistributeCitusLocalTables(int utilityHookLevel)
+{
+	if (!ConstraintDropped)
+	{
+		/*
+		 * citus_drop_trigger executes notify_constraint_dropped to set
+		 * ConstraintDropped to true, which means that last command dropped
+		 * a table constraint.
+		 */
+		return false;
+	}
+
+	/*
+	 * Even if we won't undistribute citus local tables, we need to reset this
+	 * flag here for next DDL command.
+	 */
+	ResetConstraintDropped();
+
+	if (!EnableLocalReferenceForeignKeys)
+	{
+		/*
+		 * If foreign keys between reference tables and local tables are
+		 * disabled, then user might be using create_citus_local_table for
+		 * their own purposes. In that case, we should not undistribute
+		 * citus local tables. We also disable this flag in some regression
+		 * tests for unit testing of citus local tables.
+		 */
+		return false;
+	}
+
+	if (utilityHookLevel != 1)
+	{
+		/* we only perform this operation for top level DDL command */
+		return false;
+	}
+
+	if (!IsCoordinator())
+	{
+		/* we should not perform this operation in worker nodes */
+		return false;
+	}
+
+	if (!CitusHasBeenLoaded())
+	{
+		/*
+		 * If we are dropping citus, we should not try to undistribute
+		 * citus local tables as they will also be dropped.
+		 */
+		return false;
+	}
+
+	return true;
+}
+
+
+/*
+ * NotifyUtilityHookConstraintDropped sets ConstraintDropped to true to tell us
+ * last command dropped a table constraint.
+ */
+void
+NotifyUtilityHookConstraintDropped(void)
+{
+	ConstraintDropped = true;
+}
+
+
+/*
+ * ResetConstraintDropped sets ConstraintDropped to false.
+ */
+void
+ResetConstraintDropped(void)
+{
+	ConstraintDropped = false;
 }
 
 

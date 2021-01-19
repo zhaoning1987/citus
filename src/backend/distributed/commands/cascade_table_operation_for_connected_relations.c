@@ -35,7 +35,6 @@
 
 static void EnsureSequentialModeForCitusTableCascadeFunction(List *relationIdList);
 static bool RelationIdListHasReferenceTable(List *relationIdList);
-static void LockRelationsWithLockMode(List *relationIdList, LOCKMODE lockMode);
 static List * RemovePartitionRelationIds(List *relationIdList);
 static List * GetFKeyCreationCommandsForRelationIdList(List *relationIdList);
 static void DropRelationIdListForeignKeys(List *relationIdList, int fKeyFlags);
@@ -116,7 +115,7 @@ CascadeOperationForConnectedRelations(Oid relationId, LOCKMODE lockMode,
  * LockRelationsWithLockMode sorts given relationIdList and then acquires
  * specified lockMode on those relations.
  */
-static void
+void
 LockRelationsWithLockMode(List *relationIdList, LOCKMODE lockMode)
 {
 	Oid relationId;

@@ -82,6 +82,8 @@ CREATE FUNCTION pg_catalog.master_create_worker_shards(table_name text, shard_co
     AS 'MODULE_PATHNAME'
     LANGUAGE C STRICT;
 
+DROP FUNCTION pg_catalog.notify_constraint_dropped();
+
 #include "../udfs/citus_drop_trigger/9.5-1.sql"
 #include "../udfs/citus_total_relation_size/7.0-1.sql"
 #include "../udfs/upgrade_to_reference_table/8.0-1.sql"
