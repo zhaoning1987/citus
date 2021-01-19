@@ -92,6 +92,7 @@ static void IncrementUtilityHookCountersIfNecessary(Node *parsetree);
 static void PostStandardProcessUtility(Node *parsetree);
 static void DecrementUtilityHookCountersIfNecessary(Node *parsetree);
 static bool IsDropSchemaOrDB(Node *parsetree);
+static bool IsDropSchemaOrTable(Node *parsetree);
 static void UndistributeCitusLocalTablesIfNeeded(bool executedDDLJob);
 static bool ShouldUndistributeCitusLocalTables(bool executedDDLJob);
 
@@ -671,7 +672,38 @@ ProcessUtilityInternal(PlannedStmt *pstmt,
 		return true;
 	}
 
+	if (IsDropSchemaOrTable(parsetree))
+	{
+		/*
+		 * TODO: We could specifically check if it is a:
+		 * - DROP TABLE statement that drops a reference or a citus local table
+		 *   that has a foreign key relationship with a postgres table, or a
+		 * - DROP SCHEMA statement that again drops such a citus table
+		 * but this is more easy and the other approach is much more prune to
+		 * deadlocks.
+		 */
+		return true;
+	}
+
 	return false;
+}
+
+
+/*
+ * IsDropSchemaOrTable returns true if parsetree represents a DROP SCHEMA
+ * or a DROP TABLE statement.
+ */
+static bool
+IsDropSchemaOrTable(Node *parsetree)
+{
+	if (!IsA(parsetree, DropStmt))
+	{
+		return false;
+	}
+
+	DropStmt *dropStatement = (DropStmt *) parsetree;
+	ObjectType dropType = dropStatement->removeType;
+	return dropType == OBJECT_SCHEMA || dropType == OBJECT_TABLE;
 }
 
 
