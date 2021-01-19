@@ -118,6 +118,9 @@ SELECT create_distributed_table('table_type_dist', 'a');
 CREATE TABLE table_type_ref (a INT);
 SELECT create_reference_table('table_type_ref');
 CREATE TABLE table_type_citus_local(a INT);
+
+SET citus.enable_local_reference_table_foreign_keys TO OFF;
+
 SELECT create_citus_local_table('table_type_citus_local');
 CREATE TABLE table_type_pg_local (a INT);
 

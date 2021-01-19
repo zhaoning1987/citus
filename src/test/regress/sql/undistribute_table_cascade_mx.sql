@@ -4,6 +4,8 @@ SET citus.next_shard_id TO 1517000;
 SET citus.shard_replication_factor TO 1;
 SET citus.enable_local_execution TO ON;
 
+SET citus.enable_local_reference_table_foreign_keys TO OFF;
+
 CREATE SCHEMA undistribute_table_cascade_mx;
 SET search_path TO undistribute_table_cascade_mx;
 

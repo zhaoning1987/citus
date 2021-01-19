@@ -148,6 +148,7 @@ ORDER BY 1;
  function master_update_node(integer,text,integer,boolean,integer)
  function master_update_shard_statistics(bigint)
  function master_update_table_statistics(regclass)
+ function notify_constraint_dropped()
  function poolinfo_valid(text)
  function read_intermediate_result(text,citus_copy_format)
  function read_intermediate_results(text[],citus_copy_format)
@@ -233,5 +234,5 @@ ORDER BY 1;
  view citus_worker_stat_activity
  view pg_dist_shard_placement
  view time_partitions
-(217 rows)
+(218 rows)
 

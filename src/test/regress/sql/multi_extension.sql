@@ -172,6 +172,9 @@ ALTER EXTENSION citus UPDATE TO '9.5-1';
 BEGIN;
   SELECT master_add_node('localhost', :master_port, groupId=>0);
   CREATE TABLE citus_local_table (a int);
+
+  SET citus.enable_local_reference_table_foreign_keys TO OFF;
+
   SELECT create_citus_local_table('citus_local_table');
 
   -- downgrade from 9.5-1 to 9.4-1 should fail as we have a citus local table

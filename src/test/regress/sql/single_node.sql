@@ -33,6 +33,8 @@ DROP TABLE ref;
 -- remove the coordinator to try again with create_reference_table
 SELECT master_remove_node(nodename, nodeport) FROM pg_dist_node WHERE groupid = 0;
 
+SET citus.enable_local_reference_table_foreign_keys TO OFF;
+
 CREATE TABLE loc(x int, y int);
 SELECT create_citus_local_table('loc');
 
@@ -627,6 +629,8 @@ SELECT create_reference_table('reference_table_1');
 
 CREATE TABLE distributed_table_1 (col_1 INT UNIQUE);
 SELECT create_distributed_table('distributed_table_1', 'col_1');
+
+SET citus.enable_local_reference_table_foreign_keys TO OFF;
 
 CREATE TABLE citus_local_table_1 (col_1 INT UNIQUE);
 SELECT create_citus_local_table('citus_local_table_1');

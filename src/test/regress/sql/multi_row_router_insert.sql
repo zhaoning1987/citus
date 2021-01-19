@@ -38,6 +38,8 @@ BEGIN
     RETURN a*a;
 END; $$ LANGUAGE PLPGSQL STABLE;
 
+SET citus.enable_local_reference_table_foreign_keys TO OFF;
+
 CREATE TABLE citus_local_table(a int, b int DEFAULT square(10));
 SELECT create_citus_local_table('citus_local_table');
 

@@ -5,6 +5,8 @@ SET citus.shard_replication_factor TO 1;
 SET citus.enable_local_execution TO ON;
 SET citus.log_local_commands TO ON;
 
+SET citus.enable_local_reference_table_foreign_keys TO OFF;
+
 CREATE SCHEMA citus_local_table_queries_mx;
 SET search_path TO citus_local_table_queries_mx;
 
@@ -585,6 +587,8 @@ ROLLBACK;
 \c - - - :master_port
 SET search_path TO citus_local_table_queries_mx;
 SET citus.replication_model TO streaming;
+
+SET citus.enable_local_reference_table_foreign_keys TO OFF;
 
 ALTER TABLE distributed_table DROP CONSTRAINT fkey_dist_to_ref;
 

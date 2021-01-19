@@ -19,6 +19,7 @@ SELECT create_reference_table('reference_table');
 
 (1 row)
 
+SET citus.enable_local_reference_table_foreign_keys TO OFF;
 CREATE TABLE citus_local_table (a int, b int, z bigserial);
 SELECT create_citus_local_table('citus_local_table');
  create_citus_local_table

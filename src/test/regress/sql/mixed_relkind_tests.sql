@@ -3,6 +3,8 @@
 SET citus.next_shard_id TO 1513000;
 SET citus.shard_replication_factor TO 1;
 
+SET citus.enable_local_reference_table_foreign_keys TO OFF;
+
 CREATE SCHEMA mixed_relkind_tests;
 SET search_path TO mixed_relkind_tests;
 

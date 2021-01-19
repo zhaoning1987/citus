@@ -3,6 +3,8 @@
 SET citus.next_shard_id TO 1516000;
 SET citus.shard_replication_factor TO 1;
 
+SET citus.enable_local_reference_table_foreign_keys TO OFF;
+
 CREATE SCHEMA create_citus_local_table_cascade;
 SET search_path TO create_citus_local_table_cascade;
 

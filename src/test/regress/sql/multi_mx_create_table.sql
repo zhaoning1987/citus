@@ -59,6 +59,8 @@ CREATE TYPE order_side_mx AS ENUM ('buy', 'sell');
 -- now create required stuff in the worker 1
 \c - - - :worker_1_port
 
+SET citus.enable_local_reference_table_foreign_keys TO OFF;
+
 -- show that we do not support creating citus local tables from mx workers for now
 CREATE TABLE citus_local_table(a int);
 SELECT create_citus_local_table('citus_local_table');

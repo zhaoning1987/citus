@@ -8,6 +8,8 @@ SELECT 1 FROM master_add_node('localhost', :master_port, groupid => 0);
 CREATE TABLE reference_table (a int, b int, z bigserial);
 SELECT create_reference_table('reference_table');
 
+SET citus.enable_local_reference_table_foreign_keys TO OFF;
+
 CREATE TABLE citus_local_table (a int, b int, z bigserial);
 SELECT create_citus_local_table('citus_local_table');
 

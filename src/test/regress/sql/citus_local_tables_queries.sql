@@ -5,6 +5,8 @@ SET citus.shard_replication_factor TO 1;
 SET citus.enable_local_execution TO ON;
 SET citus.log_local_commands TO ON;
 
+SET citus.enable_local_reference_table_foreign_keys TO OFF;
+
 CREATE SCHEMA citus_local_table_queries;
 SET search_path TO citus_local_table_queries;
 
