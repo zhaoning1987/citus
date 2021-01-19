@@ -77,6 +77,8 @@ extern List * DDLTaskList(Oid relationId, const char *commandString);
 extern List * NodeDDLTaskList(TargetWorkerSet targets, List *commands);
 extern bool AlterTableInProgress(void);
 extern bool DropSchemaOrDBInProgress(void);
+extern void NotifyUtilityHookConstraintDropped(void);
+extern void ResetConstraintDropped(void);
 extern void ExecuteDistributedDDLJob(DDLJob *ddlJob);
 
 /* forward declarations for sending custom commands to a distributed table */

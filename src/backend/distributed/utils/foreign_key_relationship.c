@@ -26,6 +26,7 @@
 #include "distributed/foreign_key_relationship.h"
 #include "distributed/hash_helpers.h"
 #include "distributed/listutils.h"
+#include "distributed/metadata_cache.h"
 #include "distributed/version_compat.h"
 #include "nodes/pg_list.h"
 #include "storage/lockdefs.h"
@@ -141,6 +142,30 @@ GetForeignKeyConnectedRelationIdList(Oid relationId)
 	List *fKeyConnectedRelationIdList =
 		GetRelationIdsFromRelationshipNodeList(fKeyConnectedRelationshipNodeList);
 	return fKeyConnectedRelationIdList;
+}
+
+
+/*
+ * ConnectedToReferenceTableViaFKey returns true if given relationId is
+ * connected to a reference table via its foreign key subgraph.
+ */
+bool
+ConnectedToReferenceTableViaFKey(Oid relationId)
+{
+	/* we can't rely on foreign key graph */
+	InvalidateForeignKeyGraph();
+
+	List *fkeyConnectedRelations = GetForeignKeyConnectedRelationIdList(relationId);
+	Oid otherRelId = InvalidOid;
+	foreach_oid(otherRelId, fkeyConnectedRelations)
+	{
+		if (IsCitusTableType(otherRelId, REFERENCE_TABLE))
+		{
+			return true;
+		}
+	}
+
+	return false;
 }
 
 
