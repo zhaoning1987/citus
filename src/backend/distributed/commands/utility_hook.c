@@ -253,30 +253,36 @@ multi_ProcessUtility(PlannedStmt *pstmt,
 	{
 		ProcessUtilityInternal(pstmt, queryString, context, params, queryEnv, dest,
 							   completionTag);
+
+		if (UtilityHookLevel == 1)
+		{
+			/*
+			 * When Citus local tables are disconnected from the foreign key graph, which
+			 * can happen due to various kinds of drop commands, we immediately
+			 * undistribute them at the end of the command.
+			 */
+			if (ShouldUndistributeCitusLocalTables())
+			{
+				UndistributeDisconnectedCitusLocalTables();
+			}
+			ResetConstraintDropped();
+		}
+
 		UtilityHookLevel--;
 	}
 	PG_CATCH();
 	{
-		UtilityHookLevel--;
-
-		if (UtilityHookLevel == 0)
+		if (UtilityHookLevel == 1)
 		{
-			ConstraintDropped = false;
+			ResetConstraintDropped();
 		}
+
+		UtilityHookLevel--;
 
 		PG_RE_THROW();
 	}
 	PG_END_TRY();
 
-	/*
-	 * When Citus local tables are disconnected from the foreign key graph, which
-	 * can happen due to various kinds of drop commands, we immediately undistribute
-	 * them at the end of the command.
-	 */
-	if (ShouldUndistributeCitusLocalTables())
-	{
-		UndistributeDisconnectedCitusLocalTables();
-	}
 }
 
 
@@ -740,11 +746,6 @@ UndistributeDisconnectedCitusLocalTables(void)
 static bool
 ShouldUndistributeCitusLocalTables(void)
 {
-	if (UtilityHookLevel != 0)
-	{
-		return false;
-	}
-
 	if (!ConstraintDropped)
 	{
 		/*
@@ -754,8 +755,6 @@ ShouldUndistributeCitusLocalTables(void)
 		 */
 		return false;
 	}
-
-	ResetConstraintDropped();
 
 	if (!CitusHasBeenLoaded())
 	{
