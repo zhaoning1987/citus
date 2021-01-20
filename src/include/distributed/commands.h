@@ -359,6 +359,7 @@ extern List * PreprocessDropTableStmt(Node *stmt, const char *queryString,
 									  ProcessUtilityContext processUtilityContext);
 extern void PostprocessCreateTableStmt(CreateStmt *createStatement,
 									   const char *queryString);
+extern bool ShouldEnableLocalReferenceForeignKeys(void);
 extern List * PostprocessAlterTableStmtAttachPartition(
 	AlterTableStmt *alterTableStatement,
 	const char *queryString);

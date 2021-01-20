@@ -785,14 +785,13 @@ ShouldUndistributeCitusLocalTables(bool executedDDLJob)
 
 	ResetConstraintDropped();
 
-	if (!EnableLocalReferenceForeignKeys)
+	if (!ShouldEnableLocalReferenceForeignKeys())
 	{
 		/*
 		 * If foreign keys between reference tables and local tables are
 		 * disabled, then user might be using create_citus_local_table for
 		 * their own purposes. In that case, we should not undistribute
-		 * citus local tables. We also disable this flag in some regression
-		 * tests for unit testing of citus local tables.
+		 * citus local tables.
 		 */
 		return false;
 	}
