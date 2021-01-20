@@ -366,13 +366,6 @@ UndistributeTable(TableConversionParameters *params)
 		ErrorIfAnyPartitionRelationInvolvedInNonInheritedFKey(partitionList);
 	}
 
-	/*
-	 * Undistributing a table actually accesses the table itself locally.
-	 * As long as we don't teach the functions in ConvertTable to undistribute
-	 * the table remotely, we cannot relax this check.
-	 */
-	SetLocalExecutionStatus(LOCAL_EXECUTION_REQUIRED);
-
 	params->conversionType = UNDISTRIBUTE_TABLE;
 	params->shardCountIsNull = true;
 	TableConversionState *con = CreateTableConversion(params);
@@ -495,6 +488,8 @@ AlterTableSetAccessMethod(TableConversionParameters *params)
 TableConversionReturn *
 ConvertTable(TableConversionState *con)
 {
+	SetLocalExecutionStatus(LOCAL_EXECUTION_REQUIRED);
+
 	if (con->conversionType == UNDISTRIBUTE_TABLE && con->cascadeViaForeignKeys &&
 		(TableReferencing(con->relationId) || TableReferenced(con->relationId)))
 	{
