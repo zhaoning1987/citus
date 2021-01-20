@@ -488,7 +488,8 @@ AlterTableSetAccessMethod(TableConversionParameters *params)
 TableConversionReturn *
 ConvertTable(TableConversionState *con)
 {
-	SetLocalExecutionStatus(LOCAL_EXECUTION_REQUIRED);
+	bool oldEnableLocalReferenceForeignKeys = EnableLocalReferenceForeignKeys;
+	SetLocalEnableLocalReferenceForeignKeys(false);
 
 	if (con->conversionType == UNDISTRIBUTE_TABLE && con->cascadeViaForeignKeys &&
 		(TableReferencing(con->relationId) || TableReferenced(con->relationId)))
@@ -504,6 +505,7 @@ ConvertTable(TableConversionState *con)
 		 * Undistributed every foreign key connected relation in our foreign key
 		 * subgraph including itself, so return here.
 		 */
+		SetLocalEnableLocalReferenceForeignKeys(oldEnableLocalReferenceForeignKeys);
 		return NULL;
 	}
 	char *newAccessMethod = con->accessMethod ? con->accessMethod :
@@ -744,6 +746,8 @@ ConvertTable(TableConversionState *con)
 
 	/* increment command counter so that next command can see the new table */
 	CommandCounterIncrement();
+
+	SetLocalEnableLocalReferenceForeignKeys(oldEnableLocalReferenceForeignKeys);
 
 	return ret;
 }

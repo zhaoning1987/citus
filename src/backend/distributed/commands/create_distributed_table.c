@@ -516,17 +516,6 @@ DropFKeysAndUndistributeTable(Oid relationId)
 
 	DropFKeysRelationInvolved(relationId);
 
-	/*
-	 * Dropping all foreign keys that a citus local table involved would already
-	 * undistribute it, so re-fetch relationId.
-	 */
-	relationId = get_relname_relid(relationName, schemaId);
-	if (!IsCitusTable(relationId))
-	{
-		/* relation is already undistributed when dropping foreign keys */
-		return relationId;
-	}
-
 	TableConversionParameters params = {
 		.relationId = relationId,
 		.cascadeViaForeignKeys = false

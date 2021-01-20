@@ -28,6 +28,7 @@
 #include "distributed/reference_table_utils.h"
 #include "distributed/relation_access_tracking.h"
 #include "distributed/worker_protocol.h"
+#include "miscadmin.h"
 #include "utils/builtins.h"
 #include "utils/lsyscache.h"
 #include "utils/syscache.h"
@@ -281,8 +282,28 @@ DropRelationIdListForeignKeys(List *relationIdList, int fKeyFlags)
 void
 DropRelationForeignKeys(Oid relationId, int fKeyFlags)
 {
+	bool oldEnableLocalReferenceForeignKeys = EnableLocalReferenceForeignKeys;
+	SetLocalEnableLocalReferenceForeignKeys(false);
+
 	List *dropFkeyCascadeCommandList = GetRelationDropFkeyCommands(relationId, fKeyFlags);
 	ExecuteAndLogDDLCommandList(dropFkeyCascadeCommandList);
+
+	SetLocalEnableLocalReferenceForeignKeys(oldEnableLocalReferenceForeignKeys);
+}
+
+
+/*
+ * SetLocalEnableLocalReferenceForeignKeys is simply a C interface for setting
+ * the following:
+ *      SET LOCAL citus.enable_local_reference_table_foreign_keys = 'on'|'off';
+ */
+void
+SetLocalEnableLocalReferenceForeignKeys(bool state)
+{
+	char *stateStr = state ? "on" : "off";
+	set_config_option("citus.enable_local_reference_table_foreign_keys", stateStr,
+					  (superuser() ? PGC_SUSET : PGC_USERSET), PGC_S_SESSION,
+					  GUC_ACTION_LOCAL, true, 0, false);
 }
 
 
