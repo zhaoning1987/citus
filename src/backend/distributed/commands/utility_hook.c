@@ -83,7 +83,7 @@ static int UtilityHookLevel = 0;
 
 
 /* Local functions forward declarations for helper functions */
-static bool ProcessUtilityInternal(PlannedStmt *pstmt,
+static void ProcessUtilityInternal(PlannedStmt *pstmt,
 								   const char *queryString,
 								   ProcessUtilityContext context,
 								   ParamListInfo params,
@@ -96,11 +96,8 @@ static void IncrementUtilityHookCountersIfNecessary(Node *parsetree);
 static void PostStandardProcessUtility(Node *parsetree);
 static void DecrementUtilityHookCountersIfNecessary(Node *parsetree);
 static bool IsDropSchemaOrDB(Node *parsetree);
-static bool DropStmtDropsCitusTable(Node *parsetree);
-static bool DDLExecutedOnCitusTable(Node *parsetree, List *ddlJobs, bool dropsCitusTable);
-static bool IsDropSchema(Node *parsetree);
-static void UndistributeCitusLocalTablesIfNeeded(bool ddlExecutedOnCitusTable);
-static bool ShouldUndistributeCitusLocalTables(bool ddlExecutedOnCitusTable);
+static void UndistributeDisconnectedCitusLocalTables(void);
+static bool ShouldUndistributeCitusLocalTables(void);
 
 
 /*
@@ -254,22 +251,32 @@ multi_ProcessUtility(PlannedStmt *pstmt,
 
 	PG_TRY();
 	{
-		bool ddlExecutedOnCitusTable = ProcessUtilityInternal(pstmt, queryString, context,
-															  params, queryEnv, dest,
-															  completionTag);
-		if (UtilityHookLevel == 1)
-		{
-			UndistributeCitusLocalTablesIfNeeded(ddlExecutedOnCitusTable);
-		}
+		ProcessUtilityInternal(pstmt, queryString, context, params, queryEnv, dest,
+							   completionTag);
+		UtilityHookLevel--;
 	}
 	PG_CATCH();
 	{
 		UtilityHookLevel--;
+
+		if (UtilityHookLevel == 0)
+		{
+			ConstraintDropped = false;
+		}
+
 		PG_RE_THROW();
 	}
 	PG_END_TRY();
 
-	UtilityHookLevel--;
+	/*
+	 * When Citus local tables are disconnected from the foreign key graph, which
+	 * can happen due to various kinds of drop commands, we immediately undistribute
+	 * them at the end of the command.
+	 */
+	if (ShouldUndistributeCitusLocalTables())
+	{
+		UndistributeDisconnectedCitusLocalTables();
+	}
 }
 
 
@@ -281,7 +288,7 @@ multi_ProcessUtility(PlannedStmt *pstmt,
  * commands (not internal/cascading ones). UtilityHookLevel variable is used to achieve
  * this goal.
  */
-static bool
+static void
 ProcessUtilityInternal(PlannedStmt *pstmt,
 					   const char *queryString,
 					   ProcessUtilityContext context,
@@ -389,7 +396,7 @@ ProcessUtilityInternal(PlannedStmt *pstmt,
 		}
 
 		/* Don't execute the faux copy statement */
-		return false;
+		return;
 	}
 
 	if (IsA(parsetree, CopyStmt))
@@ -401,7 +408,7 @@ ProcessUtilityInternal(PlannedStmt *pstmt,
 
 		if (parsetree == NULL)
 		{
-			return false;
+			return;
 		}
 
 		MemoryContext previousContext = MemoryContextSwitchTo(planContext);
@@ -433,8 +440,6 @@ ProcessUtilityInternal(PlannedStmt *pstmt,
 	{
 		PreprocessTruncateStatement((TruncateStmt *) parsetree);
 	}
-
-	bool dropsCitusTable = DropStmtDropsCitusTable(parsetree);
 
 	/* only generate worker DDLJobs if propagation is enabled */
 	const DistributeObjectOps *ops = NULL;
@@ -677,104 +682,17 @@ ProcessUtilityInternal(PlannedStmt *pstmt,
 		 */
 		CitusHasBeenLoaded();
 	}
-
-	return DDLExecutedOnCitusTable(parsetree, ddlJobs, dropsCitusTable);
 }
 
 
 /*
- * DropStmtDropsCitusTable returns true if given parsetree belongs to a DROP
- * TABLE command.
- */
-static bool
-DropStmtDropsCitusTable(Node *parsetree)
-{
-	if (!IsA(parsetree, DropStmt))
-	{
-		return false;
-	}
-
-	DropStmt *dropStatement = (DropStmt *) parsetree;
-	if (dropStatement->removeType != OBJECT_TABLE)
-	{
-		return false;
-	}
-
-	List *relationIdentifierList = NULL;
-	foreach_ptr(relationIdentifierList, dropStatement->objects)
-	{
-		RangeVar *relation = makeRangeVarFromNameList(relationIdentifierList);
-
-		/* we are in process, so skip non-existing tables */
-		bool missingOk = true;
-		Oid relationId = RangeVarGetRelid(relation, DROP_TABLE_LOCK_MODE, missingOk);
-		if (IsCitusTable(relationId))
-		{
-			return true;
-		}
-	}
-
-	return false;
-}
-
-
-/*
- * DDLExecutedOnCitusTable is a helper function that decides if current
- * utility command is executed on citus tables.
- */
-static bool
-DDLExecutedOnCitusTable(Node *parsetree, List *ddlJobs, bool dropsCitusTable)
-{
-	if (dropsCitusTable)
-	{
-		return true;
-	}
-
-	if (IsDropSchema(parsetree))
-	{
-		/* TODO: do we need to check if schema has citus tables ? */
-		return true;
-	}
-
-	if (list_length(ddlJobs) != 0)
-	{
-		return true;
-	}
-
-	return false;
-}
-
-
-/*
- * IsDropSchema returns true if given parsetree belongs to a DROP SCHEMA
- * command.
- */
-static bool
-IsDropSchema(Node *parsetree)
-{
-	if (!IsA(parsetree, DropStmt))
-	{
-		return false;
-	}
-
-	DropStmt *dropStatement = ((DropStmt *) parsetree);
-	return dropStatement->removeType == OBJECT_SCHEMA;
-}
-
-
-/*
- * UndistributeCitusLocalTablesIfNeeded undistributes citus local tables that
+ * UndistributeDisconnectedCitusLocalTables undistributes citus local tables that
  * are not connected to any reference tables via their individual foreign key
  * subgraphs.
  */
 static void
-UndistributeCitusLocalTablesIfNeeded(bool ddlExecutedOnCitusTable)
+UndistributeDisconnectedCitusLocalTables(void)
 {
-	if (!ShouldUndistributeCitusLocalTables(ddlExecutedOnCitusTable))
-	{
-		return;
-	}
-
 	List *citusLocalTableIdList = CitusTableTypeIdList(CITUS_LOCAL_TABLE);
 	citusLocalTableIdList = SortList(citusLocalTableIdList, CompareOids);
 
@@ -820,8 +738,13 @@ UndistributeCitusLocalTablesIfNeeded(bool ddlExecutedOnCitusTable)
  * citus local tables for their connectivity to reference tables.
  */
 static bool
-ShouldUndistributeCitusLocalTables(bool ddlExecutedOnCitusTable)
+ShouldUndistributeCitusLocalTables(void)
 {
+	if (UtilityHookLevel != 0)
+	{
+		return false;
+	}
+
 	if (!ConstraintDropped)
 	{
 		/*
@@ -834,9 +757,12 @@ ShouldUndistributeCitusLocalTables(bool ddlExecutedOnCitusTable)
 
 	ResetConstraintDropped();
 
-	if (!ddlExecutedOnCitusTable)
+	if (!CitusHasBeenLoaded())
 	{
-		/* executing DDL command for a shard placement or for a postgres table */
+		/*
+		 * If we are dropping citus, we should not try to undistribute citus
+		 * local tables as they will also be dropped.
+		 */
 		return false;
 	}
 
@@ -857,12 +783,15 @@ ShouldUndistributeCitusLocalTables(bool ddlExecutedOnCitusTable)
 		return false;
 	}
 
-	if (!CitusHasBeenLoaded())
+	if (!InCoordinatedTransaction())
 	{
-		/*
-		 * If we are dropping citus, we should not try to undistribute citus
-		 * local tables as they will also be dropped.
-		 */
+		/* not interacting with any Citus objects */
+		return false;
+	}
+
+	if (application_name != NULL && strcmp(application_name, CITUS_APPLICATION_NAME) == 0)
+	{
+		/* connection from the coordinator operating on a shard */
 		return false;
 	}
 
