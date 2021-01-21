@@ -99,8 +99,8 @@ static bool IsDropSchemaOrDB(Node *parsetree);
 static bool DropStmtDropsCitusTable(Node *parsetree);
 static bool DDLExecutedOnCitusTable(Node *parsetree, List *ddlJobs, bool dropsCitusTable);
 static bool IsDropSchema(Node *parsetree);
-static void UndistributeCitusLocalTablesIfNeeded(void);
-static bool ShouldUndistributeCitusLocalTables(void);
+static void UndistributeCitusLocalTablesIfNeeded(bool ddlExecutedOnCitusTable);
+static bool ShouldUndistributeCitusLocalTables(bool ddlExecutedOnCitusTable);
 
 
 /*
@@ -257,9 +257,9 @@ multi_ProcessUtility(PlannedStmt *pstmt,
 		bool ddlExecutedOnCitusTable = ProcessUtilityInternal(pstmt, queryString, context,
 															  params, queryEnv, dest,
 															  completionTag);
-		if (UtilityHookLevel == 1 && ddlExecutedOnCitusTable)
+		if (UtilityHookLevel == 1)
 		{
-			UndistributeCitusLocalTablesIfNeeded();
+			UndistributeCitusLocalTablesIfNeeded(ddlExecutedOnCitusTable);
 		}
 	}
 	PG_CATCH();
@@ -768,9 +768,9 @@ IsDropSchema(Node *parsetree)
  * subgraphs.
  */
 static void
-UndistributeCitusLocalTablesIfNeeded(void)
+UndistributeCitusLocalTablesIfNeeded(bool ddlExecutedOnCitusTable)
 {
-	if (!ShouldUndistributeCitusLocalTables())
+	if (!ShouldUndistributeCitusLocalTables(ddlExecutedOnCitusTable))
 	{
 		return;
 	}
@@ -820,7 +820,7 @@ UndistributeCitusLocalTablesIfNeeded(void)
  * citus local tables for their connectivity to reference tables.
  */
 static bool
-ShouldUndistributeCitusLocalTables(void)
+ShouldUndistributeCitusLocalTables(bool ddlExecutedOnCitusTable)
 {
 	if (!ConstraintDropped)
 	{
@@ -833,6 +833,12 @@ ShouldUndistributeCitusLocalTables(void)
 	}
 
 	ResetConstraintDropped();
+
+	if (!ddlExecutedOnCitusTable)
+	{
+		/* executing DDL command for a shard placement or for a postgres table */
+		return false;
+	}
 
 	if (!ShouldEnableLocalReferenceForeignKeys())
 	{
