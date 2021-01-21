@@ -200,6 +200,8 @@ CREATE FOREIGN TABLE foreign_table (
 -- & shell relation points to the same same server object
 SELECT create_citus_local_table('foreign_table');
 
+DROP FOREIGN TABLE foreign_table;
+
 -- drop them for next tests
 DROP TABLE citus_local_table_1, citus_local_table_2, distributed_table;
 

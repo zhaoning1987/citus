@@ -259,6 +259,8 @@ NOTICE:  foreign-data wrapper "fake_fdw" does not have an extension defined
 
 (1 row)
 
+DROP FOREIGN TABLE foreign_table;
+NOTICE:  executing the command locally: DROP FOREIGN TABLE IF EXISTS citus_local_tables_test_schema.foreign_table_xxxxx CASCADE
 -- drop them for next tests
 DROP TABLE citus_local_table_1, citus_local_table_2, distributed_table;
 NOTICE:  executing the command locally: DROP TABLE IF EXISTS citus_local_tables_test_schema.citus_local_table_2_xxxxx CASCADE
@@ -493,6 +495,25 @@ NOTICE:  executing the command locally: DROP TABLE IF EXISTS citus_local_tables_
 NOTICE:  drop cascades to constraint fkey_c_to_local_1504027 on table citus_local_tables_test_schema.citus_local_table_1_1504027
 NOTICE:  executing the command locally: DROP TABLE IF EXISTS citus_local_tables_test_schema.citus_local_table_2_xxxxx CASCADE
 NOTICE:  executing the command locally: DROP TABLE IF EXISTS citus_local_tables_test_schema.citus_local_table_1_xxxxx CASCADE
+NOTICE:  creating a new table for citus_local_tables_test_schema.unlogged_table
+NOTICE:  Moving the data of citus_local_tables_test_schema.unlogged_table
+NOTICE:  executing the command locally: SELECT a FROM citus_local_tables_test_schema.unlogged_table_1504023 unlogged_table
+NOTICE:  Dropping the old citus_local_tables_test_schema.unlogged_table
+NOTICE:  executing the command locally: DROP TABLE IF EXISTS citus_local_tables_test_schema.unlogged_table_xxxxx CASCADE
+NOTICE:  Renaming the new table to citus_local_tables_test_schema.unlogged_table
+NOTICE:  executing the command locally: SELECT worker_apply_inter_shard_ddl_command (xxxxx, 'citus_local_tables_test_schema', xxxxx, 'citus_local_tables_test_schema', 'ALTER TABLE citus_local_tables_test_schema.local_table_3 DROP CONSTRAINT local_table_3_b_fkey CASCADE;')
+NOTICE:  creating a new table for citus_local_tables_test_schema.local_table_3
+NOTICE:  Moving the data of citus_local_tables_test_schema.local_table_3
+NOTICE:  executing the command locally: SELECT a, b FROM citus_local_tables_test_schema.local_table_3_1504034 local_table_3
+NOTICE:  Dropping the old citus_local_tables_test_schema.local_table_3
+NOTICE:  executing the command locally: DROP TABLE IF EXISTS citus_local_tables_test_schema.local_table_3_xxxxx CASCADE
+NOTICE:  Renaming the new table to citus_local_tables_test_schema.local_table_3
+NOTICE:  creating a new table for "CiTUS!LocalTables"."LocalTabLE.1!?!"
+NOTICE:  Moving the data of "CiTUS!LocalTables"."LocalTabLE.1!?!"
+NOTICE:  executing the command locally: SELECT id, "TeNANt_Id", "local_Type", jsondata, name, price, serial_data FROM "CiTUS!LocalTables"."LocalTabLE.1!?!_1504036" "LocalTabLE.1!?!"
+NOTICE:  Dropping the old "CiTUS!LocalTables"."LocalTabLE.1!?!"
+NOTICE:  executing the command locally: DROP TABLE IF EXISTS "CiTUS!LocalTables"."LocalTabLE.1!?!_1504036" CASCADE
+NOTICE:  Renaming the new table to "CiTUS!LocalTables"."LocalTabLE.1!?!"
 -- test some other udf's with citus local tables
 CREATE TABLE citus_local_table_4(a int);
 SELECT create_citus_local_table('citus_local_table_4');
@@ -688,4 +709,4 @@ RESET client_min_messages;
 \set VERBOSITY terse
 -- cleanup at exit
 DROP SCHEMA citus_local_tables_test_schema, "CiTUS!LocalTables" CASCADE;
-NOTICE:  drop cascades to 22 other objects
+NOTICE:  drop cascades to 17 other objects
