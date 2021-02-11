@@ -42,13 +42,14 @@
 #include "distributed/distribution_column.h"
 #include "distributed/listutils.h"
 #include "distributed/local_executor.h"
-#include "distributed/metadata/dependency.h"
 #include "distributed/metadata_cache.h"
 #include "distributed/metadata_sync.h"
+#include "distributed/metadata/dependency.h"
 #include "distributed/multi_executor.h"
 #include "distributed/multi_logical_planner.h"
 #include "distributed/multi_partitioning_utils.h"
 #include "distributed/reference_table_utils.h"
+#include "distributed/relation_access_tracking.h"
 #include "distributed/worker_protocol.h"
 #include "distributed/worker_transaction.h"
 #include "executor/spi.h"
@@ -56,7 +57,6 @@
 #include "utils/builtins.h"
 #include "utils/lsyscache.h"
 #include "utils/syscache.h"
-
 
 /* Table Conversion Types */
 #define UNDISTRIBUTE_TABLE 'u'
@@ -72,6 +72,7 @@
 typedef TableConversionReturn *(*TableConversionFunction)(struct
 														  TableConversionParameters *);
 
+static void SwitchToSequentialAndLocalExecutionIfRelationNameTooLong(char *relationName);
 
 /*
  * TableConversionState objects are used for table conversion functions:
@@ -510,6 +511,8 @@ ConvertTable(TableConversionState *con)
 	 */
 	bool oldEnableLocalReferenceForeignKeys = EnableLocalReferenceForeignKeys;
 	SetLocalEnableLocalReferenceForeignKeys(false);
+
+	SwitchToSequentialAndLocalExecutionIfRelationNameTooLong(con->relationName);
 
 	if (con->conversionType == UNDISTRIBUTE_TABLE && con->cascadeViaForeignKeys &&
 		(TableReferencing(con->relationId) || TableReferenced(con->relationId)))
@@ -1563,5 +1566,38 @@ ExecuteQueryViaSPI(char *query, int SPIOK)
 	if (spiResult != SPI_OK_FINISH)
 	{
 		ereport(ERROR, (errmsg("could not finish SPI connection")));
+	}
+}
+
+
+static void
+SwitchToSequentialAndLocalExecutionIfRelationNameTooLong(char *relationName)
+{
+	if (strlen(relationName) >= NAMEDATALEN - 1)
+	{
+		if (ParallelQueryExecutedInTransaction())
+		{
+			/*
+			 * If there has already been a parallel query executed, the sequential mode
+			 * would still use the already opened parallel connections to the workers,
+			 * thus contradicting our purpose of using sequential mode.
+			 */
+			ereport(ERROR, (errmsg(
+								"The table name (%s) on a shard is too long and could lead "
+								"to deadlocks when executed in a transaction "
+								"block after a parallel query", relationName),
+							errhint("Try re-running the transaction with "
+									"\"SET LOCAL citus.multi_shard_modify_mode TO "
+									"\'sequential\';\"")));
+		}
+		else
+		{
+			elog(WARNING,
+				 "the name of the relation is too long, switching to sequential and local execution "
+				 "mode to prevent self deadlocks: %s", relationName);
+
+			SetLocalMultiShardModifyModeToSequential();
+			SetLocalExecutionStatus(LOCAL_EXECUTION_REQUIRED);
+		}
 	}
 }
