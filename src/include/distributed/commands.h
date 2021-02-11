@@ -24,6 +24,8 @@
 /* controlled via GUC, should be accessed via EnableLocalReferenceForeignKeys() */
 extern bool EnableLocalReferenceForeignKeys;
 
+extern void SwitchToSequentialAndLocalExecutionIfRelationNameTooLong(char *relationName);
+
 
 /*
  * DistributeObjectOps specifies handlers for node/object type pairs.

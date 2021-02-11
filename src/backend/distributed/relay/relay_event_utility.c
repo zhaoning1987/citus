@@ -556,6 +556,9 @@ RelayEventExtendNames(Node *parseTree, char *schemaName, uint64 shardId)
 
 				AppendShardIdToName(oldRelationName, shardId);
 				AppendShardIdToName(newRelationName, shardId);
+
+				SwitchToSequentialAndLocalExecutionIfRelationNameTooLong(
+					*newRelationName);
 			}
 			else if (objectType == OBJECT_COLUMN)
 			{

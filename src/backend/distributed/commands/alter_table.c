@@ -72,8 +72,6 @@
 typedef TableConversionReturn *(*TableConversionFunction)(struct
 														  TableConversionParameters *);
 
-static void SwitchToSequentialAndLocalExecutionIfRelationNameTooLong(char *relationName);
-
 /*
  * TableConversionState objects are used for table conversion functions:
  * UndistributeTable, AlterDistributedTable, AlterTableSetAccessMethod.
@@ -1570,7 +1568,7 @@ ExecuteQueryViaSPI(char *query, int SPIOK)
 }
 
 
-static void
+void
 SwitchToSequentialAndLocalExecutionIfRelationNameTooLong(char *relationName)
 {
 	if (strlen(relationName) >= NAMEDATALEN - 1)
