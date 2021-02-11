@@ -20,6 +20,7 @@
 #include "distributed/relation_access_tracking.h"
 #include "nodes/parsenodes.h"
 
+static void SwitchToSequentialAndLocalExecutionIfNewNameTooLong(RenameStmt *renameStmt);
 
 /*
  * PreprocessRenameStmt first determines whether a given rename statement involves
@@ -173,7 +174,7 @@ PreprocessRenameAttributeStmt(Node *node, const char *queryString,
 }
 
 
-void
+static void
 SwitchToSequentialAndLocalExecutionIfNewNameTooLong(RenameStmt *renameStmt)
 {
 	if (strlen(renameStmt->newname) >= NAMEDATALEN - 1)

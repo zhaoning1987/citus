@@ -301,7 +301,6 @@ extern List * PreprocessRenameStmt(Node *renameStmt, const char *renameCommand,
 extern void ErrorIfUnsupportedRenameStmt(RenameStmt *renameStmt);
 extern List * PreprocessRenameAttributeStmt(Node *stmt, const char *queryString,
 											ProcessUtilityContext processUtilityContext);
-extern void SwitchToSequentialAndLocalExecutionIfNewNameTooLong(RenameStmt *renameStmt);
 
 
 /* role.c - forward declarations*/

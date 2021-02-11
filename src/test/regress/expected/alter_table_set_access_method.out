@@ -691,14 +691,16 @@ select create_reference_table('abcde_0123456789012345678901234567890123456789012
 (1 row)
 
 select alter_table_set_access_method('abcde_0123456789012345678901234567890123456789012345678901234567890123456789', 'columnar');
+WARNING:  the name of the relation is too long, switching to sequential and local execution mode to prevent self deadlocks: abcde_012345678901234567890123456789012345678901234567890123456
 NOTICE:  creating a new table for alter_table_set_access_method.abcde_012345678901234567890123456789012345678901234567890123456
 NOTICE:  Moving the data of alter_table_set_access_method.abcde_012345678901234567890123456789012345678901234567890123456
 NOTICE:  Dropping the old alter_table_set_access_method.abcde_012345678901234567890123456789012345678901234567890123456
 NOTICE:  Renaming the new table to alter_table_set_access_method.abcde_012345678901234567890123456789012345678901234567890123456
 WARNING:  the name of the relation is too long, switching to sequential and local execution mode to prevent self deadlocks: abcde_012345678901234567890123456789012345678901234567890123456
 CONTEXT:  SQL statement "ALTER TABLE alter_table_set_access_method.abcde_0123456789012345678901234567890123456_f7ff6612_4160710162 RENAME TO abcde_012345678901234567890123456789012345678901234567890123456"
-ERROR:  cannot switch local execution status from local execution disabled to local execution enabled since it can cause visibility problems in the current transaction
-CONTEXT:  SQL statement "ALTER TABLE alter_table_set_access_method.abcde_0123456789012345678901234567890123456_f7ff6612_4160710162 RENAME TO abcde_012345678901234567890123456789012345678901234567890123456"
+ERROR:  shard name abcde_01234567890123456789012345678901234567890_f7ff6612_360898 exceeds 63 characters
+CONTEXT:  while executing command on localhost:xxxxx
+SQL statement "ALTER TABLE alter_table_set_access_method.abcde_0123456789012345678901234567890123456_f7ff6612_4160710162 RENAME TO abcde_012345678901234567890123456789012345678901234567890123456"
 SET client_min_messages TO WARNING;
 DROP SCHEMA alter_table_set_access_method CASCADE;
 SELECT 1 FROM master_remove_node('localhost', :master_port);
