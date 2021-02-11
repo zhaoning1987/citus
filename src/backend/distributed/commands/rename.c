@@ -14,7 +14,10 @@
 #include "catalog/namespace.h"
 #include "distributed/commands.h"
 #include "distributed/commands/utility_hook.h"
+#include "distributed/local_executor.h"
 #include "distributed/metadata_cache.h"
+#include "distributed/multi_executor.h"
+#include "distributed/relation_access_tracking.h"
 #include "nodes/parsenodes.h"
 
 
@@ -109,6 +112,8 @@ PreprocessRenameStmt(Node *node, const char *renameCommand,
 	 */
 	ErrorIfUnsupportedRenameStmt(renameStmt);
 
+	SwitchToSequentialAndLocalExecutionIfNewNameTooLong(renameStmt);
+
 	DDLJob *ddlJob = palloc0(sizeof(DDLJob));
 	ddlJob->targetRelationId = tableRelationId;
 	ddlJob->concurrentIndexCmd = false;
@@ -163,6 +168,39 @@ PreprocessRenameAttributeStmt(Node *node, const char *queryString,
 		{
 			/* unsupported relation for attribute rename, do nothing */
 			return NIL;
+		}
+	}
+}
+
+
+void
+SwitchToSequentialAndLocalExecutionIfNewNameTooLong(RenameStmt *renameStmt)
+{
+	if (strlen(renameStmt->newname) >= NAMEDATALEN - 1)
+	{
+		if (ParallelQueryExecutedInTransaction())
+		{
+			/*
+			 * If there has already been a parallel query executed, the sequential mode
+			 * would still use the already opened parallel connections to the workers,
+			 * thus contradicting our purpose of using sequential mode.
+			 */
+			ereport(ERROR, (errmsg(
+								"The table name (%s) on a shard is too long and could lead "
+								"to deadlocks when executed in a transaction "
+								"block after a parallel query", renameStmt->newname),
+							errhint("Try re-running the transaction with "
+									"\"SET LOCAL citus.multi_shard_modify_mode TO "
+									"\'sequential\';\"")));
+		}
+		else
+		{
+			elog(WARNING,
+				 "the name of the relation is too long, switching to sequential and local execution "
+				 "mode to prevent self deadlocks: %s", renameStmt->newname);
+
+			SetLocalMultiShardModifyModeToSequential();
+			SetLocalExecutionStatus(LOCAL_EXECUTION_REQUIRED);
 		}
 	}
 }
