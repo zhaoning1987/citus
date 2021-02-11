@@ -280,5 +280,10 @@ CREATE MATERIALIZED VIEW mat_view AS SELECT * FROM mat_view_test;
 SELECT alter_distributed_table('mat_view_test', shard_count := 5, cascade_to_colocated := false);
 SELECT * FROM mat_view ORDER BY a;
 
+-- test long table names
+create table abcde_0123456789012345678901234567890123456789012345678901234567890123456789 (x int, y int);
+select create_distributed_table('abcde_0123456789012345678901234567890123456789012345678901234567890123456789', 'x');
+select alter_distributed_table('abcde_0123456789012345678901234567890123456789012345678901234567890123456789', distribution_column := 'y');
+
 SET client_min_messages TO WARNING;
 DROP SCHEMA alter_distributed_table CASCADE;

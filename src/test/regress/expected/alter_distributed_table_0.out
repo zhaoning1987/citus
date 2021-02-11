@@ -816,5 +816,22 @@ SELECT * FROM mat_view ORDER BY a;
  2 | 2
 (2 rows)
 
+-- test long table names
+create table abcde_0123456789012345678901234567890123456789012345678901234567890123456789 (x int, y int);
+NOTICE:  identifier "abcde_0123456789012345678901234567890123456789012345678901234567890123456789" will be truncated to "abcde_012345678901234567890123456789012345678901234567890123456"
+select create_distributed_table('abcde_0123456789012345678901234567890123456789012345678901234567890123456789', 'x');
+ create_distributed_table
+---------------------------------------------------------------------
+
+(1 row)
+
+select alter_distributed_table('abcde_0123456789012345678901234567890123456789012345678901234567890123456789', distribution_column := 'y');
+NOTICE:  creating a new table for alter_distributed_table.abcde_012345678901234567890123456789012345678901234567890123456
+NOTICE:  Moving the data of alter_distributed_table.abcde_012345678901234567890123456789012345678901234567890123456
+NOTICE:  Dropping the old alter_distributed_table.abcde_012345678901234567890123456789012345678901234567890123456
+NOTICE:  Renaming the new table to alter_distributed_table.abcde_012345678901234567890123456789012345678901234567890123456
+ERROR:  The table name (abcde_012345678901234567890123456789012345678901234567890123456) on a shard is too long and could lead to deadlocks when executed in a transaction block after a parallel query
+HINT:  Try re-running the transaction with "SET LOCAL citus.multi_shard_modify_mode TO 'sequential';"
+CONTEXT:  SQL statement "ALTER TABLE alter_distributed_table.abcde_0123456789012345678901234567890123456_f7ff6612_4160710162 RENAME TO abcde_012345678901234567890123456789012345678901234567890123456"
 SET client_min_messages TO WARNING;
 DROP SCHEMA alter_distributed_table CASCADE;
