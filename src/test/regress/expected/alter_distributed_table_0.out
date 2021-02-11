@@ -826,12 +826,17 @@ select create_distributed_table('abcde_01234567890123456789012345678901234567890
 (1 row)
 
 select alter_distributed_table('abcde_0123456789012345678901234567890123456789012345678901234567890123456789', distribution_column := 'y');
+WARNING:  the name of the relation is too long, switching to sequential and local execution mode to prevent self deadlocks: abcde_012345678901234567890123456789012345678901234567890123456
 NOTICE:  creating a new table for alter_distributed_table.abcde_012345678901234567890123456789012345678901234567890123456
 NOTICE:  Moving the data of alter_distributed_table.abcde_012345678901234567890123456789012345678901234567890123456
 NOTICE:  Dropping the old alter_distributed_table.abcde_012345678901234567890123456789012345678901234567890123456
 NOTICE:  Renaming the new table to alter_distributed_table.abcde_012345678901234567890123456789012345678901234567890123456
-ERROR:  The table name (abcde_012345678901234567890123456789012345678901234567890123456) on a shard is too long and could lead to deadlocks when executed in a transaction block after a parallel query
-HINT:  Try re-running the transaction with "SET LOCAL citus.multi_shard_modify_mode TO 'sequential';"
+WARNING:  the name of the relation is too long, switching to sequential and local execution mode to prevent self deadlocks: abcde_012345678901234567890123456789012345678901234567890123456
 CONTEXT:  SQL statement "ALTER TABLE alter_distributed_table.abcde_0123456789012345678901234567890123456_f7ff6612_4160710162 RENAME TO abcde_012345678901234567890123456789012345678901234567890123456"
+ alter_distributed_table
+---------------------------------------------------------------------
+
+(1 row)
+
 SET client_min_messages TO WARNING;
 DROP SCHEMA alter_distributed_table CASCADE;
