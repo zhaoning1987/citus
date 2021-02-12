@@ -1377,6 +1377,11 @@ AddUnionAllSetOperationsToAttributeEquivalenceClass(AttributeEquivalenceClass **
 		}
 		int rtoffset = RangeTableOffsetCompat(root, appendRelInfo);
 
+		if (appendRelInfo->child_relid - rtoffset == varToBeAdded->varno)
+		{
+			return;
+		}
+
 		/* set the varno accordingly for this specific child */
 		varToBeAdded->varno = appendRelInfo->child_relid - rtoffset;
 
