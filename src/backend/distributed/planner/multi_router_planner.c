@@ -2771,6 +2771,10 @@ HasPseudoFalseClause(RelOptInfo *relOptInfo)
 	List *pseudoRestrictionList = extract_actual_clauses(joinInfoList, true);
 
 	bool whereFalseQuery = ContainsFalseClause(pseudoRestrictionList);
+	if (whereFalseQuery)
+	{
+		elog(INFO, "whereFalseQuery: %d", whereFalseQuery);
+	}
 	return whereFalseQuery;
 }
 
