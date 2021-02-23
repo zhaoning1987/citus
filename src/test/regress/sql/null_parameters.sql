@@ -4,6 +4,8 @@ CREATE SCHEMA null_parameters;
 SET search_path TO null_parameters;
 
 SET citus.next_shard_id TO 1680000;
+SET client_min_messages TO DEBUG4;
+SET citus.log_remote_commands TO ON;
 CREATE TABLE text_dist_column (key text, value text);
 SELECT create_distributed_table('text_dist_column', 'key');
 
