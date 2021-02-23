@@ -1594,6 +1594,7 @@ void
 SwitchToSequentialAndLocalExecutionIfRelationNameTooLong(Oid relationId,
 														 char *finalRelationName)
 {
+	return;
 	if (!IsCitusTable(relationId))
 	{
 		return;
@@ -1647,7 +1648,7 @@ static bool
 SwitchToSequentialAndLocalExecutionIfShardNameTooLong(char *relationName,
 													  char *longestShardName)
 {
-	return;
+	return false;
 	if (strlen(longestShardName) >= NAMEDATALEN - 1)
 	{
 		if (ParallelQueryExecutedInTransaction())
