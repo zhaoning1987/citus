@@ -129,13 +129,13 @@ SELECT "Constraint", "Definition" FROM table_checks WHERE relid='public.name_len
 SET client_min_messages TO DEBUG1;
 SET citus.force_max_query_parallelization TO ON;
 ALTER TABLE name_lengths RENAME TO name_len_12345678901234567890123456789012345678901234567890;
-ERROR:  shard name name_len_12345678901234567890123456789012345678_fcd8ab6f_xxxxx exceeds 63 characters
-CONTEXT:  while executing command on localhost:xxxxx
+DEBUG:  the name of the shard (name_len_12345678901234567890123456789012345678_fcd8ab6f_xxxxx) for relation (name_len_12345678901234567890123456789012345678901234567890) is too long, switching to sequential and local execution mode to prevent self deadlocks
 SELECT * FROM name_len_12345678901234567890123456789012345678901234567890;
-DEBUG:  relation "name_len_12345678901234567890123456789012345678901234567890" does not exist
-ERROR:  relation "name_len_12345678901234567890123456789012345678901234567890" does not exist
+ col1 | col2 | float_col_12345678901234567890123456789012345678901234567890 | date_col_12345678901234567890123456789012345678901234567890 | int_col_12345678901234567890123456789012345678901234567890
+---------------------------------------------------------------------
+(0 rows)
+
 ALTER TABLE name_len_12345678901234567890123456789012345678901234567890 RENAME TO name_lengths;
-ERROR:  relation "name_len_12345678901234567890123456789012345678901234567890" does not exist
 SELECT * FROM name_lengths;
  col1 | col2 | float_col_12345678901234567890123456789012345678901234567890 | date_col_12345678901234567890123456789012345678901234567890 | int_col_12345678901234567890123456789012345678901234567890
 ---------------------------------------------------------------------
@@ -145,16 +145,15 @@ SELECT * FROM name_lengths;
 BEGIN;
 ALTER TABLE name_lengths rename col1 to new_column_name;
 ALTER TABLE name_lengths RENAME TO name_len_12345678901234567890123456789012345678901234567890;
-ERROR:  shard name name_len_12345678901234567890123456789012345678_fcd8ab6f_xxxxx exceeds 63 characters
-CONTEXT:  while executing command on localhost:xxxxx
+ERROR:  Shard name (name_len_12345678901234567890123456789012345678_fcd8ab6f_xxxxx) for table (name_len_12345678901234567890123456789012345678901234567890) is too long and could lead to deadlocks when executed in a transaction block after a parallel query
+HINT:  Try re-running the transaction with "SET LOCAL citus.multi_shard_modify_mode TO 'sequential';"
 ROLLBACK;
 -- The same operation will work when sequential mode is set
 BEGIN;
 SET LOCAL citus.multi_shard_modify_mode TO 'sequential';
 ALTER TABLE name_lengths rename col1 to new_column_name;
 ALTER TABLE name_lengths RENAME TO name_len_12345678901234567890123456789012345678901234567890;
-ERROR:  shard name name_len_12345678901234567890123456789012345678_fcd8ab6f_xxxxx exceeds 63 characters
-CONTEXT:  while executing command on localhost:xxxxx
+DEBUG:  the name of the shard (name_len_12345678901234567890123456789012345678_fcd8ab6f_xxxxx) for relation (name_len_12345678901234567890123456789012345678901234567890) is too long, switching to sequential and local execution mode to prevent self deadlocks
 ROLLBACK;
 RESET client_min_messages;
 -- test long partitioned table renames
@@ -174,12 +173,9 @@ CREATE TABLE partition_lengths_p2020_09_28 PARTITION OF partition_lengths FOR VA
 -- verify that we can rename partitioned tables and partitions to too-long names
 ALTER TABLE partition_lengths RENAME TO partition_lengths_12345678901234567890123456789012345678901234567890;
 NOTICE:  identifier "partition_lengths_12345678901234567890123456789012345678901234567890" will be truncated to "partition_lengths_123456789012345678901234567890123456789012345"
-ERROR:  shard name partition_lengths_12345678901234567890123456789_f3bd8571_225004 exceeds 63 characters
-CONTEXT:  while executing command on localhost:xxxxx
 -- verify that we can rename partitioned tables and partitions with too-long names
 ALTER TABLE partition_lengths_12345678901234567890123456789012345678901234567890 RENAME TO partition_lengths;
 NOTICE:  identifier "partition_lengths_12345678901234567890123456789012345678901234567890" will be truncated to "partition_lengths_123456789012345678901234567890123456789012345"
-ERROR:  relation "partition_lengths_123456789012345678901234567890123456789012345" does not exist
 -- Placeholders for unsupported operations
 \set VERBOSITY TERSE
 -- renaming distributed table partitions are not supported
