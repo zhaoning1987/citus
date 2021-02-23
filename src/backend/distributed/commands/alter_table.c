@@ -1647,6 +1647,7 @@ static bool
 SwitchToSequentialAndLocalExecutionIfShardNameTooLong(char *relationName,
 													  char *longestShardName)
 {
+	return;
 	if (strlen(longestShardName) >= NAMEDATALEN - 1)
 	{
 		if (ParallelQueryExecutedInTransaction())

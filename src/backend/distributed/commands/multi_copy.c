@@ -2199,6 +2199,7 @@ CitusCopyDestReceiverStartup(DestReceiver *dest, int operation,
 
 	/* load the list of shards and verify that we have shards to copy into */
 	List *shardIntervalList = LoadShardIntervalList(tableId);
+	elog(INFO, "tableId: %s", get_rel_name(tableId));
 	if (shardIntervalList == NIL)
 	{
 		if (IsCitusTableTypeCacheEntry(cacheEntry, HASH_DISTRIBUTED))
