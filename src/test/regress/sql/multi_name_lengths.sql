@@ -92,6 +92,12 @@ SELECT * FROM name_len_12345678901234567890123456789012345678901234567890;
 ALTER TABLE name_len_12345678901234567890123456789012345678901234567890 RENAME TO name_lengths;
 SELECT * FROM name_lengths;
 
+-- Test renames on zero shard distributed tables
+CREATE TABLE append_zero_shard_table (a int);
+SELECT create_distributed_table('append_zero_shard_table', 'a', 'append');
+ALTER TABLE append_zero_shard_table rename TO append_zero_shard_table_12345678901234567890123456789012345678901234567890;
+
+
 -- Verify that we do not support long renames after parallel queries are executed in transaction block
 BEGIN;
 ALTER TABLE name_lengths rename col1 to new_column_name;

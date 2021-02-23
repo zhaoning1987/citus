@@ -1599,6 +1599,15 @@ SwitchToSequentialAndLocalExecutionIfRelationNameTooLong(Oid relationId,
 		return;
 	}
 
+	if (ShardIntervalCount(relationId) == 0)
+	{
+		/*
+		 * Relation has no shards, so we cannot run into "long shard relation
+		 * name" issue.
+		 */
+		return;
+	}
+
 	char *longestShardName = GetLongestShardName(relationId, finalRelationName);
 	bool switchedToSequentialAndLocalExecution =
 		SwitchToSequentialAndLocalExecutionIfShardNameTooLong(finalRelationName,

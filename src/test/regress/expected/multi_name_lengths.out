@@ -141,6 +141,16 @@ SELECT * FROM name_lengths;
 ---------------------------------------------------------------------
 (0 rows)
 
+-- Test renames on zero shard distributed tables
+CREATE TABLE append_zero_shard_table (a int);
+SELECT create_distributed_table('append_zero_shard_table', 'a', 'append');
+ create_distributed_table
+---------------------------------------------------------------------
+
+(1 row)
+
+ALTER TABLE append_zero_shard_table rename TO append_zero_shard_table_12345678901234567890123456789012345678901234567890;
+NOTICE:  identifier "append_zero_shard_table_12345678901234567890123456789012345678901234567890" will be truncated to "append_zero_shard_table_123456789012345678901234567890123456789"
 -- Verify that we do not support long renames after parallel queries are executed in transaction block
 BEGIN;
 ALTER TABLE name_lengths rename col1 to new_column_name;
