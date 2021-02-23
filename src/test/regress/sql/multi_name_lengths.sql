@@ -114,7 +114,7 @@ ROLLBACK;
 RESET client_min_messages;
 
 -- test long partitioned table renames
-RESET citus.replication_factor;
+SET citus.shard_replication_factor TO 1;
 CREATE TABLE partition_lengths
 (
     tenant_id integer NOT NULL,
@@ -133,11 +133,11 @@ ALTER TABLE partition_lengths_12345678901234567890123456789012345678901234567890
 -- Placeholders for unsupported operations
 \set VERBOSITY TERSE
 
--- renaming distributed table partitions are not supported
+-- renaming distributed table partitions
 ALTER TABLE partition_lengths_p2020_09_28 RENAME TO partition_lengths_p2020_09_28_12345678901234567890123456789012345678901234567890;
 
 -- creating or attaching new partitions with long names create deadlocks
-CREATE TABLE partition_lengths_p2020_09_29_12345678901234567890123456789012345678901234567890 (LIKE partition_lengths_p2020_09_28);
+CREATE TABLE partition_lengths_p2020_09_29_12345678901234567890123456789012345678901234567890 (LIKE partition_lengths_p2020_09_28_12345678901234567890123456789012345678901234567890);
 ALTER TABLE partition_lengths
     ATTACH PARTITION partition_lengths_p2020_09_29_12345678901234567890123456789012345678901234567890
     FOR VALUES FROM ('2020-09-29 00:00:00') TO ('2020-09-30 00:00:00');
@@ -149,7 +149,7 @@ DROP TABLE partition_lengths_p2020_09_29_123456789012345678901234567890123456789
 -- creating or attaching new partitions with long names work when using sequential shard modify mode
 BEGIN;
 SET LOCAL citus.multi_shard_modify_mode = sequential;
-CREATE TABLE partition_lengths_p2020_09_29_12345678901234567890123456789012345678901234567890 (LIKE partition_lengths_p2020_09_28);
+CREATE TABLE partition_lengths_p2020_09_29_12345678901234567890123456789012345678901234567890 (LIKE partition_lengths_p2020_09_28_12345678901234567890123456789012345678901234567890);
 ALTER TABLE partition_lengths
     ATTACH PARTITION partition_lengths_p2020_09_29_12345678901234567890123456789012345678901234567890
     FOR VALUES FROM ('2020-09-29 00:00:00') TO ('2020-09-30 00:00:00');
@@ -163,6 +163,9 @@ ALTER TABLE name_lengths RENAME CONSTRAINT unique_123456789012345678901234567890
 
 DROP TABLE partition_lengths CASCADE;
 \set VERBOSITY DEFAULT
+
+-- Verify that we can create indexes with very long names on zero shard tables.
+CREATE INDEX append_zero_shard_table_idx_12345678901234567890123456789012345678901234567890 ON append_zero_shard_table_12345678901234567890123456789012345678901234567890(a);
 
 -- Verify that CREATE INDEX on already distributed table has proper shard names.
 
