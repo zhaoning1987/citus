@@ -216,7 +216,7 @@ if test "$version_num" != '11'; then
    HAS_TABLEAM=yes
    AC_DEFINE([HAS_TABLEAM], 1, [Define to 1 to build with table access method support, pg12 and up])
 else
-   AC_MSG_NOTICE([postgres version does not support table access methodds])
+   AC_MSG_NOTICE([postgres version does not support table access methods])
 fi;
 
 # Require lz4 & zstd only if we are compiling columnar
@@ -260,6 +260,17 @@ if test "$HAS_TABLEAM" == 'yes'; then
   fi
 
 fi # test "$HAS_TABLEAM" == 'yes'
+
+
+PGAC_ARG_BOOL(with, security-flags, yes,
+              [do not use security flags])
+AC_SUBST(with_security_flags)
+
+if test "$with_security_flags" = yes; then
+SECURITY_FLAGS="-fstack-protector-strong -D_FORTIFY_SOURCE=2 -O2 -z noexecstack -fpic -Wl,-z,relro -Wl,-z,now -Wformat -Wformat-security -Werror=format-security"
+CITUS_CFLAGS="$CITUS_CFLAGS $SECURITY_FLAGS"
+AC_MSG_NOTICE([Added security flags $SECURITY_FLAGS])
+fi
 
 # Check if git is installed, when installed the gitref of the checkout will be baked in the application
 AC_PATH_PROG(GIT_BIN, git)
