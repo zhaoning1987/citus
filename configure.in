@@ -176,13 +176,7 @@ CITUSAC_PROG_CC_CFLAGS_OPT([-Werror=implicit-function-declaration])
 CITUSAC_PROG_CC_CFLAGS_OPT([-Werror=return-type])
 # Security flags
 # Flags taken from: https://liquid.microsoft.com/Web/Object/Read/ms.security/Requirements/Microsoft.Security.SystemsADM.10203#guide
-CITUSAC_PROG_CC_CFLAGS_OPT([-fstack-protector-strong])
-CITUSAC_PROG_CC_CFLAGS_OPT([-Wformat=2])
-CITUSAC_PROG_CC_CFLAGS_OPT([-Wformat])
-CITUSAC_PROG_CC_CFLAGS_OPT([-Werror=format-security])
-CITUSAC_PROG_CC_CFLAGS_OPT([-O2])
-CITUSAC_PROG_CC_CFLAGS_OPT([-fpic])
-CITUSAC_PROG_CC_CFLAGS_OPT([-shared])
+# We do not enforce the following flag because it is only available on GCC>=8
 CITUSAC_PROG_CC_CFLAGS_OPT([-fstack-clash-protection])
 
 #
@@ -279,14 +273,12 @@ AC_SUBST(with_security_flags)
 if test "$with_security_flags" = yes; then
 # Flags taken from: https://liquid.microsoft.com/Web/Object/Read/ms.security/Requirements/Microsoft.Security.SystemsADM.10203#guide
 
-# It is not trivial to check for linker parameter support, and we blindly add
-# some flags to LDFLAGS without checking if they are available.
-SECURITY_LDFLAGS="-D_FORTIFY_SOURCE=2 -z noexecstack -fpic -shared -Wl,-z,relro -Wl,-z,now"
-CITUS_LDFLAGS="$CITUS_LDFLAGS $SECURITY_LDFLAGS"
-AC_MSG_NOTICE([Blindly added security flags for linker: $SECURITY_LDFLAGS])
+# We always want to have some compiler flags for security concerns.
+SECURITY_CFLAGS="-fstack-protector-strong -Wformat -Wformat-security -Werror=format-security -O2 -fpic -shared -D_FORTIFY_SOURCE=2 -D_FORTIFY_SOURCE=2 -z noexecstack -fpic -shared -Wl,-z,relro -Wl,-z,now"
+CITUS_CFLAGS="$CITUS_CFLAGS $SECURITY_CFLAGS"
+AC_MSG_NOTICE([Blindly added security flags for linker: $SECURITY_CFLAGS])
 
-# It is not trivial to check for llvm compiler flags, and we blindly add
-# some flags to BITCODE_CFLAGS without checking if they are available.
+# We always want to have some clang flags for security concerns.
 SECURITY_BITCODE_CFLAGS="-fsanitize=safe-stack -fstack-protector-strong -flto -fvisibility=hidden -fPIC -Wformat -Wformat-security -Werror=format-security"
 CITUS_BITCODE_CFLAGS="$CITUS_BITCODE_CFLAGS $SECURITY_BITCODE_CFLAGS"
 AC_MSG_NOTICE([Blindly added security flags for llvm: $SECURITY_BITCODE_CFLAGS])
