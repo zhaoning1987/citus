@@ -281,7 +281,7 @@ AC_MSG_NOTICE([Blindly added security flags for linker: $SECURITY_CFLAGS])
 # We always want to have some clang flags for security concerns.
 # This doesn't include "-Wl,-z,relro -Wl,-z,now" on purpuse, because bitcode is not linked.
 # -fvisibility=hidden is added because otherwise -fsanitize=cfi doesn't work
-SECURITY_BITCODE_CFLAGS="-fsanitize=safe-stack -fstack-protector-strong -flto -fvisibility=hidden -fPIC -Wformat -Wformat-security -Werror=format-security"
+SECURITY_BITCODE_CFLAGS="-fsanitize=safe-stack -fstack-protector-strong -flto -fsanitize=cfi -fvisibility=hidden -fPIC -Wformat -Wformat-security -Werror=format-security"
 CITUS_BITCODE_CFLAGS="$CITUS_BITCODE_CFLAGS $SECURITY_BITCODE_CFLAGS"
 AC_MSG_NOTICE([Blindly added security flags for llvm: $SECURITY_BITCODE_CFLAGS])
 

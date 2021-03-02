@@ -4765,13 +4765,15 @@ if test "$with_security_flags" = yes; then
 # Flags taken from: https://liquid.microsoft.com/Web/Object/Read/ms.security/Requirements/Microsoft.Security.SystemsADM.10203#guide
 
 # We always want to have some compiler flags for security concerns.
-SECURITY_CFLAGS="-fstack-protector-strong -Wformat -Wformat-security -Werror=format-security -O2 -fpic -shared -D_FORTIFY_SOURCE=2 -D_FORTIFY_SOURCE=2 -z noexecstack -fpic -shared -Wl,-z,relro -Wl,-z,now"
+SECURITY_CFLAGS="-fstack-protector-strong -D_FORTIFY_SOURCE=2 -O2 -z noexecstack -fpic -shared -Wl,-z,relro -Wl,-z,now -Wformat -Wformat-security -Werror=format-security"
 CITUS_CFLAGS="$CITUS_CFLAGS $SECURITY_CFLAGS"
 { $as_echo "$as_me:${as_lineno-$LINENO}: Blindly added security flags for linker: $SECURITY_CFLAGS" >&5
 $as_echo "$as_me: Blindly added security flags for linker: $SECURITY_CFLAGS" >&6;}
 
 # We always want to have some clang flags for security concerns.
-SECURITY_BITCODE_CFLAGS="-fsanitize=safe-stack -fstack-protector-strong -flto -fvisibility=hidden -fPIC -Wformat -Wformat-security -Werror=format-security"
+# This doesn't include "-Wl,-z,relro -Wl,-z,now" on purpuse, because bitcode is not linked.
+# -fvisibility=hidden is added because otherwise -fsanitize=cfi doesn't work
+SECURITY_BITCODE_CFLAGS="-fsanitize=safe-stack -fstack-protector-strong -flto -fsanitize=cfi -fvisibility=hidden -fPIC -Wformat -Wformat-security -Werror=format-security"
 CITUS_BITCODE_CFLAGS="$CITUS_BITCODE_CFLAGS $SECURITY_BITCODE_CFLAGS"
 { $as_echo "$as_me:${as_lineno-$LINENO}: Blindly added security flags for llvm: $SECURITY_BITCODE_CFLAGS" >&5
 $as_echo "$as_me: Blindly added security flags for llvm: $SECURITY_BITCODE_CFLAGS" >&6;}
