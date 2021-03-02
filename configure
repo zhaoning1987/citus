@@ -5045,7 +5045,7 @@ $as_echo "$as_me: Blindly added security flags for linker: $SECURITY_LDFLAGS" >&
 
 # It is not trivial to check for llvm compiler flags, and we blindly add
 # some flags to BITCODE_CFLAGS without checking if they are available.
-SECURITY_BITCODE_CFLAGS="-fsanitize=safe-stack -fstack-protector-strong -flto -fvisibility=hidden -fsanitize=cfi -fPIC -Wformat -Wformat-security -Werror=format-security"
+SECURITY_BITCODE_CFLAGS="-fsanitize=safe-stack -fstack-protector-strong -flto -fvisibility=hidden -fPIC -Wformat -Wformat-security -Werror=format-security"
 CITUS_BITCODE_CFLAGS="$CITUS_BITCODE_CFLAGS $SECURITY_BITCODE_CFLAGS"
 { $as_echo "$as_me:${as_lineno-$LINENO}: Blindly added security flags for llvm: $SECURITY_BITCODE_CFLAGS" >&5
 $as_echo "$as_me: Blindly added security flags for llvm: $SECURITY_BITCODE_CFLAGS" >&6;}
