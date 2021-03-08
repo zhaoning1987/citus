@@ -37,9 +37,6 @@
 #include "common/hashfn.h"
 #endif
 #include "utils/memutils.h"
-#if PG_VERSION_NUM < PG_VERSION_12
-#include "utils/rel.h"
-#endif
 
 
 /*

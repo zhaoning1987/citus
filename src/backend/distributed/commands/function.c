@@ -1066,12 +1066,6 @@ GetAggregateDDLCommand(const RegProcedure funcOid, bool useCreateOrReplace)
 	ReleaseSysCache(aggtup);
 	ReleaseSysCache(proctup);
 
-#if PG_VERSION_NUM < PG_VERSION_12
-	if (useCreateOrReplace)
-	{
-		return WrapCreateOrReplace(buf.data);
-	}
-#endif
 	return buf.data;
 }
 

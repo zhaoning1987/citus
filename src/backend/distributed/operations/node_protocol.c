@@ -476,11 +476,7 @@ master_get_active_worker_nodes(PG_FUNCTION_ARGS)
 		 * This tuple descriptor must match the output parameters declared for
 		 * the function in pg_proc.
 		 */
-#if PG_VERSION_NUM < PG_VERSION_12
-		tupleDescriptor = CreateTemplateTupleDesc(WORKER_NODE_FIELDS, false);
-#else
 		tupleDescriptor = CreateTemplateTupleDesc(WORKER_NODE_FIELDS);
-#endif
 		TupleDescInitEntry(tupleDescriptor, (AttrNumber) 1, "node_name",
 						   TEXTOID, -1, 0);
 		TupleDescInitEntry(tupleDescriptor, (AttrNumber) 2, "node_port",

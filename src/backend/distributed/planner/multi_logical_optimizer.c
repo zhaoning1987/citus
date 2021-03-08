@@ -3608,11 +3608,7 @@ AggregateFunctionOid(const char *functionName, Oid inputType)
 			if (procForm->proargtypes.values[0] == inputType ||
 				procForm->proargtypes.values[0] == ANYELEMENTOID)
 			{
-#if PG_VERSION_NUM < PG_VERSION_12
-				functionOid = HeapTupleGetOid(heapTuple);
-#else
 				functionOid = procForm->oid;
-#endif
 				break;
 			}
 		}

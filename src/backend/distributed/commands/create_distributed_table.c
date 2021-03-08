@@ -819,18 +819,6 @@ EnsureRelationCanBeDistributed(Oid relationId, Var *distributionColumn,
 
 	ErrorIfTableIsACatalogTable(relation);
 
-#if PG_VERSION_NUM < PG_VERSION_12
-
-	/* verify target relation does not use WITH (OIDS) PostgreSQL feature */
-	if (relationDesc->tdhasoid)
-	{
-		ereport(ERROR, (errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
-						errmsg("cannot distribute relation: %s", relationName),
-						errdetail("Distributed relations must not specify the WITH "
-								  "(OIDS) option in their definitions.")));
-	}
-#endif
-
 	/* verify target relation does not use identity columns */
 	if (RelationUsesIdentityColumns(relationDesc))
 	{

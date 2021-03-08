@@ -125,6 +125,7 @@ static void CitusAuthHook(Port *port, int status);
 
 static ClientAuthentication_hook_type original_client_auth_hook = NULL;
 
+static bool dummyBool = false;
 
 /* *INDENT-OFF* */
 /* GUC enum definitions */
@@ -1061,7 +1062,7 @@ RegisterCitusConfigVariables(void)
 		"citus.enable_cte_inlining",
 		gettext_noop("This setting is deprecated"),
 		gettext_noop("This setting is deprecated"),
-		NULL,
+		&dummyBool,
 		true,
 		PGC_SUSET,
 		GUC_NO_SHOW_ALL,
