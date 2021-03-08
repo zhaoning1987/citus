@@ -12,6 +12,7 @@
 #include "postgres.h"
 
 #include "utils/lsyscache.h"
+#include "distributed/coordinator_protocol.h"
 #include "distributed/metadata_utility.h"
 #include "distributed/relay_utility.h"
 #include "distributed/shard_utils.h"
@@ -52,6 +53,26 @@ GetLongestShardName(Oid citusTableOid, char *finalRelationName)
 	char *longestShardName = pstrdup(finalRelationName);
 	ShardInterval *shardInterval = LoadShardIntervalWithLongestShardName(citusTableOid);
 	AppendShardIdToName(&longestShardName, shardInterval->shardId);
+
+	return longestShardName;
+}
+
+
+/*
+ * GetLongestShardName is a utility function that creates a hypothetical shard
+ * name for a table that is not distributed yet.
+ *
+ * There is no easy way to create the names of shards before those shards are created
+ * because sequence manipulation in PostgreSQL is not transactional. Therefore we assume
+ * that the shardId values of a partition and those of its parent will be adjacent.
+ */
+char *
+GetLongestHypotheticalShardName(Oid parentTableOid, char *relationName)
+{
+	char *longestShardName = pstrdup(relationName);
+	ShardInterval *shardInterval = LoadShardIntervalWithLongestShardName(parentTableOid);
+	uint64 newShardId = shardInterval->shardId + ShardCount;
+	AppendShardIdToName(&longestShardName, newShardId);
 
 	return longestShardName;
 }

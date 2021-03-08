@@ -139,6 +139,9 @@ ALTER TABLE partition_lengths
 CREATE TABLE partition_lengths_p2020_09_30_12345678901234567890123456789012345678901234567890
     PARTITION OF partition_lengths
     FOR VALUES FROM ('2020-09-30 00:00:00') TO ('2020-10-01 00:00:00');
+CREATE TABLE partition_lengths_p2020_10_01_12345678901234567890123456789012345678901234567890
+    PARTITION OF partition_lengths
+    FOR VALUES FROM ('2020-10-01 00:00:00') TO ('2020-10-02 00:00:00');
 DROP TABLE partition_lengths_p2020_09_29_12345678901234567890123456789012345678901234567890;
 
 -- Placeholders for unsupported operations
@@ -204,8 +207,19 @@ SELECT master_create_distributed_table('sneaky_name_lengths', 'int_col_123456789
 SELECT master_create_worker_shards('sneaky_name_lengths', '2', '2');
 
 \c - - :public_worker_1_host :worker_1_port
-\di public.sneaky*225022
-SELECT "Constraint", "Definition" FROM table_checks WHERE relid='public.sneaky_name_lengths_225022'::regclass ORDER BY 1 DESC, 2 DESC;
+SELECT c1.relname AS sneaky_index_name,
+       c2.oid AS sneaky_shard_oid
+FROM pg_class c1
+    JOIN pg_index i ON i.indexrelid = c1.oid
+    JOIN pg_class c2 ON i.indrelid = c2.oid
+WHERE c1.relname LIKE 'sneaky_name_lengths_int_col_%'
+    AND c2.relname LIKE 'sneaky_name_lengths_%'
+    AND c1.relkind = 'i'
+ORDER BY 1 ASC, 2 ASC
+LIMIT 1 \gset
+
+\di :sneaky_index_name
+SELECT "Constraint", "Definition" FROM table_checks WHERE relid= :sneaky_shard_oid ORDER BY 1 DESC, 2 DESC;
 \c - - :master_host :master_port
 
 SET citus.shard_count TO 2;
@@ -223,7 +237,18 @@ CREATE TABLE sneaky_name_lengths (
 SELECT create_distributed_table('sneaky_name_lengths', 'col1', 'hash');
 
 \c - - :public_worker_1_host :worker_1_port
-\di unique*225024
+
+SELECT c1.relname AS unique_index_name
+FROM pg_class c1
+    JOIN pg_index i ON i.indexrelid = c1.oid
+    JOIN pg_class c2 ON i.indrelid = c2.oid
+WHERE c1.relname LIKE 'unique_123456789%'
+    AND c2.relname LIKE 'sneaky_name_lengths_%'
+    AND c1.relkind = 'i'
+ORDER BY 1 ASC
+LIMIT 1 \gset
+
+\di :unique_index_name
 \c - - :master_host :master_port
 
 SET citus.shard_count TO 2;

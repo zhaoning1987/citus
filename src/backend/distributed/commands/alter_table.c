@@ -1658,16 +1658,16 @@ SwitchToSequentialAndLocalExecutionIfRelationNameTooLong(Oid relationId,
 		char *longestPartitionShardName = NULL;
 
 		/* Use the shardId values of the partition if it is distributed, otherwise use those of the parent's */
-		if (IsCitusTable(longestNamePartitionId) && ShardIntervalCount(
-				longestNamePartitionId) > 0)
+		if (IsCitusTable(longestNamePartitionId) &&
+			ShardIntervalCount(longestNamePartitionId) > 0)
 		{
 			longestPartitionShardName = GetLongestShardName(longestNamePartitionId,
 															longestPartitionName);
 		}
 		else
 		{
-			longestPartitionShardName = GetLongestShardName(relationId,
-															longestPartitionName);
+			longestPartitionShardName =
+				GetLongestHypotheticalShardName(relationId, longestPartitionName);
 		}
 
 		SwitchToSequentialAndLocalExecutionIfShardNameTooLong(longestPartitionName,
