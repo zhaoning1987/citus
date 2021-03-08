@@ -3,7 +3,6 @@
 -- ===================================================================
 SET search_path TO subquery_and_ctes;
 -- prevent PG 11 - PG 12 outputs to diverge
-SET citus.enable_cte_inlining TO false;
 CREATE TABLE users_table_local AS SELECT * FROM users_table;
 CREATE TABLE dist_table (id int, value int);
 SELECT create_distributed_table('dist_table', 'id', colocate_with => 'users_table');
@@ -609,7 +608,6 @@ SELECT  count(*) FROM (
     10
 (1 row)
 
-SET citus.enable_cte_inlining to true;
 WITH foo AS (
 	SELECT DISTINCT ref_table_1.a + 1 as a FROM  ref_table_1 JOIN ref_table_2 ON (ref_table_1.a = ref_table_2.a)
 )
@@ -679,7 +677,6 @@ DEBUG:  CTE foo is going to be inlined via distributed planning
     10
 (1 row)
 
-SET citus.enable_cte_inlining to false;
 -- We error-out when there's an error in execution of the query. By repeating it
 -- multiple times, we increase the chance of this test failing before PR #1903.
 SET client_min_messages TO ERROR;

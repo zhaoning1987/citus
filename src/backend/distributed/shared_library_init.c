@@ -1057,19 +1057,11 @@ RegisterCitusConfigVariables(void)
 		GUC_NO_SHOW_ALL,
 		NULL, NULL, NULL);
 
-	/*
-	 * We shouldn't need this variable after we drop support to PostgreSQL 11 and
-	 * below. So, noting it here with PG_VERSION_NUM < PG_VERSION_12
-	 */
 	DefineCustomBoolVariable(
 		"citus.enable_cte_inlining",
-		gettext_noop("When set to false, CTE inlining feature is disabled"),
-		gettext_noop("This feature is not intended for users. It is developed "
-					 "to get consistent regression test outputs between Postgres 11"
-					 "and Postgres 12. In Postgres 12+, the user can control the behaviour"
-					 "by [NOT] MATERIALIZED keyword on CTEs. However, in PG 11, we cannot do "
-					 "that."),
-		&EnableCTEInlining,
+		gettext_noop("This setting is deprecated"),
+		gettext_noop("This setting is deprecated"),
+		NULL,
 		true,
 		PGC_SUSET,
 		GUC_NO_SHOW_ALL,

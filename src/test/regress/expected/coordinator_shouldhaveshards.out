@@ -335,7 +335,6 @@ NOTICE:  executing the command locally: SELECT ref.a, ref.b, local.x, local.y FR
 (1 row)
 
 ROLLBACK;
-set citus.enable_cte_inlining to off;
 BEGIN;
 SELECT count(*) FROM test;
 NOTICE:  executing the command locally: SELECT count(*) AS count FROM coordinator_shouldhaveshards.test_1503000 test WHERE true
@@ -531,7 +530,6 @@ NOTICE:  executing the command locally: SELECT worker_apply_shard_ddl_command (1
 (1 row)
 
 ROLLBACK;
-RESET citus.enable_cte_inlining;
 CREATE table ref_table(x int PRIMARY KEY, y int);
 -- this will be replicated to the coordinator because of add_coordinator test
 SELECT create_reference_table('ref_table');

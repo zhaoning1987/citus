@@ -614,7 +614,6 @@ LEFT JOIN
 
 
 -- should work fine with cte inlinig disabled
-SET citus.enable_cte_inlining TO false;
 WITH distinct_undistribured AS (
     SELECT DISTINCT user_id
     FROM test_cte
@@ -701,7 +700,6 @@ LEFT JOIN
 WITH a AS (SELECT * FROM users_table LIMIT 10)
 	SELECT user_id/0 FROM users_table JOIN a USING (user_id);
 
-RESET citus.enable_cte_inlining;
 
 DROP VIEW basic_view;
 DROP VIEW cte_view;

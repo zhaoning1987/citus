@@ -28,7 +28,6 @@ INSERT INTO local_table VALUES                    (3, '3'), (4, '4'), (5, '5'), 
 -- prevent PG 11 - PG 12 outputs to diverge
 -- and have a lot more CTEs recursively planned for the
 -- sake of increasing the test coverage
-SET citus.enable_cte_inlining TO false;
 
 SET client_min_messages TO DEBUG1;
 
@@ -301,7 +300,6 @@ SET client_min_messages TO DEBUG1;
 -- prevent PG 11 - PG 12 outputs to diverge
 -- and have a lot more CTEs recursively planned for the
 -- sake of increasing the test coverage
-SET citus.enable_cte_inlining TO false;
 
 -- the query cannot be executed locally, but still because of
 -- HAVING the intermediate result is written to local file as well

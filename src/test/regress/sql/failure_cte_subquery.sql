@@ -7,7 +7,6 @@ SET citus.next_shard_id TO 16000000;
 
 -- CTE inlining should not happen because
 -- the tests rely on intermediate results
-SET citus.enable_cte_inlining TO false;
 
 -- prevent using locally executing the intermediate results
 SET citus.task_assignment_policy TO "round-robin";

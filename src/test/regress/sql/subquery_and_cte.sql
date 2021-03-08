@@ -4,7 +4,6 @@
 SET search_path TO subquery_and_ctes;
 
 -- prevent PG 11 - PG 12 outputs to diverge
-SET citus.enable_cte_inlining TO false;
 
 CREATE TABLE users_table_local AS SELECT * FROM users_table;
 
@@ -428,7 +427,6 @@ SELECT  count(*) FROM (
 	dist
 		ON(dist.a = foo.a);
 
-SET citus.enable_cte_inlining to true;
 
 WITH foo AS (
 	SELECT DISTINCT ref_table_1.a + 1 as a FROM  ref_table_1 JOIN ref_table_2 ON (ref_table_1.a = ref_table_2.a)
@@ -474,7 +472,6 @@ WITH foo AS (
 )
 SELECT count(*) FROM foo JOIN dist ON(dist.a = foo.a);
 
-SET citus.enable_cte_inlining to false;
 
 -- We error-out when there's an error in execution of the query. By repeating it
 -- multiple times, we increase the chance of this test failing before PR #1903.

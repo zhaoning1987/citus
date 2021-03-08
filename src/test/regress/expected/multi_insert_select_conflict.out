@@ -173,7 +173,6 @@ DEBUG:  Collecting INSERT ... SELECT results on coordinator
 (10 rows)
 
 -- prevent PG 11 - PG 12 outputs to diverge
-SET citus.enable_cte_inlining TO false;
 -- Get the select part from cte and do nothing on conflict
 WITH cte AS(
 	SELECT col_1, col_2 FROM source_table_1
@@ -207,7 +206,6 @@ SELECT * FROM target_table ORDER BY 1;
     10 |     0
 (10 rows)
 
-SET citus.enable_cte_inlining TO true;
 -- Test with multiple CTEs
 WITH cte AS(
 	SELECT col_1, col_2 FROM source_table_1
@@ -235,7 +233,6 @@ SELECT * FROM target_table ORDER BY 1;
 (10 rows)
 
 -- prevent PG 11 - PG 12 outputs to diverge
-SET citus.enable_cte_inlining TO false;
 WITH inserted_table AS (
 	WITH cte AS(
 		SELECT col_1, col_2, col_3 FROM source_table_1
@@ -300,7 +297,6 @@ $Q$);
                      Task Count: 4
 (6 rows)
 
-SET citus.enable_cte_inlining TO true;
 -- Tests with foreign key to reference table
 CREATE TABLE test_ref_table (key int PRIMARY KEY);
 SELECT create_reference_table('test_ref_table');
@@ -516,7 +512,6 @@ SELECT * FROM target_table ORDER BY 1;
 (10 rows)
 
 -- prevent PG 11 - PG 12 outputs to diverge
-SET citus.enable_cte_inlining TO false;
 WITH cte AS(
 	SELECT col_1, col_2, col_3 FROM source_table_1
 ), cte_2 AS(

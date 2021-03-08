@@ -438,7 +438,6 @@ SELECT time, event_type, value_2, value_3 FROM
 		WHERE
 			foo.user_id = events_table.value_2;
 -- prevent PG 11 - PG 12 outputs to diverge
-SET citus.enable_cte_inlining TO false;
 SELECT * FROM subquery_and_ctes_second
 ORDER BY 3 DESC, 2 DESC, 1 DESC
 LIMIT 5;
@@ -460,7 +459,6 @@ DEBUG:  push down of limit count: 5
  Thu Nov 23 09:33:16.992454 2017 |          3 |       4 |       1
 (5 rows)
 
-SET citus.enable_cte_inlining TO true;
 CREATE VIEW deep_subquery AS
 SELECT count(*)
 FROM
