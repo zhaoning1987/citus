@@ -560,8 +560,7 @@ SELECT true AS valid FROM explain_json_2($$
                     users_table, events_table
                 WHERE
                     users_table.user_id = events_table.user_id AND event_type IN (1,2,3,4)) as bar WHERE bar.user_id = q1.user_id ;$$);
-DEBUG:  generating subplan XXX_1 for CTE q1: SELECT user_id FROM public.users_table
-DEBUG:  Plan XXX query after replacing subqueries and CTEs: SELECT count(*) AS count FROM (SELECT intermediate_result.user_id FROM read_intermediate_result('XXX_1'::text, 'binary'::citus_copy_format) intermediate_result(user_id integer)) q1, (SELECT users_table.user_id, random() AS random FROM public.users_table, public.events_table WHERE ((users_table.user_id OPERATOR(pg_catalog.=) events_table.user_id) AND (events_table.event_type OPERATOR(pg_catalog.=) ANY (ARRAY[1, 2, 3, 4])))) bar WHERE (bar.user_id OPERATOR(pg_catalog.=) q1.user_id)
+DEBUG:  CTE q1 is going to be inlined via distributed planning
  valid
 ---------------------------------------------------------------------
  t

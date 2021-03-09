@@ -289,6 +289,7 @@ DEBUG:  query has a single distribution column value: 1
 -- queries with CTEs are supported
 WITH first_author AS ( SELECT id FROM articles_hash WHERE author_id = 1)
 SELECT * FROM first_author;
+DEBUG:  CTE first_author is going to be inlined via distributed planning
 DEBUG:  Creating router plan
 DEBUG:  query has a single distribution column value: 1
  id
@@ -352,6 +353,8 @@ DEBUG:  query has a single distribution column value: 1
 WITH id_author AS ( SELECT id, author_id FROM articles_hash WHERE author_id = 1),
 id_title AS (SELECT id, title from articles_hash WHERE author_id = 1)
 SELECT * FROM id_author, id_title WHERE id_author.id = id_title.id;
+DEBUG:  CTE id_author is going to be inlined via distributed planning
+DEBUG:  CTE id_title is going to be inlined via distributed planning
 DEBUG:  Creating router plan
 DEBUG:  query has a single distribution column value: 1
  id | author_id | id |    title
@@ -366,6 +369,8 @@ DEBUG:  query has a single distribution column value: 1
 WITH id_author AS ( SELECT id, author_id FROM articles_hash WHERE author_id = 1),
 id_title AS (SELECT id, title from articles_hash WHERE author_id = 3)
 SELECT * FROM id_author, id_title WHERE id_author.id = id_title.id;
+DEBUG:  CTE id_author is going to be inlined via distributed planning
+DEBUG:  CTE id_title is going to be inlined via distributed planning
 DEBUG:  Creating router plan
  id | author_id | id | title
 ---------------------------------------------------------------------
@@ -375,15 +380,15 @@ DEBUG:  Creating router plan
 WITH id_author AS ( SELECT id, author_id FROM articles_hash WHERE author_id = 1),
 id_title AS (SELECT id, title from articles_hash WHERE author_id = 2)
 SELECT * FROM id_author, id_title WHERE id_author.id = id_title.id;
+DEBUG:  CTE id_author is going to be inlined via distributed planning
+DEBUG:  CTE id_title is going to be inlined via distributed planning
 DEBUG:  cannot run command which targets multiple shards
-DEBUG:  generating subplan XXX_1 for CTE id_author: SELECT id, author_id FROM public.articles_hash WHERE (author_id OPERATOR(pg_catalog.=) 1)
-DEBUG:  Creating router plan
-DEBUG:  query has a single distribution column value: 1
-DEBUG:  generating subplan XXX_2 for CTE id_title: SELECT id, title FROM public.articles_hash WHERE (author_id OPERATOR(pg_catalog.=) 2)
 DEBUG:  Creating router plan
 DEBUG:  query has a single distribution column value: 2
-DEBUG:  Plan XXX query after replacing subqueries and CTEs: SELECT id_author.id, id_author.author_id, id_title.id, id_title.title FROM (SELECT intermediate_result.id, intermediate_result.author_id FROM read_intermediate_result('XXX_1'::text, 'binary'::citus_copy_format) intermediate_result(id bigint, author_id bigint)) id_author, (SELECT intermediate_result.id, intermediate_result.title FROM read_intermediate_result('XXX_2'::text, 'binary'::citus_copy_format) intermediate_result(id bigint, title character varying(20))) id_title WHERE (id_author.id OPERATOR(pg_catalog.=) id_title.id)
+DEBUG:  generating subplan XXX_1 for subquery SELECT id, title FROM public.articles_hash WHERE (author_id OPERATOR(pg_catalog.=) 2)
+DEBUG:  Plan XXX query after replacing subqueries and CTEs: SELECT id_author.id, id_author.author_id, id_title.id, id_title.title FROM (SELECT articles_hash.id, articles_hash.author_id FROM public.articles_hash WHERE (articles_hash.author_id OPERATOR(pg_catalog.=) 1)) id_author, (SELECT intermediate_result.id, intermediate_result.title FROM read_intermediate_result('XXX_1'::text, 'binary'::citus_copy_format) intermediate_result(id bigint, title character varying(20))) id_title WHERE (id_author.id OPERATOR(pg_catalog.=) id_title.id)
 DEBUG:  Creating router plan
+DEBUG:  query has a single distribution column value: 1
  id | author_id | id | title
 ---------------------------------------------------------------------
 (0 rows)
@@ -774,6 +779,37 @@ SELECT a.author_id as first_author, b.word_count as second_word_count
 	FROM articles_hash a, single_shard b
 	WHERE a.author_id = 2 and a.author_id = b.author_id
 	LIMIT 3;
+DEBUG:  CTE single_shard is going to be inlined via distributed planning
+DEBUG:  found no worker with all shard placements
+DEBUG:  push down of limit count: 3
+DEBUG:  join prunable for task partitionId 0 and 1
+DEBUG:  join prunable for task partitionId 0 and 2
+DEBUG:  join prunable for task partitionId 0 and 3
+DEBUG:  join prunable for task partitionId 1 and 0
+DEBUG:  join prunable for task partitionId 1 and 2
+DEBUG:  join prunable for task partitionId 1 and 3
+DEBUG:  join prunable for task partitionId 2 and 0
+DEBUG:  join prunable for task partitionId 2 and 1
+DEBUG:  join prunable for task partitionId 2 and 3
+DEBUG:  join prunable for task partitionId 3 and 0
+DEBUG:  join prunable for task partitionId 3 and 1
+DEBUG:  join prunable for task partitionId 3 and 2
+DEBUG:  pruning merge fetch taskId 1
+DETAIL:  Creating dependency on merge taskId 2
+DEBUG:  pruning merge fetch taskId 2
+DETAIL:  Creating dependency on merge taskId 2
+DEBUG:  pruning merge fetch taskId 4
+DETAIL:  Creating dependency on merge taskId 4
+DEBUG:  pruning merge fetch taskId 5
+DETAIL:  Creating dependency on merge taskId 4
+DEBUG:  pruning merge fetch taskId 7
+DETAIL:  Creating dependency on merge taskId 6
+DEBUG:  pruning merge fetch taskId 8
+DETAIL:  Creating dependency on merge taskId 6
+DEBUG:  pruning merge fetch taskId 10
+DETAIL:  Creating dependency on merge taskId 8
+DEBUG:  pruning merge fetch taskId 11
+DETAIL:  Creating dependency on merge taskId 8
 DEBUG:  found no worker with all shard placements
 DEBUG:  generating subplan XXX_1 for CTE single_shard: SELECT id, author_id, title, word_count FROM public.articles_single_shard_hash
 DEBUG:  Creating router plan
