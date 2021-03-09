@@ -199,7 +199,7 @@ jobs:
                 make -C src/test/regress \
                   check-citus-upgrade \
                   bindir=/usr/lib/postgresql/${PG_MAJOR}/bin \
-                  citus-pre-tar=/install-pg11-citus${citus_version}.tar \
+                  citus-pre-tar=/install-pg${PG_MAJOR}-citus${citus_version}.tar \
                   citus-post-tar=/home/circleci/project/install-$PG_MAJOR.tar; \
             done;
 
@@ -210,7 +210,7 @@ jobs:
                 make -C src/test/regress \
                   check-citus-upgrade-mixed \
                   bindir=/usr/lib/postgresql/${PG_MAJOR}/bin \
-                  citus-pre-tar=/install-pg11-citus${citus_version}.tar \
+                  citus-pre-tar=/install-pg${PG_MAJOR}-citus${citus_version}.tar \
                   citus-post-tar=/home/circleci/project/install-$PG_MAJOR.tar; \
             done;
           no_output_timeout: 2m
@@ -581,11 +581,11 @@ workflows:
           image_tag: 11-12-13
           requires: [build-12,build-13]
 
-      # - test-citus-upgrade:
-      #     name: test-11_check-citus-upgrade
-      #     pg_major: 11
-      #     image_tag: '11.9'
-      #     requires: [build-11]
+      - test-citus-upgrade:
+          name: test-12_check-citus-upgrade
+          pg_major: 12
+          image_tag: '12.4-dev202103101427'
+          requires: [build-12]
 
       - ch_benchmark:
           requires: [build-13]
