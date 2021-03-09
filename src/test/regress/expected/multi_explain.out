@@ -345,14 +345,14 @@ EXPLAIN (COSTS FALSE, ANALYZE TRUE, TIMING FALSE, SUMMARY FALSE, VERBOSE TRUE)
 	SELECT l_quantity, count(*) count_quantity FROM lineitem
 	GROUP BY l_quantity ORDER BY count_quantity, l_quantity;
 Sort (actual rows=50 loops=1)
-  Output: xxxxxx
+  Output: remote_scan.l_quantity, (COALESCE((pg_catalog.sum(remote_scan.count_quantity))::bigint, '0'::bigint))
   Sort Key: (COALESCE((pg_catalog.sum(remote_scan.count_quantity))::bigint, '0'::bigint)), remote_scan.l_quantity
   Sort Method: quicksort  Memory: 27kB
   ->  HashAggregate (actual rows=50 loops=1)
-        Output: xxxxxx
+        Output: remote_scan.l_quantity, COALESCE((pg_catalog.sum(remote_scan.count_quantity))::bigint, '0'::bigint)
         Group Key: remote_scan.l_quantity
         ->  Custom Scan (Citus Adaptive) (actual rows=100 loops=1)
-              Output: xxxxxx
+              Output: remote_scan.l_quantity, remote_scan.count_quantity
               Task Count: 2
               Tuple data received from nodes: 780 bytes
               Tasks Shown: One of 2
@@ -361,48 +361,48 @@ Sort (actual rows=50 loops=1)
                     Tuple data received from node: 390 bytes
                     Node: host=localhost port=xxxxx dbname=regression
                     ->  HashAggregate (actual rows=50 loops=1)
-                          Output: xxxxxx
+                          Output: l_quantity, count(*)
                           Group Key: lineitem.l_quantity
                           ->  Seq Scan on public.lineitem_290000 lineitem (actual rows=6000 loops=1)
-                                Output: xxxxxx
+                                Output: l_orderkey, l_partkey, l_suppkey, l_linenumber, l_quantity, l_extendedprice, l_discount, l_tax, l_returnflag, l_linestatus, l_shipdate, l_commitdate, l_receiptdate, l_shipinstruct, l_shipmode, l_comment
 -- Test query text output, with ANALYZE OFF
 EXPLAIN (COSTS FALSE, ANALYZE FALSE, TIMING FALSE, SUMMARY FALSE, VERBOSE TRUE)
 	SELECT l_quantity, count(*) count_quantity FROM lineitem
 	GROUP BY l_quantity ORDER BY count_quantity, l_quantity;
 Sort
-  Output: xxxxxx
+  Output: remote_scan.l_quantity, (COALESCE((pg_catalog.sum(remote_scan.count_quantity))::bigint, '0'::bigint))
   Sort Key: (COALESCE((pg_catalog.sum(remote_scan.count_quantity))::bigint, '0'::bigint)), remote_scan.l_quantity
   ->  HashAggregate
-        Output: xxxxxx
+        Output: remote_scan.l_quantity, COALESCE((pg_catalog.sum(remote_scan.count_quantity))::bigint, '0'::bigint)
         Group Key: remote_scan.l_quantity
         ->  Custom Scan (Citus Adaptive)
-              Output: xxxxxx
+              Output: remote_scan.l_quantity, remote_scan.count_quantity
               Task Count: 2
               Tasks Shown: One of 2
               ->  Task
                     Query: SELECT l_quantity, count(*) AS count_quantity FROM lineitem_290000 lineitem WHERE true GROUP BY l_quantity
                     Node: host=localhost port=xxxxx dbname=regression
                     ->  HashAggregate
-                          Output: xxxxxx
+                          Output: l_quantity, count(*)
                           Group Key: lineitem.l_quantity
                           ->  Seq Scan on public.lineitem_290000 lineitem
-                                Output: xxxxxx
+                                Output: l_orderkey, l_partkey, l_suppkey, l_linenumber, l_quantity, l_extendedprice, l_discount, l_tax, l_returnflag, l_linestatus, l_shipdate, l_commitdate, l_receiptdate, l_shipinstruct, l_shipmode, l_comment
 -- Test verbose
 EXPLAIN (COSTS FALSE, VERBOSE TRUE)
 	SELECT sum(l_quantity) / avg(l_quantity) FROM lineitem;
 Aggregate
-  Output: xxxxxx
+  Output: (sum(remote_scan."?column?") / (sum(remote_scan."?column?_1") / pg_catalog.sum(remote_scan."?column?_2")))
   ->  Custom Scan (Citus Adaptive)
-        Output: xxxxxx
+        Output: remote_scan."?column?", remote_scan."?column?_1", remote_scan."?column?_2"
         Task Count: 2
         Tasks Shown: One of 2
         ->  Task
               Query: SELECT sum(l_quantity), sum(l_quantity), count(l_quantity) FROM lineitem_290000 lineitem WHERE true
               Node: host=localhost port=xxxxx dbname=regression
               ->  Aggregate
-                    Output: xxxxxx
+                    Output: sum(l_quantity), sum(l_quantity), count(l_quantity)
                     ->  Seq Scan on public.lineitem_290000 lineitem
-                          Output: xxxxxx
+                          Output: l_orderkey, l_partkey, l_suppkey, l_linenumber, l_quantity, l_extendedprice, l_discount, l_tax, l_returnflag, l_linestatus, l_shipdate, l_commitdate, l_receiptdate, l_shipinstruct, l_shipmode, l_comment
 -- Test join
 EXPLAIN (COSTS FALSE)
 	SELECT * FROM lineitem
@@ -525,40 +525,40 @@ EXPLAIN (COSTS FALSE, VERBOSE TRUE)
 	SELECT sum(l_quantity) / avg(l_quantity) FROM lineitem
 	HAVING sum(l_quantity) > 100;
 Aggregate
-  Output: xxxxxx
+  Output: (sum(remote_scan."?column?") / (sum(remote_scan."?column?_1") / pg_catalog.sum(remote_scan."?column?_2")))
   Filter: (sum(remote_scan.worker_column_4) > '100'::numeric)
   ->  Custom Scan (Citus Adaptive)
-        Output: xxxxxx
+        Output: remote_scan."?column?", remote_scan."?column?_1", remote_scan."?column?_2", remote_scan.worker_column_4
         Task Count: 2
         Tasks Shown: One of 2
         ->  Task
               Query: SELECT sum(l_quantity), sum(l_quantity), count(l_quantity), sum(l_quantity) AS worker_column_4 FROM lineitem_290000 lineitem WHERE true
               Node: host=localhost port=xxxxx dbname=regression
               ->  Aggregate
-                    Output: xxxxxx
+                    Output: sum(l_quantity), sum(l_quantity), count(l_quantity), sum(l_quantity)
                     ->  Seq Scan on public.lineitem_290000 lineitem
-                          Output: xxxxxx
+                          Output: l_orderkey, l_partkey, l_suppkey, l_linenumber, l_quantity, l_extendedprice, l_discount, l_tax, l_returnflag, l_linestatus, l_shipdate, l_commitdate, l_receiptdate, l_shipinstruct, l_shipmode, l_comment
 -- Test having without aggregate
 EXPLAIN (COSTS FALSE, VERBOSE TRUE)
 	SELECT l_quantity FROM lineitem
 	GROUP BY l_quantity
 	HAVING l_quantity > (100 * random());
 HashAggregate
-  Output: xxxxxx
+  Output: remote_scan.l_quantity
   Group Key: remote_scan.l_quantity
   Filter: ((remote_scan.worker_column_2)::double precision > ('100'::double precision * random()))
   ->  Custom Scan (Citus Adaptive)
-        Output: xxxxxx
+        Output: remote_scan.l_quantity, remote_scan.worker_column_2
         Task Count: 2
         Tasks Shown: One of 2
         ->  Task
               Query: SELECT l_quantity, l_quantity AS worker_column_2 FROM lineitem_290000 lineitem WHERE true GROUP BY l_quantity
               Node: host=localhost port=xxxxx dbname=regression
               ->  HashAggregate
-                    Output: xxxxxx
+                    Output: l_quantity, l_quantity
                     Group Key: lineitem.l_quantity
                     ->  Seq Scan on public.lineitem_290000 lineitem
-                          Output: xxxxxx
+                          Output: l_orderkey, l_partkey, l_suppkey, l_linenumber, l_quantity, l_extendedprice, l_discount, l_tax, l_returnflag, l_linestatus, l_shipdate, l_commitdate, l_receiptdate, l_shipinstruct, l_shipmode, l_comment
 -- Subquery pushdown tests with explain
 EXPLAIN (COSTS OFF)
 SELECT
@@ -1396,27 +1396,27 @@ series AS (
 SELECT l_orderkey FROM series JOIN keys ON (s = l_orderkey)
 ORDER BY s;
 Sort
-  Output: xxxxxx
+  Output: remote_scan.l_orderkey, remote_scan.worker_column_2
   Sort Key: remote_scan.worker_column_2
   ->  Custom Scan (Citus Adaptive)
-        Output: xxxxxx
+        Output: remote_scan.l_orderkey, remote_scan.worker_column_2
         Task Count: 4
         Tasks Shown: One of 4
         ->  Task
               Query: SELECT worker_column_1 AS l_orderkey, worker_column_2 FROM (SELECT keys.l_orderkey AS worker_column_1, series.s AS worker_column_2 FROM ((SELECT s.s FROM generate_series(1, 10) s(s)) series JOIN (SELECT DISTINCT lineitem_hash_part.l_orderkey FROM public.lineitem_hash_part_360041 lineitem_hash_part) keys ON ((series.s OPERATOR(pg_catalog.=) keys.l_orderkey)))) worker_subquery
               Node: host=localhost port=xxxxx dbname=regression
               ->  Hash Join
-                    Output: xxxxxx
+                    Output: lineitem_hash_part.l_orderkey, s.s
                     Hash Cond: (lineitem_hash_part.l_orderkey = s.s)
                     ->  HashAggregate
-                          Output: xxxxxx
+                          Output: lineitem_hash_part.l_orderkey
                           Group Key: lineitem_hash_part.l_orderkey
                           ->  Seq Scan on public.lineitem_hash_part_360041 lineitem_hash_part
-                                Output: xxxxxx
+                                Output: lineitem_hash_part.l_orderkey, lineitem_hash_part.l_partkey, lineitem_hash_part.l_suppkey, lineitem_hash_part.l_linenumber, lineitem_hash_part.l_quantity, lineitem_hash_part.l_extendedprice, lineitem_hash_part.l_discount, lineitem_hash_part.l_tax, lineitem_hash_part.l_returnflag, lineitem_hash_part.l_linestatus, lineitem_hash_part.l_shipdate, lineitem_hash_part.l_commitdate, lineitem_hash_part.l_receiptdate, lineitem_hash_part.l_shipinstruct, lineitem_hash_part.l_shipmode, lineitem_hash_part.l_comment
                     ->  Hash
-                          Output: xxxxxx
+                          Output: s.s
                           ->  Function Scan on pg_catalog.generate_series s
-                                Output: xxxxxx
+                                Output: s.s
                                 Function Call: generate_series(1, 10)
 SELECT true AS valid FROM explain_json($$
   WITH result AS (
@@ -1736,7 +1736,7 @@ SELECT * FROM worker_save_query_explain_analyze('SELECT * FROM explain_analyze_t
  4
 (4 rows)
 
-SELECT explain_analyze_output ~ 'Output: xxxxxx
+SELECT explain_analyze_output ~ 'Output: a, b' FROM worker_last_saved_explain_analyze();
  ?column?
 ---------------------------------------------------------------------
  t
