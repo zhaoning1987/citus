@@ -435,7 +435,6 @@ AlterDistributedTable(TableConversionParameters *params)
 TableConversionReturn *
 AlterTableSetAccessMethod(TableConversionParameters *params)
 {
-
 	EnsureRelationExists(params->relationId);
 	EnsureTableOwner(params->relationId);
 

@@ -450,15 +450,12 @@ Datum
 master_get_active_worker_nodes(PG_FUNCTION_ARGS)
 {
 	FuncCallContext *functionContext = NULL;
-	uint32 workerNodeIndex = 0;
 	uint32 workerNodeCount = 0;
 
 	CheckCitusVersion(ERROR);
 
 	if (SRF_IS_FIRSTCALL())
 	{
-		TupleDesc tupleDescriptor = NULL;
-
 		/* create a function context for cross-call persistence */
 		functionContext = SRF_FIRSTCALL_INIT();
 
@@ -476,7 +473,7 @@ master_get_active_worker_nodes(PG_FUNCTION_ARGS)
 		 * This tuple descriptor must match the output parameters declared for
 		 * the function in pg_proc.
 		 */
-		tupleDescriptor = CreateTemplateTupleDesc(WORKER_NODE_FIELDS);
+		TupleDesc tupleDescriptor = CreateTemplateTupleDesc(WORKER_NODE_FIELDS);
 		TupleDescInitEntry(tupleDescriptor, (AttrNumber) 1, "node_name",
 						   TEXTOID, -1, 0);
 		TupleDescInitEntry(tupleDescriptor, (AttrNumber) 2, "node_port",
@@ -488,7 +485,7 @@ master_get_active_worker_nodes(PG_FUNCTION_ARGS)
 	}
 
 	functionContext = SRF_PERCALL_SETUP();
-	workerNodeIndex = functionContext->call_cntr;
+	uint32 workerNodeIndex = functionContext->call_cntr;
 	workerNodeCount = functionContext->max_calls;
 
 	if (workerNodeIndex < workerNodeCount)

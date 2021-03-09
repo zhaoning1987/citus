@@ -125,7 +125,6 @@ get_extension_schema(Oid ext_oid)
 	/* *INDENT-OFF* */
 	Oid			result;
 	Relation	rel;
-	SysScanDesc scandesc;
 	HeapTuple	tuple;
 	ScanKeyData entry[1];
 
@@ -136,7 +135,7 @@ get_extension_schema(Oid ext_oid)
 				BTEqualStrategyNumber, F_OIDEQ,
 				ObjectIdGetDatum(ext_oid));
 
-	scandesc = systable_beginscan(rel, ExtensionOidIndexId, true,
+	SysScanDesc scandesc = systable_beginscan(rel, ExtensionOidIndexId, true,
 								  NULL, 1, entry);
 
 	tuple = systable_getnext(scandesc);
@@ -247,7 +246,6 @@ char *
 pg_get_tableschemadef_string(Oid tableRelationId, bool includeSequenceDefaults,
 							 char *accessMethod)
 {
-	char relationKind = 0;
 	bool firstAttributePrinted = false;
 	AttrNumber defaultValueIndex = 0;
 	AttrNumber constraintIndex = 0;
@@ -428,7 +426,7 @@ pg_get_tableschemadef_string(Oid tableRelationId, bool includeSequenceDefaults,
 	 * If the relation is a foreign table, append the server name and options to
 	 * the create table statement.
 	 */
-	relationKind = relation->rd_rel->relkind;
+	char relationKind = relation->rd_rel->relkind;
 	if (relationKind == RELKIND_FOREIGN_TABLE)
 	{
 		ForeignTable *foreignTable = GetForeignTable(tableRelationId);

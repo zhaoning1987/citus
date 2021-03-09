@@ -734,9 +734,6 @@ static char *
 GetAggregateDDLCommand(const RegProcedure funcOid, bool useCreateOrReplace)
 {
 	StringInfoData buf = { 0 };
-	HeapTuple aggtup = NULL;
-	Form_pg_aggregate agg = NULL;
-	int numargs = 0;
 	int i = 0;
 	Oid *argtypes = NULL;
 	char **argnames = NULL;
@@ -772,14 +769,14 @@ GetAggregateDDLCommand(const RegProcedure funcOid, bool useCreateOrReplace)
 	}
 
 	/* Parameters, borrows heavily from print_function_arguments in postgres */
-	numargs = get_func_arg_info(proctup, &argtypes, &argnames, &argmodes);
+	int numargs = get_func_arg_info(proctup, &argtypes, &argnames, &argmodes);
 
-	aggtup = SearchSysCache1(AGGFNOID, funcOid);
+	HeapTuple aggtup = SearchSysCache1(AGGFNOID, funcOid);
 	if (!HeapTupleIsValid(aggtup))
 	{
 		elog(ERROR, "cache lookup failed for %d", funcOid);
 	}
-	agg = (Form_pg_aggregate) GETSTRUCT(aggtup);
+	Form_pg_aggregate agg = (Form_pg_aggregate) GETSTRUCT(aggtup);
 
 	if (AGGKIND_IS_ORDERED_SET(agg->aggkind))
 	{

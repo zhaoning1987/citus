@@ -264,18 +264,16 @@ worker_merge_files_and_run_query(PG_FUNCTION_ARGS)
 Datum
 worker_cleanup_job_schema_cache(PG_FUNCTION_ARGS)
 {
-	Relation pgNamespace = NULL;
-	TableScanDesc scanDescriptor = NULL;
 	ScanKey scanKey = NULL;
 	int scanKeyCount = 0;
-	HeapTuple heapTuple = NULL;
 
 	CheckCitusVersion(ERROR);
 
-	pgNamespace = table_open(NamespaceRelationId, AccessExclusiveLock);
-	scanDescriptor = table_beginscan_catalog(pgNamespace, scanKeyCount, scanKey);
+	Relation pgNamespace = table_open(NamespaceRelationId, AccessExclusiveLock);
+	TableScanDesc scanDescriptor = table_beginscan_catalog(pgNamespace, scanKeyCount,
+														   scanKey);
 
-	heapTuple = heap_getnext(scanDescriptor, ForwardScanDirection);
+	HeapTuple heapTuple = heap_getnext(scanDescriptor, ForwardScanDirection);
 	while (HeapTupleIsValid(heapTuple))
 	{
 		Form_pg_namespace schemaForm = (Form_pg_namespace) GETSTRUCT(heapTuple);

@@ -122,6 +122,7 @@ FileCompatFromFileStart(File fileDesc)
 	return fc;
 }
 
+
 #endif /* PG12 */
 
 #define fcSetArg(fc, n, value) fcSetArgExt(fc, n, value, false)

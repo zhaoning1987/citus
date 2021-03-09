@@ -540,7 +540,6 @@ PreprocessReindexStmt(Node *node, const char *reindexCommand,
 	{
 		Relation relation = NULL;
 		Oid relationId = InvalidOid;
-		bool isCitusRelation = false;
 		LOCKMODE lockmode = reindexStatement->concurrent ? ShareUpdateExclusiveLock :
 							AccessExclusiveLock;
 		MemoryContext relationContext = NULL;
@@ -550,15 +549,14 @@ PreprocessReindexStmt(Node *node, const char *reindexCommand,
 
 		if (reindexStatement->kind == REINDEX_OBJECT_INDEX)
 		{
-			Oid indOid;
 			struct ReindexIndexCallbackState state;
 			state.concurrent = reindexStatement->concurrent;
 			state.locked_table_oid = InvalidOid;
 
-			indOid = RangeVarGetRelidExtended(reindexStatement->relation,
-											  lockmode, 0,
-											  RangeVarCallbackForReindexIndex,
-											  &state);
+			Oid indOid = RangeVarGetRelidExtended(reindexStatement->relation,
+												  lockmode, 0,
+												  RangeVarCallbackForReindexIndex,
+												  &state);
 			relation = index_open(indOid, NoLock);
 			relationId = IndexGetRelation(indOid, false);
 		}
@@ -571,7 +569,7 @@ PreprocessReindexStmt(Node *node, const char *reindexCommand,
 			relationId = RelationGetRelid(relation);
 		}
 
-		isCitusRelation = IsCitusTable(relationId);
+		bool isCitusRelation = IsCitusTable(relationId);
 
 		if (reindexStatement->relation->schemaname == NULL)
 		{

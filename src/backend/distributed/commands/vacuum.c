@@ -343,8 +343,8 @@ DeparseVacuumStmtPrefix(CitusVacuumParams vacuumParams)
 	}
 
 	/* if no flags remain, exit early */
-	if (vacuumFlags == 0
-		&& vacuumParams.truncate == VACOPT_TERNARY_DEFAULT &&
+	if (vacuumFlags == 0 &&
+		vacuumParams.truncate == VACOPT_TERNARY_DEFAULT &&
 		vacuumParams.index_cleanup == VACOPT_TERNARY_DEFAULT
 #if PG_VERSION_NUM >= PG_VERSION_13
 		&& vacuumParams.nworkers == VACUUM_PARALLEL_NOTSET

@@ -1094,8 +1094,6 @@ FinishModifyRelation(ModifyState *state)
 static EState *
 create_estate_for_relation(Relation rel)
 {
-	ResultRelInfo *resultRelInfo;
-
 	EState *estate = CreateExecutorState();
 
 	RangeTblEntry *rte = makeNode(RangeTblEntry);
@@ -1105,7 +1103,7 @@ create_estate_for_relation(Relation rel)
 	rte->rellockmode = AccessShareLock;
 	ExecInitRangeTable(estate, list_make1(rte));
 
-	resultRelInfo = makeNode(ResultRelInfo);
+	ResultRelInfo *resultRelInfo = makeNode(ResultRelInfo);
 	InitResultRelInfo(resultRelInfo, rel, 1, NULL, 0);
 
 	estate->es_result_relations = resultRelInfo;

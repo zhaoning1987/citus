@@ -224,10 +224,8 @@ DecompressBuffer(StringInfo buffer,
 
 		case COMPRESSION_PG_LZ:
 		{
-			StringInfo decompressedBuffer = NULL;
 			uint32 compressedDataSize = VARSIZE(buffer->data) - COLUMNAR_COMPRESS_HDRSZ;
 			uint32 decompressedDataSize = COLUMNAR_COMPRESS_RAWSIZE(buffer->data);
-			int32 decompressedByteCount = 0;
 
 			if (compressedDataSize + COLUMNAR_COMPRESS_HDRSZ != buffer->len)
 			{
@@ -238,10 +236,11 @@ DecompressBuffer(StringInfo buffer,
 
 			char *decompressedData = palloc0(decompressedDataSize);
 
-			decompressedByteCount = pglz_decompress(COLUMNAR_COMPRESS_RAWDATA(
-														buffer->data),
-													compressedDataSize, decompressedData,
-													decompressedDataSize, true);
+			int32 decompressedByteCount = pglz_decompress(COLUMNAR_COMPRESS_RAWDATA(
+															  buffer->data),
+														  compressedDataSize,
+														  decompressedData,
+														  decompressedDataSize, true);
 
 			if (decompressedByteCount < 0)
 			{
@@ -249,7 +248,7 @@ DecompressBuffer(StringInfo buffer,
 								errdetail("compressed data is corrupted")));
 			}
 
-			decompressedBuffer = palloc0(sizeof(StringInfoData));
+			StringInfo decompressedBuffer = palloc0(sizeof(StringInfoData));
 			decompressedBuffer->data = decompressedData;
 			decompressedBuffer->len = decompressedDataSize;
 			decompressedBuffer->maxlen = decompressedDataSize;

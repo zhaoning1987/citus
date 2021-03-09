@@ -594,10 +594,9 @@ GetExplicitStatisticsIdList(Oid relationId)
 	HeapTuple heapTuple = systable_getnext(scanDescriptor);
 	while (HeapTupleIsValid(heapTuple))
 	{
-		Oid statisticsId = InvalidOid;
 		FormData_pg_statistic_ext *statisticsForm =
 			(FormData_pg_statistic_ext *) GETSTRUCT(heapTuple);
-		statisticsId = statisticsForm->oid;
+		Oid statisticsId = statisticsForm->oid;
 		statisticsIdList = lappend_oid(statisticsIdList, statisticsId);
 
 		heapTuple = systable_getnext(scanDescriptor);

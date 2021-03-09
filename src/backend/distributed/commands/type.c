@@ -322,8 +322,6 @@ List *
 PreprocessAlterEnumStmt(Node *node, const char *queryString,
 						ProcessUtilityContext processUtilityContext)
 {
-	List *commands = NIL;
-
 	ObjectAddress typeAddress = GetObjectAddressFromParseTree(node, false);
 	if (!ShouldPropagateObject(&typeAddress))
 	{
@@ -353,12 +351,13 @@ PreprocessAlterEnumStmt(Node *node, const char *queryString,
 	 * we directly connect to workers and execute the commands remotely.
 	 */
 
-	commands = list_make3(DISABLE_DDL_PROPAGATION,
-						  (void *) alterEnumStmtSql,
-						  ENABLE_DDL_PROPAGATION);
+	List *commands = list_make3(DISABLE_DDL_PROPAGATION,
+								(void *) alterEnumStmtSql,
+								ENABLE_DDL_PROPAGATION);
 
 	return NodeDDLTaskList(NON_COORDINATOR_NODES, commands);
 }
+
 
 /*
  * PreprocessDropTypeStmt is called for all DROP TYPE statements. For all types in the list that

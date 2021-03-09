@@ -962,8 +962,8 @@ ModifyQuerySupported(Query *queryTree, Query *originalQuery, bool multiShardQuer
 
 			queryTableCount++;
 		}
-		else if (rangeTableEntry->rtekind == RTE_VALUES
-				 || rangeTableEntry->rtekind == RTE_RESULT
+		else if (rangeTableEntry->rtekind == RTE_VALUES ||
+				 rangeTableEntry->rtekind == RTE_RESULT
 				 )
 		{
 			/* do nothing, this type is supported */

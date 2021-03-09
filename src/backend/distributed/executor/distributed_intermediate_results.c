@@ -272,10 +272,9 @@ WrapTasksForPartitioning(const char *resultIdPrefix, List *selectTaskList,
 static PartitioningTupleDest *
 CreatePartitioningTupleDest(CitusTableCacheEntry *targetRelation)
 {
-	TupleDesc tupleDescriptor = NULL;
 	int resultColumnCount = 3;
 
-	tupleDescriptor = CreateTemplateTupleDesc(resultColumnCount);
+	TupleDesc tupleDescriptor = CreateTemplateTupleDesc(resultColumnCount);
 
 	TupleDescInitEntry(tupleDescriptor, (AttrNumber) 1, "partition_index",
 					   INT4OID, -1, 0);
@@ -682,10 +681,9 @@ QueryStringForFragmentsTransfer(NodeToNodeFragmentsTransfer *fragmentsTransfer)
 static void
 ExecuteFetchTaskList(List *taskList)
 {
-	TupleDesc resultDescriptor = NULL;
 	int resultColumnCount = 1;
 
-	resultDescriptor = CreateTemplateTupleDesc(resultColumnCount);
+	TupleDesc resultDescriptor = CreateTemplateTupleDesc(resultColumnCount);
 
 	TupleDescInitEntry(resultDescriptor, (AttrNumber) 1, "byte_count", INT8OID, -1, 0);
 

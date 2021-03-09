@@ -1465,11 +1465,10 @@ BlessRecordExpression(Expr *expr)
 		 * Handle row expressions, e.g. SELECT (1,2);
 		 */
 		RowExpr *rowExpr = (RowExpr *) expr;
-		TupleDesc rowTupleDesc = NULL;
 		ListCell *argCell = NULL;
 		int currentResno = 1;
 
-		rowTupleDesc = CreateTemplateTupleDesc(list_length(rowExpr->args));
+		TupleDesc rowTupleDesc = CreateTemplateTupleDesc(list_length(rowExpr->args));
 
 		foreach(argCell, rowExpr->args)
 		{
@@ -1967,7 +1966,6 @@ AdjustReadIntermediateResultsCostInternal(RelOptInfo *relOptInfo, List *columnTy
 {
 	PathTarget *reltarget = relOptInfo->reltarget;
 	List *pathList = relOptInfo->pathlist;
-	Path *path = NULL;
 	double rowCost = 0.;
 	double rowSizeEstimate = 0;
 	double rowCountEstimate = 0.;
@@ -2044,7 +2042,7 @@ AdjustReadIntermediateResultsCostInternal(RelOptInfo *relOptInfo, List *columnTy
 	Assert(pathList != NIL);
 
 	/* tell the planner about the cost and row count of the function */
-	path = (Path *) linitial(pathList);
+	Path *path = (Path *) linitial(pathList);
 	path->rows = rowCountEstimate;
 	path->total_cost = rowCountEstimate * rowCost + ioCost;
 

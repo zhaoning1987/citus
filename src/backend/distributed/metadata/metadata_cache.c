@@ -2552,7 +2552,6 @@ LookupTypeOid(char *schemaNameSting, char *typeNameString)
 	List *qualifiedName = list_make2(schemaName, typeName);
 	TypeName *enumTypeName = makeTypeNameFromNameList(qualifiedName);
 
-	Oid nodeRoleTypId;
 
 	/* typenameTypeId but instead of raising an error return InvalidOid */
 	Type tup = LookupTypeName(NULL, enumTypeName, NULL, false);
@@ -2561,7 +2560,7 @@ LookupTypeOid(char *schemaNameSting, char *typeNameString)
 		return InvalidOid;
 	}
 
-	nodeRoleTypId = ((Form_pg_type) GETSTRUCT(tup))->oid;
+	Oid nodeRoleTypId = ((Form_pg_type) GETSTRUCT(tup))->oid;
 	ReleaseSysCache(tup);
 
 	return nodeRoleTypId;

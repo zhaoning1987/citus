@@ -585,4 +585,3 @@ fake_am_handler(PG_FUNCTION_ARGS)
 {
 	PG_RETURN_POINTER(&fake_methods);
 }
-

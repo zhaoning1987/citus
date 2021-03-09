@@ -188,10 +188,9 @@ get_relation_trigger_oid_compat(HeapTuple heapTuple)
 {
 	Assert(HeapTupleIsValid(heapTuple));
 
-	Oid triggerOid = InvalidOid;
 
 	Form_pg_trigger triggerForm = (Form_pg_trigger) GETSTRUCT(heapTuple);
-	triggerOid = triggerForm->oid;
+	Oid triggerOid = triggerForm->oid;
 
 	return triggerOid;
 }

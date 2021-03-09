@@ -114,11 +114,11 @@ ObjectExists(const ObjectAddress *address)
 
 	if (is_objectclass_supported(address->classId))
 	{
-		HeapTuple objtup;
 		Relation catalog = table_open(address->classId, AccessShareLock);
 
-		objtup = get_catalog_object_by_oid(catalog, get_object_attnum_oid(
-											   address->classId), address->objectId);
+		HeapTuple objtup = get_catalog_object_by_oid(catalog, get_object_attnum_oid(
+														 address->classId),
+													 address->objectId);
 		table_close(catalog, AccessShareLock);
 		if (objtup != NULL)
 		{

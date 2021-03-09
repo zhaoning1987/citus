@@ -231,7 +231,6 @@ HasEmptyJoinTree(Query *query)
 	{
 		return true;
 	}
-
 	else if (list_length(query->rtable) == 1)
 	{
 		RangeTblEntry *rte = (RangeTblEntry *) linitial(query->rtable);
@@ -1147,8 +1146,8 @@ DeferErrorIfUnsupportedTableCombination(Query *queryTree)
 		 * subquery, or immutable function.
 		 */
 		if (rangeTableEntry->rtekind == RTE_RELATION ||
-			rangeTableEntry->rtekind == RTE_SUBQUERY
-			|| rangeTableEntry->rtekind == RTE_RESULT
+			rangeTableEntry->rtekind == RTE_SUBQUERY ||
+			rangeTableEntry->rtekind == RTE_RESULT
 			)
 		{
 			/* accepted */

@@ -311,10 +311,10 @@ GetRangeTblKind(RangeTblEntry *rte)
 		case RTE_VALUES:
 		case RTE_CTE:
 		case RTE_RESULT:
-			{
-				rteKind = (CitusRTEKind) rte->rtekind;
-				break;
-			}
+		{
+			rteKind = (CitusRTEKind) rte->rtekind;
+			break;
+		}
 
 		case RTE_FUNCTION:
 		{

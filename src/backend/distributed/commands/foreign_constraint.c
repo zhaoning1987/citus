@@ -713,10 +713,9 @@ get_relation_constraint_oid_compat(HeapTuple heapTuple)
 {
 	Assert(heapTuple != NULL);
 
-	Oid constraintOid = InvalidOid;
 
 	Form_pg_constraint constraintForm = (Form_pg_constraint) GETSTRUCT(heapTuple);
-	constraintOid = constraintForm->oid;
+	Oid constraintOid = constraintForm->oid;
 
 	return constraintOid;
 }
@@ -1278,8 +1277,6 @@ GetForeignConstraintCommandsToReferenceTable(ShardInterval *shardInterval)
 static void
 UpdateConstraintIsValid(Oid constraintId, bool isValid)
 {
-	HeapTuple heapTuple = NULL;
-	SysScanDesc scanDescriptor;
 	ScanKeyData scankey[1];
 	Relation pgConstraint = table_open(ConstraintRelationId, AccessShareLock);
 	TupleDesc tupleDescriptor = RelationGetDescr(pgConstraint);
@@ -1292,13 +1289,13 @@ UpdateConstraintIsValid(Oid constraintId, bool isValid)
 				BTEqualStrategyNumber, F_OIDEQ,
 				ObjectIdGetDatum(constraintId));
 
-	scanDescriptor = systable_beginscan(pgConstraint,
-										ConstraintOidIndexId,
-										true,
-										NULL,
-										1,
-										scankey);
-	heapTuple = systable_getnext(scanDescriptor);
+	SysScanDesc scanDescriptor = systable_beginscan(pgConstraint,
+													ConstraintOidIndexId,
+													true,
+													NULL,
+													1,
+													scankey);
+	HeapTuple heapTuple = systable_getnext(scanDescriptor);
 	if (!HeapTupleIsValid(heapTuple))
 	{
 		elog(ERROR, "could not find tuple for constraint %u", constraintId);
