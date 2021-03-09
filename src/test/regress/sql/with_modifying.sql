@@ -356,14 +356,14 @@ raw_data AS (
 )
 SELECT * FROM raw_data ORDER BY val;
 
--- Needed becaues of CTE inlining triggering https://github.com/citusdata/citus/issues/3189
-WITH added_data AS (
+-- We materialize because of https://github.com/citusdata/citus/issues/3189
+WITH added_data AS MATERIALIZED (
 	INSERT INTO modify_table VALUES (1, trunc(10 * random())), (1, trunc(random())) RETURNING *
 ),
-select_data AS (
+select_data AS MATERIALIZED (
 	SELECT val, now() FROM added_data WHERE id = 1
 ),
-raw_data AS (
+raw_data AS MATERIALIZED (
 	DELETE FROM modify_table WHERE id = 1 AND val IN (SELECT val FROM select_data) RETURNING *
 )
 SELECT COUNT(*) FROM raw_data;

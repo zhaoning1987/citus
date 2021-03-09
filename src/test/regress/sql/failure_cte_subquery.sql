@@ -22,11 +22,11 @@ CREATE TABLE users_table_local AS SELECT * FROM users_table;
 -- kill at the first copy (push)
 SELECT citus.mitmproxy('conn.onQuery(query="^COPY").kill()');
 
-WITH cte AS (
-	WITH local_cte AS (
+WITH cte AS MATERIALIZED (
+	WITH local_cte AS MATERIALIZED (
 		SELECT * FROM users_table_local
 	),
-	dist_cte AS (
+	dist_cte AS MATERIALIZED (
 		SELECT user_id FROM events_table
 	)
 	SELECT dist_cte.user_id FROM local_cte join dist_cte on dist_cte.user_id=local_cte.user_id
@@ -49,11 +49,11 @@ FROM
 -- kill at the second copy (pull)
 SELECT citus.mitmproxy('conn.onQuery(query="SELECT user_id FROM cte_failure.events_table_16000002").kill()');
 
-WITH cte AS (
-	WITH local_cte AS (
+WITH cte AS MATERIALIZED (
+	WITH local_cte AS MATERIALIZED (
 		SELECT * FROM users_table_local
 	),
-	dist_cte AS (
+	dist_cte AS MATERIALIZED (
 		SELECT user_id FROM events_table
 	)
 	SELECT dist_cte.user_id FROM local_cte join dist_cte on dist_cte.user_id=local_cte.user_id
@@ -76,11 +76,11 @@ FROM
 -- kill at the third copy (pull)
 SELECT citus.mitmproxy('conn.onQuery(query="SELECT DISTINCT users_table.user").kill()');
 
-WITH cte AS (
-	WITH local_cte AS (
+WITH cte AS MATERIALIZED (
+	WITH local_cte AS MATERIALIZED (
 		SELECT * FROM users_table_local
 	),
-	dist_cte AS (
+	dist_cte AS MATERIALIZED (
 		SELECT user_id FROM events_table
 	)
 	SELECT dist_cte.user_id FROM local_cte join dist_cte on dist_cte.user_id=local_cte.user_id
@@ -103,11 +103,11 @@ FROM
 -- cancel at the first copy (push)
 SELECT citus.mitmproxy('conn.onQuery(query="^COPY").cancel(' || :pid || ')');
 
-WITH cte AS (
-	WITH local_cte AS (
+WITH cte AS MATERIALIZED (
+	WITH local_cte AS MATERIALIZED (
 		SELECT * FROM users_table_local
 	),
-	dist_cte AS (
+	dist_cte AS MATERIALIZED (
 		SELECT user_id FROM events_table
 	)
 	SELECT dist_cte.user_id FROM local_cte join dist_cte on dist_cte.user_id=local_cte.user_id
@@ -130,11 +130,11 @@ FROM
 -- cancel at the second copy (pull)
 SELECT citus.mitmproxy('conn.onQuery(query="SELECT user_id FROM").cancel(' || :pid || ')');
 
-WITH cte AS (
-	WITH local_cte AS (
+WITH cte AS MATERIALIZED (
+	WITH local_cte AS MATERIALIZED (
 		SELECT * FROM users_table_local
 	),
-	dist_cte AS (
+	dist_cte AS MATERIALIZED (
 		SELECT user_id FROM events_table
 	)
 	SELECT dist_cte.user_id FROM local_cte join dist_cte on dist_cte.user_id=local_cte.user_id
@@ -157,11 +157,11 @@ FROM
 -- cancel at the third copy (pull)
 SELECT citus.mitmproxy('conn.onQuery(query="SELECT DISTINCT users_table.user").cancel(' || :pid || ')');
 
-WITH cte AS (
-	WITH local_cte AS (
+WITH cte AS MATERIALIZED (
+	WITH local_cte AS MATERIALIZED (
 		SELECT * FROM users_table_local
 	),
-	dist_cte AS (
+	dist_cte AS MATERIALIZED (
 		SELECT user_id FROM events_table
 	)
 	SELECT dist_cte.user_id FROM local_cte join dist_cte on dist_cte.user_id=local_cte.user_id
@@ -190,14 +190,14 @@ INSERT INTO events_table VALUES (1,1,1), (1,2,1), (1,3,1), (2,1, 4), (3, 4,1), (
 
 SELECT * FROM users_table ORDER BY 1, 2;
 -- following will delete and insert the same rows
-WITH cte_delete as (DELETE FROM users_table WHERE user_name in ('A', 'D') RETURNING *)
+WITH cte_delete AS MATERIALIZED (DELETE FROM users_table WHERE user_name in ('A', 'D') RETURNING *)
 INSERT INTO users_table SELECT * FROM cte_delete;
 -- verify contents are the same
 SELECT * FROM users_table ORDER BY 1, 2;
 
 -- kill connection during deletion
 SELECT citus.mitmproxy('conn.onQuery(query="^DELETE FROM").kill()');
-WITH cte_delete as (DELETE FROM users_table WHERE user_name in ('A', 'D') RETURNING *)
+WITH cte_delete AS MATERIALIZED (DELETE FROM users_table WHERE user_name in ('A', 'D') RETURNING *)
 INSERT INTO users_table SELECT * FROM cte_delete;
 
 -- verify contents are the same
@@ -206,7 +206,7 @@ SELECT * FROM users_table ORDER BY 1, 2;
 
 -- kill connection during insert
 SELECT citus.mitmproxy('conn.onQuery(query="^COPY").kill()');
-WITH cte_delete as (DELETE FROM users_table WHERE user_name in ('A', 'D') RETURNING *)
+WITH cte_delete AS MATERIALIZED (DELETE FROM users_table WHERE user_name in ('A', 'D') RETURNING *)
 INSERT INTO users_table SELECT * FROM cte_delete;
 
 -- verify contents are the same
@@ -215,7 +215,7 @@ SELECT * FROM users_table ORDER BY 1, 2;
 
 -- cancel during deletion
 SELECT citus.mitmproxy('conn.onQuery(query="^DELETE FROM").cancel(' || :pid || ')');
-WITH cte_delete as (DELETE FROM users_table WHERE user_name in ('A', 'D') RETURNING *)
+WITH cte_delete AS MATERIALIZED (DELETE FROM users_table WHERE user_name in ('A', 'D') RETURNING *)
 INSERT INTO users_table SELECT * FROM cte_delete;
 
 -- verify contents are the same
@@ -224,7 +224,7 @@ SELECT * FROM users_table ORDER BY 1, 2;
 
 -- cancel during insert
 SELECT citus.mitmproxy('conn.onQuery(query="^COPY").cancel(' || :pid || ')');
-WITH cte_delete as (DELETE FROM users_table WHERE user_name in ('A', 'D') RETURNING *)
+WITH cte_delete AS MATERIALIZED (DELETE FROM users_table WHERE user_name in ('A', 'D') RETURNING *)
 INSERT INTO users_table SELECT * FROM cte_delete;
 
 -- verify contents are the same
@@ -235,7 +235,7 @@ SELECT * FROM users_table ORDER BY 1, 2;
 SELECT citus.mitmproxy('conn.onQuery(query="^DELETE FROM").kill()');
 BEGIN;
 SET LOCAL citus.multi_shard_modify_mode = 'sequential';
-WITH cte_delete as (DELETE FROM users_table WHERE user_name in ('A', 'D') RETURNING *)
+WITH cte_delete AS MATERIALIZED (DELETE FROM users_table WHERE user_name in ('A', 'D') RETURNING *)
 INSERT INTO users_table SELECT * FROM cte_delete;
 END;
 
