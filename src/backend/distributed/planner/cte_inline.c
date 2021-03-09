@@ -18,12 +18,7 @@
 
 #include "distributed/cte_inline.h"
 #include "nodes/nodeFuncs.h"
-#if PG_VERSION_NUM >= PG_VERSION_12
 #include "optimizer/optimizer.h"
-#else
-#include "optimizer/cost.h"
-#include "optimizer/clauses.h"
-#endif
 #include "rewrite/rewriteManip.h"
 
 typedef struct inline_cte_walker_context
@@ -214,18 +209,9 @@ PostgreSQLCTEInlineCondition(CommonTableExpr *cte, CmdType cmdType)
 	 * will be inlined even if multiply referenced.
 	 */
 	if (
-#if PG_VERSION_NUM >= PG_VERSION_12
 		(cte->ctematerialized == CTEMaterializeNever ||
 		 (cte->ctematerialized == CTEMaterializeDefault &&
 		  cte->cterefcount == 1)) &&
-#else
-
-		/*
-		 * If referenced only once inlining would probably perform
-		 * better, so for pg < 12, try inlining
-		 */
-		cte->cterefcount == 1 &&
-#endif
 		!cte->cterecursive &&
 		cmdType == CMD_SELECT &&
 		!contain_dml(cte->ctequery) &&

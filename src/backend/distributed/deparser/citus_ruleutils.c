@@ -132,11 +132,7 @@ get_extension_schema(Oid ext_oid)
 	rel = table_open(ExtensionRelationId, AccessShareLock);
 
 	ScanKeyInit(&entry[0],
-#if PG_VERSION_NUM >= PG_VERSION_12
 				Anum_pg_extension_oid,
-#else
-				ObjectIdAttributeNumber,
-#endif
 				BTEqualStrategyNumber, F_OIDEQ,
 				ObjectIdGetDatum(ext_oid));
 
@@ -361,7 +357,6 @@ pg_get_tableschemadef_string(Oid tableRelationId, bool includeSequenceDefaults,
 					defaultString = deparse_expression(defaultNode, defaultContext,
 													   false, false);
 
-#if PG_VERSION_NUM >= PG_VERSION_12
 					if (attributeForm->attgenerated == ATTRIBUTE_GENERATED_STORED)
 					{
 						appendStringInfo(&buffer, " GENERATED ALWAYS AS (%s) STORED",
@@ -371,9 +366,6 @@ pg_get_tableschemadef_string(Oid tableRelationId, bool includeSequenceDefaults,
 					{
 						appendStringInfo(&buffer, " DEFAULT %s", defaultString);
 					}
-#else
-					appendStringInfo(&buffer, " DEFAULT %s", defaultString);
-#endif
 				}
 			}
 
@@ -452,8 +444,6 @@ pg_get_tableschemadef_string(Oid tableRelationId, bool includeSequenceDefaults,
 		appendStringInfo(&buffer, " PARTITION BY %s ", partitioningInformation);
 	}
 
-#if PG_VERSION_NUM >= 120000
-
 	/*
 	 * Add table access methods for pg12 and higher when the table is configured with an
 	 * access method
@@ -475,7 +465,6 @@ pg_get_tableschemadef_string(Oid tableRelationId, bool includeSequenceDefaults,
 		appendStringInfo(&buffer, " USING %s", quote_identifier(NameStr(amForm->amname)));
 		ReleaseSysCache(amTup);
 	}
-#endif
 
 	/*
 	 * Add any reloptions (storage parameters) defined on the table in a WITH
@@ -745,11 +734,7 @@ deparse_shard_reindex_statement(ReindexStmt *origStmt, Oid distrelid, int64 shar
 {
 	ReindexStmt *reindexStmt = copyObject(origStmt); /* copy to avoid modifications */
 	char *relationName = NULL;
-#if PG_VERSION_NUM >= PG_VERSION_12
 	const char *concurrentlyString = reindexStmt->concurrent ? "CONCURRENTLY " : "";
-#else
-	const char *concurrentlyString = "";
-#endif
 
 
 	if (reindexStmt->kind == REINDEX_OBJECT_INDEX ||

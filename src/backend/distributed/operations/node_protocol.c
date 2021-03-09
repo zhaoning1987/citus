@@ -653,7 +653,6 @@ GetPreLoadTableCreationCommands(Oid relationId, bool includeSequenceDefaults,
 										tableColumnOptionsDef));
 	}
 
-#if PG_VERSION_NUM >= 120000
 
 	/* add columnar options for cstore tables */
 	if (accessMethod == NULL && IsColumnarTableAmTable(relationId))
@@ -664,7 +663,6 @@ GetPreLoadTableCreationCommands(Oid relationId, bool includeSequenceDefaults,
 			tableDDLEventList = lappend(tableDDLEventList, cstoreOptionsDDL);
 		}
 	}
-#endif
 
 	char *tableOwnerDef = TableOwnerResetCommand(relationId);
 	if (tableOwnerDef != NULL)

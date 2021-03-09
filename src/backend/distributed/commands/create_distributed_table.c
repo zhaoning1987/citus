@@ -29,9 +29,7 @@
 #include "catalog/pg_extension.h"
 #include "catalog/pg_namespace.h"
 #include "catalog/pg_opclass.h"
-#if PG_VERSION_NUM >= 12000
 #include "catalog/pg_proc.h"
-#endif
 #include "catalog/pg_trigger.h"
 #include "commands/defrem.h"
 #include "commands/extension.h"
@@ -854,7 +852,6 @@ EnsureRelationCanBeDistributed(Oid relationId, Var *distributionColumn,
 									  "defined to use hash partitioning.")));
 		}
 
-#if PG_VERSION_NUM >= PG_VERSION_12
 		if (distributionColumn->varcollid != InvalidOid &&
 			!get_collation_isdeterministic(distributionColumn->varcollid))
 		{
@@ -862,7 +859,6 @@ EnsureRelationCanBeDistributed(Oid relationId, Var *distributionColumn,
 							errmsg("Hash distributed partition columns may not use "
 								   "a non deterministic collation")));
 		}
-#endif
 	}
 	else if (distributionMethod == DISTRIBUTE_BY_RANGE)
 	{
@@ -1527,12 +1523,8 @@ DoCopyFromLocalTableIntoShards(Relation distributedRelation,
 							   EState *estate)
 {
 	/* begin reading from local table */
-#if PG_VERSION_NUM >= PG_VERSION_12
 	TableScanDesc scan = table_beginscan(distributedRelation, GetActiveSnapshot(), 0,
 										 NULL);
-#else
-	HeapScanDesc scan = heap_beginscan(distributedRelation, GetActiveSnapshot(), 0, NULL);
-#endif
 
 	MemoryContext oldContext = MemoryContextSwitchTo(GetPerTupleMemoryContext(estate));
 
@@ -1581,11 +1573,7 @@ DoCopyFromLocalTableIntoShards(Relation distributedRelation,
 	MemoryContextSwitchTo(oldContext);
 
 	/* finish reading from the local table */
-#if PG_VERSION_NUM >= PG_VERSION_12
 	table_endscan(scan);
-#else
-	heap_endscan(scan);
-#endif
 }
 
 
@@ -1604,9 +1592,7 @@ TupleDescColumnNameList(TupleDesc tupleDescriptor)
 		char *columnName = NameStr(currentColumn->attname);
 
 		if (currentColumn->attisdropped
-#if PG_VERSION_NUM >= PG_VERSION_12
 			|| currentColumn->attgenerated == ATTRIBUTE_GENERATED_STORED
-#endif
 			)
 		{
 			continue;
@@ -1648,7 +1634,6 @@ static bool
 DistributionColumnUsesGeneratedStoredColumn(TupleDesc relationDesc,
 											Var *distributionColumn)
 {
-#if PG_VERSION_NUM >= PG_VERSION_12
 	Form_pg_attribute attributeForm = TupleDescAttr(relationDesc,
 													distributionColumn->varattno - 1);
 
@@ -1656,7 +1641,6 @@ DistributionColumnUsesGeneratedStoredColumn(TupleDesc relationDesc,
 	{
 		return true;
 	}
-#endif
 
 	return false;
 }

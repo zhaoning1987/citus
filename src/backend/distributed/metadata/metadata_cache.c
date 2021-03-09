@@ -2561,11 +2561,7 @@ LookupTypeOid(char *schemaNameSting, char *typeNameString)
 		return InvalidOid;
 	}
 
-#if PG_VERSION_NUM >= PG_VERSION_12
 	nodeRoleTypId = ((Form_pg_type) GETSTRUCT(tup))->oid;
-#else
-	nodeRoleTypId = HeapTupleGetOid(tup);
-#endif
 	ReleaseSysCache(tup);
 
 	return nodeRoleTypId;

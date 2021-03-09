@@ -238,17 +238,10 @@ DecompressBuffer(StringInfo buffer,
 
 			char *decompressedData = palloc0(decompressedDataSize);
 
-	#if PG_VERSION_NUM >= 120000
 			decompressedByteCount = pglz_decompress(COLUMNAR_COMPRESS_RAWDATA(
 														buffer->data),
 													compressedDataSize, decompressedData,
 													decompressedDataSize, true);
-	#else
-			decompressedByteCount = pglz_decompress(COLUMNAR_COMPRESS_RAWDATA(
-														buffer->data),
-													compressedDataSize, decompressedData,
-													decompressedDataSize);
-	#endif
 
 			if (decompressedByteCount < 0)
 			{

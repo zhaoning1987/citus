@@ -470,9 +470,7 @@ CopyToExistingShards(CopyStmt *copyStatement, QueryCompletionCompat *completionT
 		char *columnName = NameStr(currentColumn->attname);
 
 		if (currentColumn->attisdropped
-#if PG_VERSION_NUM >= PG_VERSION_12
 			|| currentColumn->attgenerated == ATTRIBUTE_GENERATED_STORED
-#endif
 			)
 		{
 			continue;
@@ -948,9 +946,7 @@ CanUseBinaryCopyFormat(TupleDesc tupleDescription)
 		Oid typeId = InvalidOid;
 
 		if (currentColumn->attisdropped
-#if PG_VERSION_NUM >= PG_VERSION_12
 			|| currentColumn->attgenerated == ATTRIBUTE_GENERATED_STORED
-#endif
 			)
 		{
 			continue;
@@ -1418,9 +1414,7 @@ TypeArrayFromTupleDescriptor(TupleDesc tupleDescriptor)
 	{
 		Form_pg_attribute attr = TupleDescAttr(tupleDescriptor, columnIndex);
 		if (attr->attisdropped
-#if PG_VERSION_NUM >= PG_VERSION_12
 			|| attr->attgenerated == ATTRIBUTE_GENERATED_STORED
-#endif
 			)
 		{
 			typeArray[columnIndex] = InvalidOid;
@@ -1590,9 +1584,7 @@ AppendCopyRowData(Datum *valueArray, bool *isNullArray, TupleDesc rowDescriptor,
 		}
 
 		if (currentColumn->attisdropped
-#if PG_VERSION_NUM >= PG_VERSION_12
 			|| currentColumn->attgenerated == ATTRIBUTE_GENERATED_STORED
-#endif
 			)
 		{
 			continue;
@@ -1713,9 +1705,7 @@ AvailableColumnCount(TupleDesc tupleDescriptor)
 		Form_pg_attribute currentColumn = TupleDescAttr(tupleDescriptor, columnIndex);
 
 		if (!currentColumn->attisdropped
-#if PG_VERSION_NUM >= PG_VERSION_12
 			&& currentColumn->attgenerated != ATTRIBUTE_GENERATED_STORED
-#endif
 			)
 		{
 			columnCount++;
@@ -2993,13 +2983,11 @@ ProcessCopyStmt(CopyStmt *copyStatement, QueryCompletionCompat *completionTag, c
 		{
 			if (copyStatement->is_from)
 			{
-#if PG_VERSION_NUM >= PG_VERSION_12
 				if (copyStatement->whereClause)
 				{
 					ereport(ERROR, (errmsg(
 										"Citus does not support COPY FROM with WHERE")));
 				}
-#endif
 
 				/* check permissions, we're bypassing postgres' normal checks */
 				CheckCopyPermissions(copyStatement);
@@ -3055,9 +3043,7 @@ CitusCopySelect(CopyStmt *copyStatement)
 		Form_pg_attribute attr = &tupleDescriptor->attrs[i];
 
 		if (attr->attisdropped
-#if PG_VERSION_NUM >= PG_VERSION_12
 			|| attr->attgenerated
-#endif
 			)
 		{
 			continue;
@@ -3312,10 +3298,8 @@ CopyGetAttnums(TupleDesc tupDesc, Relation rel, List *attnamelist)
 		{
 			if (TupleDescAttr(tupDesc, i)->attisdropped)
 				continue;
-#if PG_VERSION_NUM >= PG_VERSION_12
 			if (TupleDescAttr(tupDesc, i)->attgenerated)
 				continue;
-#endif
 			attnums = lappend_int(attnums, i + 1);
 		}
 	}
@@ -3340,14 +3324,12 @@ CopyGetAttnums(TupleDesc tupDesc, Relation rel, List *attnamelist)
 					continue;
 				if (namestrcmp(&(att->attname), name) == 0)
 				{
-#if PG_VERSION_NUM >= PG_VERSION_12
 					if (att->attgenerated)
 						ereport(ERROR,
 								(errcode(ERRCODE_INVALID_COLUMN_REFERENCE),
 								 errmsg("column \"%s\" is a generated column",
 										name),
 								 errdetail("Generated columns cannot be used in COPY.")));
-#endif
 					attnum = att->attnum;
 					break;
 				}

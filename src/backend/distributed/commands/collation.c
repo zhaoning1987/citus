@@ -60,9 +60,7 @@ CreateCollationDDLInternal(Oid collationId, Oid *collowner, char **quotedCollati
 	const char *collctype;
 	const char *collname;
 	Oid collnamespace;
-#if PG_VERSION_NUM >= PG_VERSION_12
 	bool collisdeterministic;
-#endif
 
 	heapTuple = SearchSysCache1(COLLOID, ObjectIdGetDatum(collationId));
 	if (!HeapTupleIsValid(heapTuple))
@@ -76,9 +74,7 @@ CreateCollationDDLInternal(Oid collationId, Oid *collowner, char **quotedCollati
 	collctype = NameStr(collationForm->collctype);
 	collnamespace = collationForm->collnamespace;
 	collname = NameStr(collationForm->collname);
-#if PG_VERSION_NUM >= PG_VERSION_12
 	collisdeterministic = collationForm->collisdeterministic;
-#endif
 
 	if (collowner != NULL)
 	{
@@ -117,12 +113,10 @@ CreateCollationDDLInternal(Oid collationId, Oid *collowner, char **quotedCollati
 						 quote_literal_cstr(collctype));
 	}
 
-#if PG_VERSION_NUM >= PG_VERSION_12
 	if (!collisdeterministic)
 	{
 		appendStringInfoString(&collationNameDef, ", deterministic = false");
 	}
-#endif
 
 
 	appendStringInfoChar(&collationNameDef, ')');

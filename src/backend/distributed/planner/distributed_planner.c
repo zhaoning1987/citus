@@ -52,12 +52,8 @@
 #include "nodes/pg_list.h"
 #include "parser/parsetree.h"
 #include "parser/parse_type.h"
-#if PG_VERSION_NUM >= PG_VERSION_12
 #include "optimizer/optimizer.h"
 #include "optimizer/plancat.h"
-#else
-#include "optimizer/cost.h"
-#endif
 #include "optimizer/pathnode.h"
 #include "optimizer/planner.h"
 #include "optimizer/planmain.h"
@@ -1473,11 +1469,7 @@ BlessRecordExpression(Expr *expr)
 		ListCell *argCell = NULL;
 		int currentResno = 1;
 
-#if PG_VERSION_NUM >= PG_VERSION_12
 		rowTupleDesc = CreateTemplateTupleDesc(list_length(rowExpr->args));
-#else
-		rowTupleDesc = CreateTemplateTupleDesc(list_length(rowExpr->args), false);
-#endif
 
 		foreach(argCell, rowExpr->args)
 		{
@@ -1980,11 +1972,7 @@ AdjustReadIntermediateResultsCostInternal(RelOptInfo *relOptInfo, List *columnTy
 	double rowSizeEstimate = 0;
 	double rowCountEstimate = 0.;
 	double ioCost = 0.;
-#if PG_VERSION_NUM >= PG_VERSION_12
 	QualCost funcCost = { 0., 0. };
-#else
-	double funcCost = 0.;
-#endif
 	int64 totalResultSize = 0;
 	ListCell *typeCell = NULL;
 
@@ -2043,17 +2031,9 @@ AdjustReadIntermediateResultsCostInternal(RelOptInfo *relOptInfo, List *columnTy
 
 
 		/* add the cost of parsing a column */
-#if PG_VERSION_NUM >= PG_VERSION_12
 		add_function_cost(NULL, inputFunctionId, NULL, &funcCost);
-#else
-		funcCost += get_func_cost(inputFunctionId);
-#endif
 	}
-#if PG_VERSION_NUM >= PG_VERSION_12
 	rowCost += funcCost.per_tuple;
-#else
-	rowCost += funcCost * cpu_operator_cost;
-#endif
 
 	/* estimate the number of rows based on the file size and estimated row size */
 	rowCountEstimate = Max(1, (double) totalResultSize / rowSizeEstimate);
@@ -2068,9 +2048,7 @@ AdjustReadIntermediateResultsCostInternal(RelOptInfo *relOptInfo, List *columnTy
 	path->rows = rowCountEstimate;
 	path->total_cost = rowCountEstimate * rowCost + ioCost;
 
-#if PG_VERSION_NUM >= PG_VERSION_12
 	path->startup_cost = funcCost.startup + relOptInfo->baserestrictcost.startup;
-#endif
 }
 
 

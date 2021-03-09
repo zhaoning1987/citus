@@ -12,13 +12,7 @@
 #include "distributed/pg_version_constants.h"
 
 #include "access/genam.h"
-#if PG_VERSION_NUM >= PG_VERSION_12
 #include "access/table.h"
-#else
-#include "access/heapam.h"
-#include "access/htup_details.h"
-#include "access/sysattr.h"
-#endif
 #include "catalog/indexing.h"
 #include "catalog/namespace.h"
 #include "catalog/pg_trigger.h"
@@ -101,11 +95,7 @@ GetTriggerTupleById(Oid triggerId, bool missingOk)
 	int scanKeyCount = 1;
 	ScanKeyData scanKey[1];
 
-#if PG_VERSION_NUM >= PG_VERSION_12
 	AttrNumber attrNumber = Anum_pg_trigger_oid;
-#else
-	AttrNumber attrNumber = ObjectIdAttributeNumber;
-#endif
 
 	ScanKeyInit(&scanKey[0], attrNumber, BTEqualStrategyNumber,
 				F_OIDEQ, ObjectIdGetDatum(triggerId));
@@ -200,12 +190,8 @@ get_relation_trigger_oid_compat(HeapTuple heapTuple)
 
 	Oid triggerOid = InvalidOid;
 
-#if PG_VERSION_NUM >= PG_VERSION_12
 	Form_pg_trigger triggerForm = (Form_pg_trigger) GETSTRUCT(heapTuple);
 	triggerOid = triggerForm->oid;
-#else
-	triggerOid = HeapTupleGetOid(heapTuple);
-#endif
 
 	return triggerOid;
 }

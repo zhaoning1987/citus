@@ -275,11 +275,7 @@ CreatePartitioningTupleDest(CitusTableCacheEntry *targetRelation)
 	TupleDesc tupleDescriptor = NULL;
 	int resultColumnCount = 3;
 
-#if PG_VERSION_NUM >= PG_VERSION_12
 	tupleDescriptor = CreateTemplateTupleDesc(resultColumnCount);
-#else
-	tupleDescriptor = CreateTemplateTupleDesc(resultColumnCount, false);
-#endif
 
 	TupleDescInitEntry(tupleDescriptor, (AttrNumber) 1, "partition_index",
 					   INT4OID, -1, 0);
@@ -689,11 +685,7 @@ ExecuteFetchTaskList(List *taskList)
 	TupleDesc resultDescriptor = NULL;
 	int resultColumnCount = 1;
 
-#if PG_VERSION_NUM >= PG_VERSION_12
 	resultDescriptor = CreateTemplateTupleDesc(resultColumnCount);
-#else
-	resultDescriptor = CreateTemplateTupleDesc(resultColumnCount, false);
-#endif
 
 	TupleDescInitEntry(resultDescriptor, (AttrNumber) 1, "byte_count", INT8OID, -1, 0);
 

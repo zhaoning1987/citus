@@ -43,9 +43,7 @@
 #include "nodes/primnodes.h"
 #include "optimizer/clauses.h"
 #include "parser/parse_coerce.h"
-#if PG_VERSION_NUM >= PG_VERSION_12
 #include "parser/parsetree.h"
-#endif
 #include "miscadmin.h"
 #include "tcop/dest.h"
 #include "utils/lsyscache.h"
@@ -157,7 +155,6 @@ TryToDelegateFunctionCall(DistributedPlanningContext *planContext)
 
 	if (joinTree->fromlist != NIL)
 	{
-#if PG_VERSION_NUM >= PG_VERSION_12
 
 		/*
 		 * In pg12's planning phase empty FROMs are represented with an RTE_RESULT.
@@ -194,11 +191,6 @@ TryToDelegateFunctionCall(DistributedPlanningContext *planContext)
 			Assert(list_length(joinTree->fromlist) > 1);
 			return NULL;
 		}
-#else
-
-		/* query has a FROM section */
-		return NULL;
-#endif
 	}
 
 	targetList = planContext->query->targetList;

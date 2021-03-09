@@ -24,9 +24,7 @@
 #include "executor/tuptable.h"
 #include "nodes/parsenodes.h"
 #include "parser/parse_func.h"
-#if (PG_VERSION_NUM >= PG_VERSION_12)
 #include "optimizer/optimizer.h"
-#endif
 
 #if (PG_VERSION_NUM >= PG_VERSION_13)
 #include "tcop/tcopprot.h"

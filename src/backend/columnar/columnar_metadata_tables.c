@@ -1039,15 +1039,10 @@ InsertTupleAndEnforceConstraints(ModifyState *state, Datum *values, bool *nulls)
 	TupleDesc tupleDescriptor = RelationGetDescr(state->rel);
 	HeapTuple tuple = heap_form_tuple(tupleDescriptor, values, nulls);
 
-#if PG_VERSION_NUM >= 120000
 	TupleTableSlot *slot = ExecInitExtraTupleSlot(state->estate, tupleDescriptor,
 												  &TTSOpsHeapTuple);
 
 	ExecStoreHeapTuple(tuple, slot, false);
-#else
-	TupleTableSlot *slot = ExecInitExtraTupleSlot(state->estate, tupleDescriptor);
-	ExecStoreTuple(tuple, slot, InvalidBuffer, false);
-#endif
 
 	/* use ExecSimpleRelationInsert to enforce constraints */
 	ExecSimpleRelationInsert(state->estate, slot);
@@ -1107,10 +1102,8 @@ create_estate_for_relation(Relation rel)
 	rte->rtekind = RTE_RELATION;
 	rte->relid = RelationGetRelid(rel);
 	rte->relkind = rel->rd_rel->relkind;
-#if PG_VERSION_NUM >= 120000
 	rte->rellockmode = AccessShareLock;
 	ExecInitRangeTable(estate, list_make1(rte));
-#endif
 
 	resultRelInfo = makeNode(ResultRelInfo);
 	InitResultRelInfo(resultRelInfo, rel, 1, NULL, 0);

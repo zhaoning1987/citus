@@ -20,10 +20,8 @@
 #include "funcapi.h"
 #include "miscadmin.h"
 
-#if PG_VERSION_NUM >= PG_VERSION_12
 #include "access/genam.h"
 #include "access/table.h"
-#endif
 #include "access/htup_details.h"
 #include "access/xact.h"
 #include "catalog/dependency.h"
@@ -267,11 +265,7 @@ Datum
 worker_cleanup_job_schema_cache(PG_FUNCTION_ARGS)
 {
 	Relation pgNamespace = NULL;
-#if PG_VERSION_NUM >= PG_VERSION_12
 	TableScanDesc scanDescriptor = NULL;
-#else
-	HeapScanDesc scanDescriptor = NULL;
-#endif
 	ScanKey scanKey = NULL;
 	int scanKeyCount = 0;
 	HeapTuple heapTuple = NULL;
@@ -279,11 +273,7 @@ worker_cleanup_job_schema_cache(PG_FUNCTION_ARGS)
 	CheckCitusVersion(ERROR);
 
 	pgNamespace = table_open(NamespaceRelationId, AccessExclusiveLock);
-#if PG_VERSION_NUM >= PG_VERSION_12
 	scanDescriptor = table_beginscan_catalog(pgNamespace, scanKeyCount, scanKey);
-#else
-	scanDescriptor = heap_beginscan_catalog(pgNamespace, scanKeyCount, scanKey);
-#endif
 
 	heapTuple = heap_getnext(scanDescriptor, ForwardScanDirection);
 	while (HeapTupleIsValid(heapTuple))

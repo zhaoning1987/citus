@@ -19,9 +19,7 @@
 #include "access/xact.h"
 #include "catalog/namespace.h"
 #include "catalog/pg_constraint.h"
-#if (PG_VERSION_NUM >= PG_VERSION_12)
 #include "access/genam.h"
-#endif
 #include "catalog/pg_type.h"
 #include "distributed/colocation_utils.h"
 #include "distributed/commands.h"
@@ -717,12 +715,8 @@ get_relation_constraint_oid_compat(HeapTuple heapTuple)
 
 	Oid constraintOid = InvalidOid;
 
-#if PG_VERSION_NUM >= PG_VERSION_12
 	Form_pg_constraint constraintForm = (Form_pg_constraint) GETSTRUCT(heapTuple);
 	constraintOid = constraintForm->oid;
-#else
-	constraintOid = HeapTupleGetOid(heapTuple);
-#endif
 
 	return constraintOid;
 }
@@ -1294,11 +1288,7 @@ UpdateConstraintIsValid(Oid constraintId, bool isValid)
 	bool replace[Natts_pg_constraint];
 
 	ScanKeyInit(&scankey[0],
-#if PG_VERSION_NUM >= 120000
 				Anum_pg_constraint_oid,
-#else
-				ObjectIdAttributeNumber,
-#endif
 				BTEqualStrategyNumber, F_OIDEQ,
 				ObjectIdGetDatum(constraintId));
 

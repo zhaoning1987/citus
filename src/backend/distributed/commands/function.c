@@ -21,9 +21,7 @@
 
 #include "distributed/pg_version_constants.h"
 
-#if PG_VERSION_NUM >= PG_VERSION_12
 #include "access/genam.h"
-#endif
 #include "access/htup_details.h"
 #include "access/xact.h"
 #include "catalog/pg_aggregate.h"
@@ -762,7 +760,6 @@ GetAggregateDDLCommand(const RegProcedure funcOid, bool useCreateOrReplace)
 	const char *name = NameStr(proc->proname);
 	const char *nsp = get_namespace_name(proc->pronamespace);
 
-#if PG_VERSION_NUM >= PG_VERSION_12
 	if (useCreateOrReplace)
 	{
 		appendStringInfo(&buf, "CREATE OR REPLACE AGGREGATE %s(",
@@ -773,10 +770,6 @@ GetAggregateDDLCommand(const RegProcedure funcOid, bool useCreateOrReplace)
 		appendStringInfo(&buf, "CREATE AGGREGATE %s(",
 						 quote_qualified_identifier(nsp, name));
 	}
-#else
-	appendStringInfo(&buf, "CREATE AGGREGATE %s(",
-					 quote_qualified_identifier(nsp, name));
-#endif
 
 	/* Parameters, borrows heavily from print_function_arguments in postgres */
 	numargs = get_func_arg_info(proctup, &argtypes, &argnames, &argmodes);
