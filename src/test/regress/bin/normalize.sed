@@ -191,8 +191,8 @@ s/relation with OID [0-9]+ does not exist/relation with OID XXXX does not exist/
 # ignore JIT related messages
 /^DEBUG:  probing availability of JIT.*/d
 /^DEBUG:  provider not available, disabling JIT for current session.*/d
-
-
+/^DEBUG:  time to inline:.*/d
+/^DEBUG:  successfully loaded JIT.*/d
 
 # ignore timing statistics for VACUUM VERBOSE
 /CPU: user: .*s, system: .*s, elapsed: .*s/d
@@ -223,3 +223,11 @@ s/^(ERROR:  child table is missing constraint "\w+)_([0-9])+"/\1_xxxxxx"/g
         s/.*//g
     }
 }
+
+# normalize long table shard name errors for alter_table_set_access_method and alter_distributed_table
+s/^(ERROR:  child table is missing constraint "\w+)_([0-9])+"/\1_xxxxxx"/g
+s/^(DEBUG:  the name of the shard \(abcde_01234567890123456789012345678901234567890_f7ff6612)_([0-9])+/\1_xxxxxx/g
+
+# normalize long index name errors for multi_index_statements
+s/^(ERROR:  The index name \(test_index_creation1_p2020_09_26)_([0-9])+_(tenant_id_timeperiod_idx)/\1_xxxxxx_\3/g
+s/^(DEBUG:  the index name on the shards of the partition is too long, switching to sequential and local execution mode to prevent self deadlocks: test_index_creation1_p2020_09_26)_([0-9])+_(tenant_id_timeperiod_idx)/\1_xxxxxx_\3/g

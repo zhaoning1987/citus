@@ -289,9 +289,9 @@ COMMIT;
 -- to test citus local tables
 select undistribute_table('upsert_test');
 NOTICE:  creating a new table for single_node.upsert_test
-NOTICE:  Moving the data of single_node.upsert_test
-NOTICE:  Dropping the old single_node.upsert_test
-NOTICE:  Renaming the new table to single_node.upsert_test
+NOTICE:  moving the data of single_node.upsert_test
+NOTICE:  dropping the old single_node.upsert_test
+NOTICE:  renaming the new table to single_node.upsert_test
  undistribute_table
 ---------------------------------------------------------------------
 
@@ -693,6 +693,76 @@ SELECT * FROM collections_list, collections_list_0 WHERE collections_list.key=co
 ---------------------------------------------------------------------
  100 |             0 | 10000 | 100 |             0 | 10000
 (1 row)
+
+-- test hash distribution using INSERT with generate_series() function
+CREATE OR REPLACE FUNCTION part_hashint4_noop(value int4, seed int8)
+RETURNS int8 AS $$
+SELECT value + seed;
+$$ LANGUAGE SQL IMMUTABLE;
+CREATE OPERATOR CLASS part_test_int4_ops
+FOR TYPE int4
+USING HASH AS
+operator 1 =,
+function 2 part_hashint4_noop(int4, int8);
+CREATE TABLE hash_parted (
+       a int,
+  b int
+) PARTITION BY HASH (a part_test_int4_ops);
+CREATE TABLE hpart0 PARTITION OF hash_parted FOR VALUES WITH (modulus 4, remainder 0);
+CREATE TABLE hpart1 PARTITION OF hash_parted FOR VALUES WITH (modulus 4, remainder 1);
+CREATE TABLE hpart2 PARTITION OF hash_parted FOR VALUES WITH (modulus 4, remainder 2);
+CREATE TABLE hpart3 PARTITION OF hash_parted FOR VALUES WITH (modulus 4, remainder 3);
+SELECT create_distributed_table('hash_parted ', 'a');
+ create_distributed_table
+---------------------------------------------------------------------
+
+(1 row)
+
+INSERT INTO hash_parted VALUES (1, generate_series(1, 10));
+SELECT * FROM hash_parted ORDER BY 1, 2;
+ a | b
+---------------------------------------------------------------------
+ 1 |  1
+ 1 |  2
+ 1 |  3
+ 1 |  4
+ 1 |  5
+ 1 |  6
+ 1 |  7
+ 1 |  8
+ 1 |  9
+ 1 | 10
+(10 rows)
+
+ALTER TABLE hash_parted DETACH PARTITION hpart0;
+ALTER TABLE hash_parted DETACH PARTITION hpart1;
+ALTER TABLE hash_parted DETACH PARTITION hpart2;
+ALTER TABLE hash_parted DETACH PARTITION hpart3;
+-- test range partition without creating partitions and inserting with generate_series()
+-- should error out even in plain PG since no partition of relation "parent_tab" is found for row
+-- in Citus it errors out because it fails to evaluate partition key in insert
+CREATE TABLE parent_tab (id int) PARTITION BY RANGE (id);
+SELECT create_distributed_table('parent_tab', 'id');
+ create_distributed_table
+---------------------------------------------------------------------
+
+(1 row)
+
+INSERT INTO parent_tab VALUES (generate_series(0, 3));
+ERROR:  failed to evaluate partition key in insert
+HINT:  try using constant values for partition column
+-- now it should work
+CREATE TABLE parent_tab_1_2 PARTITION OF parent_tab FOR VALUES FROM (1) to (2);
+ALTER TABLE parent_tab ADD COLUMN b int;
+INSERT INTO parent_tab VALUES (1, generate_series(0, 3));
+SELECT * FROM parent_tab ORDER BY 1, 2;
+ id | b
+---------------------------------------------------------------------
+  1 | 0
+  1 | 1
+  1 | 2
+  1 | 3
+(4 rows)
 
 -- make sure that parallel accesses are good
 SET citus.force_max_query_parallelization TO ON;
@@ -1125,9 +1195,9 @@ RESET citus.task_executor_type;
 ALTER TABLE test DROP CONSTRAINT foreign_key;
 SELECT undistribute_table('test_2');
 NOTICE:  creating a new table for single_node.test_2
-NOTICE:  Moving the data of single_node.test_2
-NOTICE:  Dropping the old single_node.test_2
-NOTICE:  Renaming the new table to single_node.test_2
+NOTICE:  moving the data of single_node.test_2
+NOTICE:  dropping the old single_node.test_2
+NOTICE:  renaming the new table to single_node.test_2
  undistribute_table
 ---------------------------------------------------------------------
 
@@ -1176,28 +1246,28 @@ ALTER TABLE partitioned_table_1 ADD CONSTRAINT fkey_5 FOREIGN KEY (col_1) REFERE
 SELECT undistribute_table('partitioned_table_1', cascade_via_foreign_keys=>true);
 NOTICE:  converting the partitions of single_node.partitioned_table_1
 NOTICE:  creating a new table for single_node.partitioned_table_1_100_200
-NOTICE:  Moving the data of single_node.partitioned_table_1_100_200
-NOTICE:  Dropping the old single_node.partitioned_table_1_100_200
-NOTICE:  Renaming the new table to single_node.partitioned_table_1_100_200
+NOTICE:  moving the data of single_node.partitioned_table_1_100_200
+NOTICE:  dropping the old single_node.partitioned_table_1_100_200
+NOTICE:  renaming the new table to single_node.partitioned_table_1_100_200
 NOTICE:  creating a new table for single_node.partitioned_table_1_200_300
-NOTICE:  Moving the data of single_node.partitioned_table_1_200_300
-NOTICE:  Dropping the old single_node.partitioned_table_1_200_300
-NOTICE:  Renaming the new table to single_node.partitioned_table_1_200_300
+NOTICE:  moving the data of single_node.partitioned_table_1_200_300
+NOTICE:  dropping the old single_node.partitioned_table_1_200_300
+NOTICE:  renaming the new table to single_node.partitioned_table_1_200_300
 NOTICE:  creating a new table for single_node.partitioned_table_1
-NOTICE:  Dropping the old single_node.partitioned_table_1
-NOTICE:  Renaming the new table to single_node.partitioned_table_1
+NOTICE:  dropping the old single_node.partitioned_table_1
+NOTICE:  renaming the new table to single_node.partitioned_table_1
 NOTICE:  creating a new table for single_node.reference_table_1
-NOTICE:  Moving the data of single_node.reference_table_1
-NOTICE:  Dropping the old single_node.reference_table_1
-NOTICE:  Renaming the new table to single_node.reference_table_1
+NOTICE:  moving the data of single_node.reference_table_1
+NOTICE:  dropping the old single_node.reference_table_1
+NOTICE:  renaming the new table to single_node.reference_table_1
 NOTICE:  creating a new table for single_node.distributed_table_1
-NOTICE:  Moving the data of single_node.distributed_table_1
-NOTICE:  Dropping the old single_node.distributed_table_1
-NOTICE:  Renaming the new table to single_node.distributed_table_1
+NOTICE:  moving the data of single_node.distributed_table_1
+NOTICE:  dropping the old single_node.distributed_table_1
+NOTICE:  renaming the new table to single_node.distributed_table_1
 NOTICE:  creating a new table for single_node.citus_local_table_1
-NOTICE:  Moving the data of single_node.citus_local_table_1
-NOTICE:  Dropping the old single_node.citus_local_table_1
-NOTICE:  Renaming the new table to single_node.citus_local_table_1
+NOTICE:  moving the data of single_node.citus_local_table_1
+NOTICE:  dropping the old single_node.citus_local_table_1
+NOTICE:  renaming the new table to single_node.citus_local_table_1
  undistribute_table
 ---------------------------------------------------------------------
 

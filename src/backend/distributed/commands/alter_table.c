@@ -43,12 +43,15 @@
 #include "distributed/listutils.h"
 #include "distributed/local_executor.h"
 #include "distributed/metadata/dependency.h"
+#include "distributed/metadata/distobject.h"
 #include "distributed/metadata_cache.h"
 #include "distributed/metadata_sync.h"
 #include "distributed/multi_executor.h"
 #include "distributed/multi_logical_planner.h"
 #include "distributed/multi_partitioning_utils.h"
 #include "distributed/reference_table_utils.h"
+#include "distributed/relation_access_tracking.h"
+#include "distributed/shard_utils.h"
 #include "distributed/worker_protocol.h"
 #include "distributed/worker_transaction.h"
 #include "executor/spi.h"
@@ -175,6 +178,8 @@ static TableConversionReturn * AlterDistributedTable(TableConversionParameters *
 static TableConversionReturn * AlterTableSetAccessMethod(
 	TableConversionParameters *params);
 static TableConversionReturn * ConvertTable(TableConversionState *con);
+static bool SwitchToSequentialAndLocalExecutionIfShardNameTooLong(char *relationName,
+																  char *longestShardName);
 static void EnsureTableNotReferencing(Oid relationId, char conversionType);
 static void EnsureTableNotReferenced(Oid relationId, char conversionType);
 static void EnsureTableNotForeign(Oid relationId);
@@ -511,6 +516,10 @@ ConvertTable(TableConversionState *con)
 	bool oldEnableLocalReferenceForeignKeys = EnableLocalReferenceForeignKeys;
 	SetLocalEnableLocalReferenceForeignKeys(false);
 
+	/* switch to sequential execution if shard names will be too long */
+	SwitchToSequentialAndLocalExecutionIfRelationNameTooLong(con->relationId,
+															 con->relationName);
+
 	if (con->conversionType == UNDISTRIBUTE_TABLE && con->cascadeViaForeignKeys &&
 		(TableReferencing(con->relationId) || TableReferenced(con->relationId)))
 	{
@@ -673,7 +682,7 @@ ConvertTable(TableConversionState *con)
 		Node *parseTree = ParseTreeNode(tableCreationSql);
 
 		RelayEventExtendNames(parseTree, con->schemaName, con->hashOfName);
-		ProcessUtilityParseTree(parseTree, tableCreationSql, PROCESS_UTILITY_TOPLEVEL,
+		ProcessUtilityParseTree(parseTree, tableCreationSql, PROCESS_UTILITY_QUERY,
 								NULL, None_Receiver, NULL);
 	}
 
@@ -711,6 +720,32 @@ ConvertTable(TableConversionState *con)
 		CreateCitusTableLike(con);
 	}
 
+	/* preserve colocation with procedures/functions */
+	if (con->conversionType == ALTER_DISTRIBUTED_TABLE)
+	{
+		/*
+		 * Updating the colocationId of functions is always desirable for
+		 * the following scenario:
+		 *    we have shardCount or colocateWith change
+		 *    AND  entire co-location group is altered
+		 * The reason for the second condition is because we currently don't
+		 * remember the original table specified in the colocateWith when
+		 * distributing the function. We only remember the colocationId in
+		 * pg_dist_object table.
+		 */
+		if ((!con->shardCountIsNull || con->colocateWith != NULL) &&
+			(con->cascadeToColocated == CASCADE_TO_COLOCATED_YES || list_length(
+				 con->colocatedTableList) == 1) && con->distributionColumn == NULL)
+		{
+			/*
+			 * Update the colocationId from the one of the old relation to the one
+			 * of the new relation for all tuples in citus.pg_dist_object
+			 */
+			UpdateDistributedObjectColocationId(TableColocationId(con->relationId),
+												TableColocationId(con->newRelationId));
+		}
+	}
+
 	ReplaceTable(con->relationId, con->newRelationId, justBeforeDropCommands,
 				 con->suppressNoticeMessages);
 
@@ -728,7 +763,7 @@ ConvertTable(TableConversionState *con)
 		Node *parseTree = ParseTreeNode(attachPartitionCommand);
 
 		ProcessUtilityParseTree(parseTree, attachPartitionCommand,
-								PROCESS_UTILITY_TOPLEVEL,
+								PROCESS_UTILITY_QUERY,
 								NULL, None_Receiver, NULL);
 	}
 
@@ -1134,7 +1169,7 @@ ReplaceTable(Oid sourceId, Oid targetId, List *justBeforeDropCommands,
 	{
 		if (!suppressNoticeMessages)
 		{
-			ereport(NOTICE, (errmsg("Moving the data of %s",
+			ereport(NOTICE, (errmsg("moving the data of %s",
 									quote_qualified_identifier(schemaName, sourceName))));
 		}
 
@@ -1207,7 +1242,7 @@ ReplaceTable(Oid sourceId, Oid targetId, List *justBeforeDropCommands,
 
 	if (!suppressNoticeMessages)
 	{
-		ereport(NOTICE, (errmsg("Dropping the old %s",
+		ereport(NOTICE, (errmsg("dropping the old %s",
 								quote_qualified_identifier(schemaName, sourceName))));
 	}
 
@@ -1218,7 +1253,7 @@ ReplaceTable(Oid sourceId, Oid targetId, List *justBeforeDropCommands,
 
 	if (!suppressNoticeMessages)
 	{
-		ereport(NOTICE, (errmsg("Renaming the new table to %s",
+		ereport(NOTICE, (errmsg("renaming the new table to %s",
 								quote_qualified_identifier(schemaName, sourceName))));
 	}
 
@@ -1571,4 +1606,105 @@ ExecuteQueryViaSPI(char *query, int SPIOK)
 	{
 		ereport(ERROR, (errmsg("could not finish SPI connection")));
 	}
+}
+
+
+/*
+ * SwitchToSequentialAndLocalExecutionIfRelationNameTooLong generates the longest shard name
+ * on the shards of a distributed table, and if exceeds the limit switches to sequential and
+ * local execution to prevent self-deadlocks.
+ *
+ * In case of a RENAME, the relation name parameter should store the new table name, so
+ * that the function can generate shard names of the renamed relations
+ */
+void
+SwitchToSequentialAndLocalExecutionIfRelationNameTooLong(Oid relationId,
+														 char *finalRelationName)
+{
+	if (!IsCitusTable(relationId))
+	{
+		return;
+	}
+
+	if (ShardIntervalCount(relationId) == 0)
+	{
+		/*
+		 * Relation has no shards, so we cannot run into "long shard relation
+		 * name" issue.
+		 */
+		return;
+	}
+
+	char *longestShardName = GetLongestShardName(relationId, finalRelationName);
+	bool switchedToSequentialAndLocalExecution =
+		SwitchToSequentialAndLocalExecutionIfShardNameTooLong(finalRelationName,
+															  longestShardName);
+
+	if (switchedToSequentialAndLocalExecution)
+	{
+		return;
+	}
+
+	if (PartitionedTable(relationId))
+	{
+		Oid longestNamePartitionId = PartitionWithLongestNameRelationId(relationId);
+		if (!OidIsValid(longestNamePartitionId))
+		{
+			/* no partitions have been created yet */
+			return;
+		}
+
+		char *longestPartitionName = get_rel_name(longestNamePartitionId);
+		char *longestPartitionShardName = GetLongestShardName(longestNamePartitionId,
+															  longestPartitionName);
+
+		SwitchToSequentialAndLocalExecutionIfShardNameTooLong(longestPartitionName,
+															  longestPartitionShardName);
+	}
+}
+
+
+/*
+ * SwitchToSequentialAndLocalExecutionIfShardNameTooLong switches to sequential and local
+ * execution if the shard name is too long.
+ *
+ * returns true if switched to sequential and local execution.
+ */
+static bool
+SwitchToSequentialAndLocalExecutionIfShardNameTooLong(char *relationName,
+													  char *longestShardName)
+{
+	if (strlen(longestShardName) >= NAMEDATALEN - 1)
+	{
+		if (ParallelQueryExecutedInTransaction())
+		{
+			/*
+			 * If there has already been a parallel query executed, the sequential mode
+			 * would still use the already opened parallel connections to the workers,
+			 * thus contradicting our purpose of using sequential mode.
+			 */
+			ereport(ERROR, (errmsg(
+								"Shard name (%s) for table (%s) is too long and could "
+								"lead to deadlocks when executed in a transaction "
+								"block after a parallel query", longestShardName,
+								relationName),
+							errhint("Try re-running the transaction with "
+									"\"SET LOCAL citus.multi_shard_modify_mode TO "
+									"\'sequential\';\"")));
+		}
+		else
+		{
+			elog(DEBUG1, "the name of the shard (%s) for relation (%s) is too long, "
+						 "switching to sequential and local execution mode to prevent "
+						 "self deadlocks",
+				 longestShardName, relationName);
+
+			SetLocalMultiShardModifyModeToSequential();
+			SetLocalExecutionStatus(LOCAL_EXECUTION_REQUIRED);
+
+			return true;
+		}
+	}
+
+	return false;
 }
