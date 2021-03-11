@@ -205,7 +205,7 @@ check-citus-upgrade-local: clean-upgrade-artifacts
 		--pgxsdir=$(pgxsdir) \
 		--citus-old-version=$(citus-old-version)
 
-check-citus-upgrade-mixed-local:
+check-citus-upgrade-mixed-local: clean-upgrade-artifacts
 	$(citus_upgrade_check) \
 		--bindir=$(bindir) \
 		--pgxsdir=$(pgxsdir) \
