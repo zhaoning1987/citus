@@ -221,7 +221,7 @@ SELECT create_distributed_table('dist_table1', 'a');
 ROLLBACK;
 
 RESET citus.enable_cte_inlining;
-CREATE table ref_table(x int, y int);
+CREATE table ref_table(x int PRIMARY KEY, y int);
 -- this will be replicated to the coordinator because of add_coordinator test
 SELECT create_reference_table('ref_table');
 
@@ -232,6 +232,14 @@ INSERT INTO test SELECT *, * FROM generate_series(1, 100);
 INSERT INTO ref_table SELECT *, * FROM generate_series(1, 100);
 SELECT COUNT(*) FROM test JOIN ref_table USING(x);
 ROLLBACK;
+
+-- writing to local file and remote intermediate files
+-- at the same time
+INSERT INTO ref_table SELECT *, * FROM generate_series(1, 100);
+
+WITH cte_1 AS (
+INSERT INTO ref_table SELECT * FROM ref_table LIMIT 10000 ON CONFLICT (x) DO UPDATE SET y = EXCLUDED.y + 1 RETURNING *)
+SELECT count(*) FROM cte_1;
 
 -- issue #4237: preventing empty placement creation on coordinator
 CREATE TABLE test_append_table(a int);
@@ -321,6 +329,50 @@ END;
 
 SELECT table_name, citus_table_type, distribution_column, shard_count FROM public.citus_tables WHERE table_name::text = 'adt_table';
 SET client_min_messages TO DEFAULT;
+
+
+-- issue 4508 table_1 and table_2 are used to test
+-- some edge cases around intermediate result pruning
+CREATE TABLE table_1 (key int, value text);
+SELECT create_distributed_table('table_1', 'key');
+
+CREATE TABLE table_2 (key int, value text);
+SELECT create_distributed_table('table_2', 'key');
+
+INSERT INTO table_1    VALUES (1, '1'), (2, '2'), (3, '3'), (4, '4');
+INSERT INTO table_2    VALUES (1, '1'), (2, '2'), (3, '3'), (4, '4'), (5, '5'), (6, '6');
+
+SET citus.log_intermediate_results TO ON;
+SET client_min_messages to debug1;
+WITH a AS (SELECT * FROM table_1 ORDER BY 1,2 DESC LIMIT 1)
+SELECT count(*),
+key
+FROM a JOIN table_2 USING (key)
+GROUP BY key
+HAVING (max(table_2.value) >= (SELECT value FROM a));
+
+WITH a AS (SELECT * FROM table_1 ORDER BY 1,2 DESC LIMIT 1)
+INSERT INTO table_1 SELECT count(*),
+key
+FROM a JOIN table_2 USING (key)
+GROUP BY key
+HAVING (max(table_2.value) >= (SELECT value FROM a));
+
+WITH stats AS (
+  SELECT count(key) m FROM table_1
+),
+inserts AS (
+  INSERT INTO table_2
+  SELECT key, count(*)
+  FROM table_1
+  WHERE key >= (SELECT m FROM stats)
+  GROUP BY key
+  HAVING count(*) <= (SELECT m FROM stats)
+  LIMIT 1
+  RETURNING *
+) SELECT count(*) FROM inserts;
+
+RESET client_min_messages;
 
 
 \set VERBOSITY terse

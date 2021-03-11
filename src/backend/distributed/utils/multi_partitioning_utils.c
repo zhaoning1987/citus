@@ -87,8 +87,13 @@ fix_pre_citus10_partitioned_table_constraint_names(PG_FUNCTION_ARGS)
 	}
 
 	List *taskList = CreateFixPartitionConstraintsTaskList(relationId);
-	bool localExecutionSupported = true;
-	ExecuteUtilityTaskList(taskList, localExecutionSupported);
+
+	/* do not do anything if there are no constraints that should be fixed */
+	if (taskList != NIL)
+	{
+		bool localExecutionSupported = true;
+		ExecuteUtilityTaskList(taskList, localExecutionSupported);
+	}
 
 	PG_RETURN_VOID();
 }
@@ -543,13 +548,14 @@ PartitionParentOid(Oid partitionOid)
 
 
 /*
- * LongestPartitionName is a uitility function that returns the partition
- * name which is the longest in terms of number of characters.
+ * PartitionWithLongestNameRelationId is a utility function that returns the
+ * oid of the partition table that has the longest name in terms of number of
+ * characters.
  */
-char *
-LongestPartitionName(Oid parentRelationId)
+Oid
+PartitionWithLongestNameRelationId(Oid parentRelationId)
 {
-	char *longestName = NULL;
+	Oid longestNamePartitionId = InvalidOid;
 	int longestNameLength = 0;
 	List *partitionList = PartitionList(parentRelationId);
 
@@ -560,12 +566,12 @@ LongestPartitionName(Oid parentRelationId)
 		int partitionNameLength = strnlen(partitionName, NAMEDATALEN);
 		if (partitionNameLength > longestNameLength)
 		{
-			longestName = partitionName;
+			longestNamePartitionId = partitionRelationId;
 			longestNameLength = partitionNameLength;
 		}
 	}
 
-	return longestName;
+	return longestNamePartitionId;
 }
 
 

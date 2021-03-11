@@ -68,6 +68,13 @@ CascadeOperationForConnectedRelations(Oid relationId, LOCKMODE lockMode,
 	InvalidateForeignKeyGraph();
 
 	List *fKeyConnectedRelationIdList = GetForeignKeyConnectedRelationIdList(relationId);
+
+	/* early exit if there are no connected relations */
+	if (fKeyConnectedRelationIdList == NIL)
+	{
+		return;
+	}
+
 	LockRelationsWithLockMode(fKeyConnectedRelationIdList, lockMode);
 
 	/*
@@ -503,6 +510,6 @@ ExecuteForeignKeyCreateCommand(const char *commandString, bool skip_validation)
 								"command \"%s\"", commandString)));
 	}
 
-	ProcessUtilityParseTree(parseTree, commandString, PROCESS_UTILITY_TOPLEVEL,
+	ProcessUtilityParseTree(parseTree, commandString, PROCESS_UTILITY_QUERY,
 							NULL, None_Receiver, NULL);
 }

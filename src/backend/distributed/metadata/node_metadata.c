@@ -105,6 +105,7 @@ static void SetUpDistributedTableDependencies(WorkerNode *workerNode);
 static WorkerNode * TupleToWorkerNode(TupleDesc tupleDescriptor, HeapTuple heapTuple);
 static void PropagateNodeWideObjects(WorkerNode *newWorkerNode);
 static WorkerNode * ModifiableWorkerNode(const char *nodeName, int32 nodePort);
+static bool NodeIsLocal(WorkerNode *worker);
 static void SetLockTimeoutLocally(int32 lock_cooldown);
 static void UpdateNodeLocation(int32 nodeId, char *newNodeName, int32 newNodePort);
 static bool UnsetMetadataSyncedForAll(void);
@@ -696,6 +697,17 @@ GroupForNode(char *nodeName, int nodePort)
 
 
 /*
+ * NodeIsPrimaryAndLocal returns whether the argument represents the local
+ * primary node.
+ */
+bool
+NodeIsPrimaryAndRemote(WorkerNode *worker)
+{
+	return NodeIsPrimary(worker) && !NodeIsLocal(worker);
+}
+
+
+/*
  * NodeIsPrimary returns whether the argument represents a primary node.
  */
 bool
@@ -710,6 +722,16 @@ NodeIsPrimary(WorkerNode *worker)
 	}
 
 	return worker->nodeRole == primaryRole;
+}
+
+
+/*
+ * NodeIsLocal returns whether the argument represents the local node.
+ */
+static bool
+NodeIsLocal(WorkerNode *worker)
+{
+	return worker->groupId == GetLocalGroupId();
 }
 
 
@@ -1362,16 +1384,34 @@ AddNodeMetadata(char *nodeName, int32 nodePort,
 	*nodeAlreadyExists = false;
 
 	/*
-	 * Take an exclusive lock on pg_dist_node to serialize node changes.
+	 * Prevent / wait for concurrent modification before checking whether
+	 * the worker already exists in pg_dist_node.
+	 */
+	LockRelationOid(DistNodeRelationId(), RowShareLock);
+
+	WorkerNode *workerNode = FindWorkerNodeAnyCluster(nodeName, nodePort);
+	if (workerNode != NULL)
+	{
+		/* return early without holding locks when the node already exists */
+		*nodeAlreadyExists = true;
+
+		return workerNode->nodeId;
+	}
+
+	/*
+	 * We are going to change pg_dist_node, prevent any concurrent reads that
+	 * are not tolerant to concurrent node addition by taking an exclusive
+	 * lock (conflicts with all but AccessShareLock).
+	 *
 	 * We may want to relax or have more fine-grained locking in the future
 	 * to allow users to add multiple nodes concurrently.
 	 */
 	LockRelationOid(DistNodeRelationId(), ExclusiveLock);
 
-	WorkerNode *workerNode = FindWorkerNodeAnyCluster(nodeName, nodePort);
+	/* recheck in case 2 node additions pass the first check concurrently */
+	workerNode = FindWorkerNodeAnyCluster(nodeName, nodePort);
 	if (workerNode != NULL)
 	{
-		/* fill return data and return */
 		*nodeAlreadyExists = true;
 
 		return workerNode->nodeId;

@@ -335,6 +335,142 @@ ALTER TABLE local DROP column key3;
 ALTER TABLE local DROP column key1;
 SELECT COUNT(*) FROM distributed_table JOIN local ON distributed_table.value = 'text';
 
+--Issue 4678
+
+create table custom_pg_type(typdefault text);
+insert into custom_pg_type VALUES ('b');
+
+create table tbl (a int);
+insert into tbl VALUES (1);
+
+-- check result with local tables
+select typdefault from (
+  select typdefault from (
+    select typdefault from
+      custom_pg_type,
+      lateral (
+        select a from tbl
+        where typdefault > 'a'
+        limit 1) as subq_0
+    where (
+      select true from pg_catalog.pg_am limit 1
+    )
+  ) as subq_1
+) as subq_2;
+
+select create_distributed_table('tbl', 'a');
+
+-- subplans work but we might skip the restrictions in them
+select typdefault from (
+  select typdefault from (
+    select typdefault from
+      custom_pg_type,
+      lateral (
+        select a from tbl
+        where typdefault > 'a'
+        limit 1) as subq_0
+    where (
+      select true from pg_catalog.pg_am limit 1
+    )
+  ) as subq_1
+) as subq_2;
+
+-- Not supported because of 4470
+select typdefault from (
+  select typdefault from (
+    select typdefault from
+      custom_pg_type,
+      lateral (
+        select a from tbl
+        where typdefault > 'a'
+        limit 1) as subq_0
+    where (
+      select true from pg_catalog.pg_am
+	  where typdefault = 'a' LIMIT 1
+    )
+  ) as subq_1
+) as subq_2;
+
+-- correlated sublinks are not yet supported because of #4470, unless we convert not-correlated table
+SELECT COUNT(*) FROM distributed_table d1 JOIN postgres_table using(key)
+WHERE d1.key IN (SELECT key FROM distributed_table WHERE d1.key = key and key = 5);
+
+set citus.local_table_join_policy to 'prefer-distributed';
+SELECT COUNT(*) FROM distributed_table d1 JOIN postgres_table using(key)
+WHERE d1.key IN (SELECT key FROM distributed_table WHERE d1.key = key and key = 5);
+set citus.local_table_join_policy to 'auto';
+
+-- Some more subqueries
+SELECT COUNT(*) FROM distributed_table JOIN postgres_table using(key)
+WHERE distributed_table.key IN (SELECT key FROM distributed_table WHERE key = 5);
+
+SELECT COUNT(*) FROM distributed_table JOIN postgres_table using(key)
+WHERE distributed_table.key IN (SELECT key FROM distributed_table WHERE key = 5) AND distributed_table.key = 5;
+
+SELECT COUNT(*) FROM distributed_table_pkey JOIN postgres_table using(key)
+WHERE distributed_table_pkey.key IN (SELECT key FROM distributed_table_pkey WHERE key = 5);
+
+SELECT COUNT(*) FROM distributed_table_pkey JOIN postgres_table using(key)
+WHERE distributed_table_pkey.key IN (SELECT key FROM distributed_table_pkey WHERE key = 5) AND distributed_table_pkey.key = 5;
+
+-- issue 4682
+create table tbl1 (a int, b int, c int, d int);
+INSERT INTO tbl1 SELECT i,i,i,i FROM generate_series(1,10) i;
+
+create table custom_pg_operator(oprname text);
+INSERT INTO custom_pg_operator values('a');
+
+-- try with local tables to make sure the results are same when tbl1 is distributed
+select COUNT(*) from
+  custom_pg_operator
+  inner join tbl1 on (select 1 from custom_pg_type) >= d
+  left join pg_dist_rebalance_strategy on 'by_shard_count' = name
+where a + b + c > 0;
+
+select create_distributed_table('tbl1', 'a');
+
+-- there is a different output in pg11 and in this query the debug messages are not
+-- as important as the others so we use notice
+set client_min_messages to NOTICE;
+select COUNT(*) from
+  custom_pg_operator
+  inner join tbl1 on (select 1 from custom_pg_type) >= d
+  left join pg_dist_rebalance_strategy on 'by_shard_count' = name
+where a + b + c > 0;
+
+--issue 4706
+CREATE TABLE table1(a int);
+CREATE TABLE table2(a int);
+
+INSERT INTO table1 VALUES (1);
+INSERT INTO table2 VALUES (1);
+
+-- make sure all the followings give the same result as postgres tables.
+SELECT 1 AS res FROM table2 RIGHT JOIN (SELECT 1 FROM table1, table2) AS sub1 ON false;
+
+SET client_min_messages to DEBUG1;
+
+BEGIN;
+SELECT create_distributed_table('table1', 'a');
+SELECT 1 AS res FROM table2 RIGHT JOIN (SELECT 1 FROM table1, table2) AS sub1 ON false;
+ROLLBACK;
+
+BEGIN;
+SELECT create_distributed_table('table2', 'a');
+-- currently not supported
+SELECT 1 AS res FROM table2 RIGHT JOIN (SELECT 1 FROM table1, table2) AS sub1 ON false;
+ROLLBACK;
+
+BEGIN;
+SELECT create_reference_table('table1');
+SELECT 1 AS res FROM table2 RIGHT JOIN (SELECT 1 FROM table1, table2) AS sub1 ON false;
+ROLLBACK;
+
+BEGIN;
+SELECT create_reference_table('table2');
+SELECT 1 AS res FROM table2 RIGHT JOIN (SELECT 1 FROM table1, table2) AS sub1 ON false;
+ROLLBACK;
+
 
 RESET client_min_messages;
 \set VERBOSITY terse

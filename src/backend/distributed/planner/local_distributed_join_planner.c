@@ -93,6 +93,7 @@
 #include "distributed/multi_router_planner.h"
 #include "distributed/multi_physical_planner.h"
 #include "distributed/multi_server_executor.h"
+#include "distributed/multi_router_planner.h"
 #include "distributed/query_colocation_checker.h"
 #include "distributed/query_pushdown_planning.h"
 #include "distributed/recursive_planning.h"
@@ -237,7 +238,7 @@ ResultRTEIdentity(Query *query)
 	int resultRTEIdentity = INVALID_RTE_IDENTITY;
 	if (IsModifyCommand(query))
 	{
-		RangeTblEntry *resultRTE = ExtractResultRelationRTE(query);
+		RangeTblEntry *resultRTE = ExtractResultRelationRTEOrError(query);
 		resultRTEIdentity = GetRTEIdentity(resultRTE);
 	}
 	return resultRTEIdentity;
@@ -384,17 +385,28 @@ static bool
 HasConstantFilterOnUniqueColumn(RangeTblEntry *rangeTableEntry,
 								RelationRestriction *relationRestriction)
 {
-	if (rangeTableEntry == NULL)
+	if (rangeTableEntry == NULL || relationRestriction == NULL)
 	{
+		/*
+		 * Postgres might not pass relationRestriction info with hooks if
+		 * the table doesn't contribute to the result, and in that case
+		 * relationRestriction will be NULL. Ideally it doesn't make sense
+		 * to recursively plan such tables but for the time being we don't
+		 * add any special logic for these tables as it might introduce bugs.
+		 */
 		return false;
 	}
-	List *baseRestrictionList = relationRestriction->relOptInfo->baserestrictinfo;
-	List *restrictClauseList = get_all_actual_clauses(baseRestrictionList);
-	if (ContainsFalseClause(restrictClauseList))
+
+	bool joinOnFalse = JoinConditionIsOnFalse(relationRestriction->relOptInfo->joininfo);
+	if (joinOnFalse)
 	{
 		/* If there is a WHERE FALSE, we consider it as a constant filter. */
 		return true;
 	}
+
+	List *baseRestrictionList = relationRestriction->relOptInfo->baserestrictinfo;
+	List *restrictClauseList = get_all_actual_clauses(baseRestrictionList);
+
 	List *rteEqualityColumnsNos =
 		FetchEqualityAttrNumsForRTE((Node *) restrictClauseList);
 
@@ -538,11 +550,6 @@ CreateConversionCandidates(PlannerRestrictionContext *plannerRestrictionContext,
 
 		RelationRestriction *relationRestriction =
 			RelationRestrictionForRelation(rangeTableEntry, plannerRestrictionContext);
-		if (relationRestriction == NULL)
-		{
-			continue;
-		}
-
 
 		RangeTableEntryDetails *rangeTableEntryDetails =
 			palloc0(sizeof(RangeTableEntryDetails));

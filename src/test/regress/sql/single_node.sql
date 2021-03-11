@@ -79,6 +79,10 @@ CREATE TABLE local(c int, d int);
 CREATE TABLE public.another_schema_table(a int, b int);
 SELECT create_distributed_table('public.another_schema_table', 'a');
 
+CREATE TABLE non_binary_copy_test (key int PRIMARY KEY, value new_type);
+SELECT create_distributed_table('non_binary_copy_test', 'key');
+INSERT INTO non_binary_copy_test SELECT i, (i, 'citus9.5')::new_type FROM generate_series(0,1000)i;
+
 -- Confirm the basics work
 INSERT INTO test VALUES (1, 2), (3, 4), (5, 6), (2, 7), (4, 5);
 SELECT * FROM test WHERE x = 1;
@@ -404,6 +408,50 @@ SELECT count(*) FROM collections_list_0 WHERE key < 10 AND collection_id = 1;
 SELECT count(*) FROM collections_list_1 WHERE key = 11;
 ALTER TABLE collections_list DROP COLUMN ts;
 SELECT * FROM collections_list, collections_list_0 WHERE collections_list.key=collections_list_0.key  ORDER BY 1 DESC,2 DESC,3 DESC,4 DESC LIMIT 1;
+
+-- test hash distribution using INSERT with generate_series() function
+CREATE OR REPLACE FUNCTION part_hashint4_noop(value int4, seed int8)
+RETURNS int8 AS $$
+SELECT value + seed;
+$$ LANGUAGE SQL IMMUTABLE;
+
+CREATE OPERATOR CLASS part_test_int4_ops
+FOR TYPE int4
+USING HASH AS
+operator 1 =,
+function 2 part_hashint4_noop(int4, int8);
+
+CREATE TABLE hash_parted (
+	a int,
+  b int
+) PARTITION BY HASH (a part_test_int4_ops);
+CREATE TABLE hpart0 PARTITION OF hash_parted FOR VALUES WITH (modulus 4, remainder 0);
+CREATE TABLE hpart1 PARTITION OF hash_parted FOR VALUES WITH (modulus 4, remainder 1);
+CREATE TABLE hpart2 PARTITION OF hash_parted FOR VALUES WITH (modulus 4, remainder 2);
+CREATE TABLE hpart3 PARTITION OF hash_parted FOR VALUES WITH (modulus 4, remainder 3);
+
+SELECT create_distributed_table('hash_parted ', 'a');
+
+INSERT INTO hash_parted VALUES (1, generate_series(1, 10));
+
+SELECT * FROM hash_parted ORDER BY 1, 2;
+
+ALTER TABLE hash_parted DETACH PARTITION hpart0;
+ALTER TABLE hash_parted DETACH PARTITION hpart1;
+ALTER TABLE hash_parted DETACH PARTITION hpart2;
+ALTER TABLE hash_parted DETACH PARTITION hpart3;
+
+-- test range partition without creating partitions and inserting with generate_series()
+-- should error out even in plain PG since no partition of relation "parent_tab" is found for row
+-- in Citus it errors out because it fails to evaluate partition key in insert
+CREATE TABLE parent_tab (id int) PARTITION BY RANGE (id);
+SELECT create_distributed_table('parent_tab', 'id');
+INSERT INTO parent_tab VALUES (generate_series(0, 3));
+-- now it should work
+CREATE TABLE parent_tab_1_2 PARTITION OF parent_tab FOR VALUES FROM (1) to (2);
+ALTER TABLE parent_tab ADD COLUMN b int;
+INSERT INTO parent_tab VALUES (1, generate_series(0, 3));
+SELECT * FROM parent_tab ORDER BY 1, 2;
 
 -- make sure that parallel accesses are good
 SET citus.force_max_query_parallelization TO ON;
@@ -783,7 +831,6 @@ ROLLBACK;
 \c - - - :master_port
 SET search_path TO single_node;
 
-
 -- simulate that even if there is no connection slots
 -- to connect, Citus can switch to local execution
 SET citus.force_max_query_parallelization TO false;
@@ -817,6 +864,48 @@ ROLLBACK;
 WITH cte_1 AS (SELECT * FROM another_schema_table LIMIT 1000)
 	SELECT count(*) FROM cte_1;
 
+-- this is to get ready for the next tests
+TRUNCATE another_schema_table;
+
+-- copy can use local execution even if there is no connection available
+COPY another_schema_table(a) FROM PROGRAM 'seq 32';
+
+-- INSERT .. SELECT with co-located intermediate results
+SET citus.log_remote_commands to false;
+CREATE UNIQUE INDEX another_schema_table_pk ON another_schema_table(a);
+
+SET citus.log_local_commands to true;
+INSERT INTO another_schema_table SELECT * FROM another_schema_table LIMIT 10000 ON CONFLICT(a) DO NOTHING;
+INSERT INTO another_schema_table SELECT * FROM another_schema_table ORDER BY a LIMIT 10 ON CONFLICT(a) DO UPDATE SET b = EXCLUDED.b + 1 RETURNING *;
+
+-- INSERT .. SELECT with co-located intermediate result for non-binary input
+WITH cte_1 AS
+(INSERT INTO non_binary_copy_test SELECT * FROM non_binary_copy_test LIMIT 10000 ON CONFLICT (key) DO UPDATE SET value = (0, 'citus0')::new_type RETURNING value)
+SELECT count(*) FROM cte_1;
+
+-- test with NULL columns
+ALTER TABLE non_binary_copy_test ADD COLUMN z INT;
+WITH cte_1 AS
+(INSERT INTO non_binary_copy_test SELECT * FROM non_binary_copy_test LIMIT 10000 ON CONFLICT (key) DO UPDATE SET value = (0, 'citus0')::new_type RETURNING z)
+SELECT bool_and(z is null) FROM cte_1;
+
+-- test with type coersion (int -> text) and also NULL values with coersion
+WITH cte_1 AS
+(INSERT INTO non_binary_copy_test SELECT * FROM non_binary_copy_test LIMIT 10000 ON CONFLICT (key) DO UPDATE SET value = (0, 'citus0')::new_type RETURNING key, z)
+SELECT count(DISTINCT key::text), count(DISTINCT z::text) FROM cte_1;
+
+-- lets flush the copy often to make sure everyhing is fine
+SET citus.local_copy_flush_threshold TO 1;
+TRUNCATE another_schema_table;
+INSERT INTO another_schema_table(a) SELECT i from generate_Series(0,10000)i;
+WITH cte_1 AS
+(INSERT INTO another_schema_table SELECT * FROM another_schema_table ORDER BY a LIMIT 10000 ON CONFLICT(a) DO NOTHING RETURNING *)
+SELECT count(*) FROM cte_1;
+WITH cte_1 AS
+(INSERT INTO non_binary_copy_test SELECT * FROM non_binary_copy_test LIMIT 10000 ON CONFLICT (key) DO UPDATE SET value = (0, 'citus0')::new_type RETURNING z)
+SELECT bool_and(z is null) FROM cte_1;
+
+RESET citus.local_copy_flush_threshold;
 -- if the local execution is disabled, we cannot failover to
 -- local execution and the queries would fail
 SET citus.enable_local_execution TO  false;
@@ -828,6 +917,9 @@ WITH cte_1 AS (SELECT * FROM another_schema_table LIMIT 1000)
 	SELECT count(*) FROM cte_1;
 
 INSERT INTO another_schema_table VALUES (1,1), (2,2), (3,3), (4,4), (5,5),(6,6),(7,7);
+
+-- copy fails if local execution is disabled and there is no connection slot
+COPY another_schema_table(a) FROM PROGRAM 'seq 32';
 
 -- set the values to originals back
 ALTER SYSTEM RESET citus.max_cached_conns_per_worker;

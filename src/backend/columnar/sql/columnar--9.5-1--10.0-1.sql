@@ -7,8 +7,8 @@ CREATE SEQUENCE storageid_seq MINVALUE 10000000000 NO CYCLE;
 
 CREATE TABLE options (
     regclass regclass NOT NULL PRIMARY KEY,
-    chunk_row_count int NOT NULL,
-    stripe_row_count int NOT NULL,
+    chunk_group_row_limit int NOT NULL,
+    stripe_row_limit int NOT NULL,
     compression_level int NOT NULL,
     compression name NOT NULL
 ) WITH (user_catalog_table = true);
@@ -16,25 +16,35 @@ CREATE TABLE options (
 COMMENT ON TABLE options IS 'columnar table specific options, maintained by alter_columnar_table_set';
 
 CREATE TABLE stripe (
-    storageid bigint NOT NULL,
-    stripeid bigint NOT NULL,
+    storage_id bigint NOT NULL,
+    stripe_num bigint NOT NULL,
     file_offset bigint NOT NULL,
     data_length bigint NOT NULL,
     column_count int NOT NULL,
-    chunk_count int NOT NULL,
     chunk_row_count int NOT NULL,
     row_count bigint NOT NULL,
-    PRIMARY KEY (storageid, stripeid)
+    chunk_group_count int NOT NULL,
+    PRIMARY KEY (storage_id, stripe_num)
 ) WITH (user_catalog_table = true);
 
 COMMENT ON TABLE stripe IS 'Columnar per stripe metadata';
 
-CREATE TABLE chunk (
-    storageid bigint NOT NULL,
-    stripeid bigint NOT NULL,
-    attnum int NOT NULL,
-    chunkid int NOT NULL,
+CREATE TABLE chunk_group (
+    storage_id bigint NOT NULL,
+    stripe_num bigint NOT NULL,
+    chunk_group_num int NOT NULL,
     row_count bigint NOT NULL,
+    PRIMARY KEY (storage_id, stripe_num, chunk_group_num),
+    FOREIGN KEY (storage_id, stripe_num) REFERENCES stripe(storage_id, stripe_num) ON DELETE CASCADE
+);
+
+COMMENT ON TABLE chunk_group IS 'Columnar chunk group metadata';
+
+CREATE TABLE chunk (
+    storage_id bigint NOT NULL,
+    stripe_num bigint NOT NULL,
+    attr_num int NOT NULL,
+    chunk_group_num int NOT NULL,
     minimum_value bytea,
     maximum_value bytea,
     value_stream_offset bigint NOT NULL,
@@ -44,8 +54,9 @@ CREATE TABLE chunk (
     value_compression_type int NOT NULL,
     value_compression_level int NOT NULL,
     value_decompressed_length bigint NOT NULL,
-    PRIMARY KEY (storageid, stripeid, attnum, chunkid),
-    FOREIGN KEY (storageid, stripeid) REFERENCES stripe(storageid, stripeid) ON DELETE CASCADE
+    value_count bigint NOT NULL,
+    PRIMARY KEY (storage_id, stripe_num, attr_num, chunk_group_num),
+    FOREIGN KEY (storage_id, stripe_num, chunk_group_num) REFERENCES chunk_group(storage_id, stripe_num, chunk_group_num) ON DELETE CASCADE
 ) WITH (user_catalog_table = true);
 
 COMMENT ON TABLE chunk IS 'Columnar per chunk metadata';

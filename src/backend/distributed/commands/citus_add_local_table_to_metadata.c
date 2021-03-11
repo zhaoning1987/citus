@@ -45,8 +45,11 @@
 #include "utils/syscache.h"
 
 
+static void citus_add_local_table_to_metadata_internal(Oid relationId,
+													   bool cascadeViaForeignKeys);
 static void ErrorIfUnsupportedCreateCitusLocalTable(Relation relation);
 static void ErrorIfUnsupportedCitusLocalTableKind(Oid relationId);
+static void ErrorIfUnsupportedCitusLocalColumnDefinition(Relation relation);
 static List * GetShellTableDDLEventsForCitusLocalTable(Oid relationId);
 static uint64 ConvertLocalTableToShard(Oid relationId);
 static void RenameRelationToShardRelation(Oid shellRelationId, uint64 shardId);
@@ -66,8 +69,8 @@ static char * GetRenameShardTriggerCommand(Oid shardRelationId, char *triggerNam
 static void DropRelationTruncateTriggers(Oid relationId);
 static char * GetDropTriggerCommand(Oid relationId, char *triggerName);
 static List * GetRenameStatsCommandList(List *statsOidList, uint64 shardId);
-static void DropAndMoveDefaultSequenceOwnerships(Oid sourceRelationId,
-												 Oid targetRelationId);
+static void DropDefaultExpressionsAndMoveOwnedSequenceOwnerships(Oid sourceRelationId,
+																 Oid targetRelationId);
 static void DropDefaultColumnDefinition(Oid relationId, char *columnName);
 static void TransferSequenceOwnership(Oid ownedSequenceId, Oid targetRelationId,
 									  char *columnName);
@@ -88,6 +91,22 @@ PG_FUNCTION_INFO_V1(remove_local_tables_from_metadata);
 Datum
 citus_add_local_table_to_metadata(PG_FUNCTION_ARGS)
 {
+	Oid relationId = PG_GETARG_OID(0);
+	bool cascadeViaForeignKeys = PG_GETARG_BOOL(1);
+
+	citus_add_local_table_to_metadata_internal(relationId, cascadeViaForeignKeys);
+
+	PG_RETURN_VOID();
+}
+
+
+/*
+ * citus_add_local_table_to_metadata_internal is the internal method for
+ * citus_add_local_table_to_metadata udf.
+ */
+static void
+citus_add_local_table_to_metadata_internal(Oid relationId, bool cascadeViaForeignKeys)
+{
 	CheckCitusVersion(ERROR);
 
 	if (ShouldEnableLocalReferenceForeignKeys())
@@ -106,12 +125,7 @@ citus_add_local_table_to_metadata(PG_FUNCTION_ARGS)
 								  "to 'off' to disable this behavior")));
 	}
 
-	Oid relationId = PG_GETARG_OID(0);
-	bool cascadeViaForeignKeys = PG_GETARG_BOOL(1);
-
 	CreateCitusLocalTable(relationId, cascadeViaForeignKeys);
-
-	PG_RETURN_VOID();
 }
 
 
@@ -128,7 +142,18 @@ create_citus_local_table(PG_FUNCTION_ARGS)
 {
 	ereport(NOTICE, (errmsg("create_citus_local_table is deprecated in favour of "
 							"citus_add_local_table_to_metadata")));
-	return citus_add_local_table_to_metadata(fcinfo);
+
+	Oid relationId = PG_GETARG_OID(0);
+
+	/*
+	 * create_citus_local_table doesn't have cascadeViaForeignKeys option,
+	 * so we can't directly call citus_add_local_table_to_metadata udf itself
+	 * since create_citus_local_table doesn't specify cascadeViaForeignKeys.
+	 */
+	bool cascadeViaForeignKeys = false;
+	citus_add_local_table_to_metadata_internal(relationId, cascadeViaForeignKeys);
+
+	PG_RETURN_VOID();
 }
 
 
@@ -285,7 +310,8 @@ CreateCitusLocalTable(Oid relationId, bool cascadeViaForeignKeys)
 	 * DEFAULT expressions from shard relation as we should evaluate such columns
 	 * in shell table when needed.
 	 */
-	DropAndMoveDefaultSequenceOwnerships(shardRelationId, shellRelationId);
+	DropDefaultExpressionsAndMoveOwnedSequenceOwnerships(shardRelationId,
+														 shellRelationId);
 
 	InsertMetadataForCitusLocalTable(shellRelationId, shardId);
 
@@ -313,6 +339,7 @@ ErrorIfUnsupportedCreateCitusLocalTable(Relation relation)
 	ErrorIfCoordinatorNotAddedAsWorkerNode();
 	ErrorIfUnsupportedCitusLocalTableKind(relationId);
 	EnsureTableNotDistributed(relationId);
+	ErrorIfUnsupportedCitusLocalColumnDefinition(relation);
 
 	/*
 	 * When creating other citus table types, we don't need to check that case as
@@ -376,6 +403,30 @@ ErrorIfUnsupportedCitusLocalTableKind(Oid relationId)
 		ereport(ERROR, (errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
 						errmsg("constraints on temporary tables may reference only "
 							   "temporary tables")));
+	}
+}
+
+
+/*
+ * ErrorIfUnsupportedCitusLocalColumnDefinition errors out if given relation
+ * has unsupported column definition for citus local table creation.
+ */
+static void
+ErrorIfUnsupportedCitusLocalColumnDefinition(Relation relation)
+{
+	TupleDesc relationDesc = RelationGetDescr(relation);
+	if (RelationUsesIdentityColumns(relationDesc))
+	{
+		/*
+		 * pg_get_tableschemadef_string doesn't know how to deparse identity
+		 * columns so we cannot reflect those columns when creating shell
+		 * relation. For this reason, error out here.
+		 */
+		Oid relationId = relation->rd_id;
+		ereport(ERROR, (errmsg("cannot add %s to citus metadata since table "
+							   "has identity column",
+							   generate_qualified_relation_name(relationId)),
+						errhint("Drop the identity columns and re-try the command")));
 	}
 }
 
@@ -859,18 +910,19 @@ GetRenameStatsCommandList(List *statsOidList, uint64 shardId)
 
 
 /*
- * DropAndMoveDefaultSequenceOwnerships drops default column definitions for
- * relation with sourceRelationId. Also, for each column that defaults to an
- * owned sequence, it grants ownership to the same named column of the relation
- * with targetRelationId.
+ * DropDefaultExpressionsAndMoveOwnedSequenceOwnerships drops default column
+ * definitions for relation with sourceRelationId. Also, for each column that
+ * defaults to an owned sequence, it grants ownership to the same named column
+ * of the relation with targetRelationId.
  */
 static void
-DropAndMoveDefaultSequenceOwnerships(Oid sourceRelationId, Oid targetRelationId)
+DropDefaultExpressionsAndMoveOwnedSequenceOwnerships(Oid sourceRelationId,
+													 Oid targetRelationId)
 {
 	List *columnNameList = NIL;
 	List *ownedSequenceIdList = NIL;
-	ExtractColumnsOwningSequences(sourceRelationId, &columnNameList,
-								  &ownedSequenceIdList);
+	ExtractDefaultColumnsAndOwnedSequences(sourceRelationId, &columnNameList,
+										   &ownedSequenceIdList);
 
 	ListCell *columnNameCell = NULL;
 	ListCell *ownedSequenceIdCell = NULL;

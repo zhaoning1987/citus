@@ -243,6 +243,11 @@ ClusterHasKnownMetadataWorkers()
 bool
 ShouldSyncTableMetadata(Oid relationId)
 {
+	if (!OidIsValid(relationId) || !IsCitusTable(relationId))
+	{
+		return false;
+	}
+
 	CitusTableCacheEntry *tableEntry = GetCitusTableCacheEntry(relationId);
 
 	bool streamingReplicated =
@@ -1126,7 +1131,7 @@ SequenceDependencyCommandList(Oid relationId)
 	List *columnNameList = NIL;
 	List *sequenceIdList = NIL;
 
-	ExtractColumnsOwningSequences(relationId, &columnNameList, &sequenceIdList);
+	ExtractDefaultColumnsAndOwnedSequences(relationId, &columnNameList, &sequenceIdList);
 
 	ListCell *columnNameCell = NULL;
 	ListCell *sequenceIdCell = NULL;
@@ -1139,7 +1144,7 @@ SequenceDependencyCommandList(Oid relationId)
 		if (!OidIsValid(sequenceId))
 		{
 			/*
-			 * ExtractColumnsOwningSequences returns entries for all columns,
+			 * ExtractDefaultColumnsAndOwnedSequences returns entries for all columns,
 			 * but with 0 sequence ID unless there is default nextval(..).
 			 */
 			continue;
