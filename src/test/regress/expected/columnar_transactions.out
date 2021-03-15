@@ -347,7 +347,8 @@ EXPLAIN (ANALYZE true, COSTS off, TIMING off, SUMMARY off) EXECUTE p3;
    Filter: (a = 8)
    Rows Removed by Filter: 2
    Columnar Chunk Groups Removed by Filter: 8
-(4 rows)
+   Columnar Projected Columns: a,b
+(5 rows)
 
 SELECT * FROM t ORDER BY a;
  a  | b
@@ -398,7 +399,8 @@ EXPLAIN (ANALYZE true, COSTS off, TIMING off, SUMMARY off) EXECUTE p5(9);
    Filter: (a = 9)
    Rows Removed by Filter: 2
    Columnar Chunk Groups Removed by Filter: 8
-(4 rows)
+   Columnar Projected Columns: a,b
+(5 rows)
 
 SELECT * FROM t ORDER BY a;
  a  | b
@@ -450,7 +452,8 @@ EXPLAIN (ANALYZE true, COSTS off, TIMING off, SUMMARY off) EXECUTE p6(50, 60);
    Filter: ((a = 51) AND (b = 61))
    Rows Removed by Filter: 3
    Columnar Chunk Groups Removed by Filter: 9
-(4 rows)
+   Columnar Projected Columns: a,b
+(5 rows)
 
 SELECT * FROM t ORDER BY a;
  a  | b

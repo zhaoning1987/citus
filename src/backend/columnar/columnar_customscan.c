@@ -24,10 +24,12 @@
 #include "optimizer/paths.h"
 #include "optimizer/restrictinfo.h"
 #include "utils/relcache.h"
+#include "utils/syscache.h"
 
 #include "columnar/columnar.h"
 #include "columnar/columnar_customscan.h"
 #include "columnar/columnar_tableam.h"
+#include "distributed/listutils.h"
 
 typedef struct ColumnarScanPath
 {
@@ -72,6 +74,9 @@ static void ColumnarScan_EndCustomScan(CustomScanState *node);
 static void ColumnarScan_ReScanCustomScan(CustomScanState *node);
 static void ColumnarScan_ExplainCustomScan(CustomScanState *node, List *ancestors,
 										   ExplainState *es);
+static char * GenerateProjectedColumnStr(Relation relation,
+										 const List *projectedColumnList);
+static char * GetRelAttrName(Oid relationId, AttrNumber attrNumber);
 
 /* saved hook value in case of unload */
 static set_rel_pathlist_hook_type PreviousSetRelPathlistHook = NULL;
@@ -493,7 +498,63 @@ ColumnarScan_ExplainCustomScan(CustomScanState *node, List *ancestors,
 		int64 chunkGroupsFiltered = ColumnarScanChunkGroupsFiltered(scanDesc);
 		ExplainPropertyInteger("Columnar Chunk Groups Removed by Filter", NULL,
 							   chunkGroupsFiltered, es);
+
+		const List *projectedColumnList = ColumnarScanProjectedColumnList(scanDesc);
+		if (list_length(projectedColumnList) > 0)
+		{
+			char *projectedColumnsStr = GenerateProjectedColumnStr(scanDesc->rs_rd,
+																   projectedColumnList);
+			ExplainPropertyText("Columnar Projected Columns",
+								projectedColumnsStr, es);
+		}
 	}
+}
+
+
+/*
+ * GenerateProjectedColumnStr generates projected column string for explain output.
+ */
+static char *
+GenerateProjectedColumnStr(Relation relation, const List *projectedColumnList)
+{
+	List *columnNameList = NIL;
+
+	Var *column = NULL;
+	foreach_ptr(column, projectedColumnList)
+	{
+		char *columnName = GetRelAttrName(RelationGetRelid(relation), column->varattno);
+		columnNameList = lappend(columnNameList, columnName);
+	}
+
+	return StringJoin(columnNameList, ',');
+}
+
+
+/*
+ * GetRelAttrName returns name of the attribute with given attrNumber.
+ * If no such attribute exists or if it's dropped, then errors out.
+ */
+static char *
+GetRelAttrName(Oid relationId, AttrNumber attrNumber)
+{
+	HeapTuple attributeTuple = SearchSysCache2(ATTNUM, ObjectIdGetDatum(relationId),
+											   Int16GetDatum(attrNumber));
+	if (!HeapTupleIsValid(attributeTuple))
+	{
+		ereport(ERROR, (errmsg("attribute does not exist")));
+	}
+
+	Form_pg_attribute attributeForm = ((Form_pg_attribute) GETSTRUCT(attributeTuple));
+	if (attributeForm->attisdropped)
+	{
+		ereport(ERROR, (errmsg("attribute is dropped")));
+	}
+
+	char *columnName = pstrdup(NameStr(attributeForm->attname));
+
+	ReleaseSysCache(attributeTuple);
+
+	return columnName;
 }
 
 

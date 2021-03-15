@@ -19,6 +19,7 @@ extern TableScanDesc columnar_beginscan_extended(Relation relation, Snapshot sna
 												 uint32 flags, Bitmapset *attr_needed,
 												 List *scanQual);
 extern int64 ColumnarScanChunkGroupsFiltered(TableScanDesc scanDesc);
+extern const List * ColumnarScanProjectedColumnList(TableScanDesc scanDesc);
 extern bool IsColumnarTableAmTable(Oid relationId);
 extern TableDDLCommand * ColumnarGetTableOptionsDDL(Oid relationId);
 extern char * GetShardedTableDDLCommandColumnar(uint64 shardId, void *context);
