@@ -339,3 +339,27 @@ SELECT create_distributed_table('pg_class', 'relname');
 ERROR:  cannot create a citus table from a catalog table
 SELECT create_reference_table('pg_class');
 ERROR:  cannot create a citus table from a catalog table
+-- test shard_count parameter
+-- first set citus.shard_count so we know the parameter works
+SET citus.shard_count TO 10;
+CREATE TABLE shard_count_table (a INT, b TEXT);
+CREATE TABLE shard_count_table_2 (a INT, b TEXT);
+SELECT create_distributed_table('shard_count_table', 'a', shard_count:=5);
+ create_distributed_table
+---------------------------------------------------------------------
+
+(1 row)
+
+SELECT shard_count FROM citus_tables WHERE table_name::text = 'shard_count_table';
+ shard_count
+---------------------------------------------------------------------
+           5
+(1 row)
+
+SELECT create_distributed_table('shard_count_table_2', 'a', shard_count:=0);
+ERROR:  0 is outside the valid range for parameter "shard_count" (1 .. 64000)
+SELECT create_distributed_table('shard_count_table_2', 'a', shard_count:=-100);
+ERROR:  -100 is outside the valid range for parameter "shard_count" (1 .. 64000)
+SELECT create_distributed_table('shard_count_table_2', 'a', shard_count:=64001);
+ERROR:  64001 is outside the valid range for parameter "shard_count" (1 .. 64000)
+DROP TABLE shard_count_table;

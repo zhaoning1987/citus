@@ -199,6 +199,7 @@ create_distributed_table(PG_FUNCTION_ARGS)
 	text *distributionColumnText = PG_GETARG_TEXT_P(1);
 	Oid distributionMethodOid = PG_GETARG_OID(2);
 	text *colocateWithTableNameText = PG_GETARG_TEXT_P(3);
+	int shardCount = PG_GETARG_INT32(4);
 
 	CheckCitusVersion(ERROR);
 
@@ -229,8 +230,15 @@ create_distributed_table(PG_FUNCTION_ARGS)
 
 	char *colocateWithTableName = text_to_cstring(colocateWithTableNameText);
 
+	if (shardCount < 1 || shardCount > 64000)
+	{
+		ereport(ERROR, (errmsg("%d is outside the valid range for "
+							   "parameter \"shard_count\" (1 .. 64000)",
+							   shardCount)));
+	}
+
 	CreateDistributedTable(relationId, distributionColumn, distributionMethod,
-						   ShardCount, colocateWithTableName, viaDeprecatedAPI);
+						   shardCount, colocateWithTableName, viaDeprecatedAPI);
 
 	PG_RETURN_VOID();
 }

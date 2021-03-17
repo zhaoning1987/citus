@@ -224,3 +224,20 @@ END;
 -- distributing catalog tables is not supported
 SELECT create_distributed_table('pg_class', 'relname');
 SELECT create_reference_table('pg_class');
+
+
+-- test shard_count parameter
+-- first set citus.shard_count so we know the parameter works
+SET citus.shard_count TO 10;
+
+CREATE TABLE shard_count_table (a INT, b TEXT);
+CREATE TABLE shard_count_table_2 (a INT, b TEXT);
+
+SELECT create_distributed_table('shard_count_table', 'a', shard_count:=5);
+SELECT shard_count FROM citus_tables WHERE table_name::text = 'shard_count_table';
+
+SELECT create_distributed_table('shard_count_table_2', 'a', shard_count:=0);
+SELECT create_distributed_table('shard_count_table_2', 'a', shard_count:=-100);
+SELECT create_distributed_table('shard_count_table_2', 'a', shard_count:=64001);
+
+DROP TABLE shard_count_table;
