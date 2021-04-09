@@ -29,6 +29,7 @@
 #include "parser/parse_type.h"
 #include "utils/syscache.h"
 #include "utils/lsyscache.h"
+#include "utils/elog.h"
 
 static char * GetTypeNamespaceNameByNameList(List *names);
 static Oid TypeOidGetNamespaceOid(Oid typeOid);
@@ -39,6 +40,7 @@ static Oid TypeOidGetNamespaceOid(Oid typeOid);
 static char *
 GetTypeNamespaceNameByNameList(List *names)
 {
+elog(INFO, "TTT src/backend/distributed/deparser/qualify_type_stmt.c:GetTypeNamespaceNameByNameList");
 	TypeName *typeName = makeTypeNameFromNameList(names);
 	Oid typeOid = LookupTypeNameOid(NULL, typeName, false);
 	Oid namespaceOid = TypeOidGetNamespaceOid(typeOid);
@@ -53,6 +55,7 @@ GetTypeNamespaceNameByNameList(List *names)
 static Oid
 TypeOidGetNamespaceOid(Oid typeOid)
 {
+elog(INFO, "TTT src/backend/distributed/deparser/qualify_type_stmt.c:TypeOidGetNamespaceOid");
 	HeapTuple typeTuple = SearchSysCache1(TYPEOID, typeOid);
 
 	if (!HeapTupleIsValid(typeTuple))
@@ -72,6 +75,7 @@ TypeOidGetNamespaceOid(Oid typeOid)
 void
 QualifyRenameTypeStmt(Node *node)
 {
+elog(INFO, "TTT src/backend/distributed/deparser/qualify_type_stmt.c:QualifyRenameTypeStmt");
 	RenameStmt *stmt = castNode(RenameStmt, node);
 	List *names = (List *) stmt->object;
 
@@ -91,6 +95,7 @@ QualifyRenameTypeStmt(Node *node)
 void
 QualifyRenameTypeAttributeStmt(Node *node)
 {
+elog(INFO, "TTT src/backend/distributed/deparser/qualify_type_stmt.c:QualifyRenameTypeAttributeStmt");
 	RenameStmt *stmt = castNode(RenameStmt, node);
 	Assert(stmt->renameType == OBJECT_ATTRIBUTE);
 	Assert(stmt->relationType == OBJECT_TYPE);
@@ -107,6 +112,7 @@ QualifyRenameTypeAttributeStmt(Node *node)
 void
 QualifyAlterEnumStmt(Node *node)
 {
+elog(INFO, "TTT src/backend/distributed/deparser/qualify_type_stmt.c:QualifyAlterEnumStmt");
 	AlterEnumStmt *stmt = castNode(AlterEnumStmt, node);
 	List *names = stmt->typeName;
 
@@ -124,6 +130,7 @@ QualifyAlterEnumStmt(Node *node)
 void
 QualifyAlterTypeStmt(Node *node)
 {
+elog(INFO, "TTT src/backend/distributed/deparser/qualify_type_stmt.c:QualifyAlterTypeStmt");
 	AlterTableStmt *stmt = castNode(AlterTableStmt, node);
 	Assert(stmt->relkind == OBJECT_TYPE);
 

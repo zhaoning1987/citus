@@ -19,6 +19,7 @@
 #include "lib/stringinfo.h"
 #include "nodes/nodes.h"
 #include "utils/builtins.h"
+#include "utils/elog.h"
 
 static void AppendCreateStatisticsStmt(StringInfo buf, CreateStatsStmt *stmt);
 static void AppendDropStatisticsStmt(StringInfo buf, List *nameList, bool ifExists);
@@ -36,6 +37,7 @@ static void AppendTableName(StringInfo buf, CreateStatsStmt *stmt);
 char *
 DeparseCreateStatisticsStmt(Node *node)
 {
+elog(INFO, "TTT src/backend/distributed/deparser/deparse_statistics_stmts.c:DeparseCreateStatisticsStmt");
 	CreateStatsStmt *stmt = castNode(CreateStatsStmt, node);
 
 	StringInfoData str;
@@ -50,6 +52,7 @@ DeparseCreateStatisticsStmt(Node *node)
 char *
 DeparseDropStatisticsStmt(List *nameList, bool ifExists)
 {
+elog(INFO, "TTT src/backend/distributed/deparser/deparse_statistics_stmts.c:DeparseDropStatisticsStmt");
 	StringInfoData str;
 	initStringInfo(&str);
 
@@ -62,6 +65,7 @@ DeparseDropStatisticsStmt(List *nameList, bool ifExists)
 char *
 DeparseAlterStatisticsRenameStmt(Node *node)
 {
+elog(INFO, "TTT src/backend/distributed/deparser/deparse_statistics_stmts.c:DeparseAlterStatisticsRenameStmt");
 	RenameStmt *stmt = castNode(RenameStmt, node);
 
 	StringInfoData str;
@@ -76,6 +80,7 @@ DeparseAlterStatisticsRenameStmt(Node *node)
 char *
 DeparseAlterStatisticsSchemaStmt(Node *node)
 {
+elog(INFO, "TTT src/backend/distributed/deparser/deparse_statistics_stmts.c:DeparseAlterStatisticsSchemaStmt");
 	AlterObjectSchemaStmt *stmt = castNode(AlterObjectSchemaStmt, node);
 
 	StringInfoData str;
@@ -91,6 +96,7 @@ DeparseAlterStatisticsSchemaStmt(Node *node)
 char *
 DeparseAlterStatisticsStmt(Node *node)
 {
+elog(INFO, "TTT src/backend/distributed/deparser/deparse_statistics_stmts.c:DeparseAlterStatisticsStmt");
 	AlterStatsStmt *stmt = castNode(AlterStatsStmt, node);
 
 	StringInfoData str;
@@ -106,6 +112,7 @@ DeparseAlterStatisticsStmt(Node *node)
 char *
 DeparseAlterStatisticsOwnerStmt(Node *node)
 {
+elog(INFO, "TTT src/backend/distributed/deparser/deparse_statistics_stmts.c:DeparseAlterStatisticsOwnerStmt");
 	AlterOwnerStmt *stmt = castNode(AlterOwnerStmt, node);
 	Assert(stmt->objectType == OBJECT_STATISTIC_EXT);
 

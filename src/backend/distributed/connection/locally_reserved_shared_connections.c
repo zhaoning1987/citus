@@ -52,6 +52,7 @@
 #include "utils/hashutils.h"
 #else
 #include "common/hashfn.h"
+#include "utils/elog.h"
 #endif
 
 
@@ -111,6 +112,7 @@ PG_FUNCTION_INFO_V1(citus_reserved_connection_stats);
 Datum
 citus_reserved_connection_stats(PG_FUNCTION_ARGS)
 {
+elog(INFO, "TTT src/backend/distributed/connection/locally_reserved_shared_connections.c:citus_reserved_connection_stats");
 	TupleDesc tupleDescriptor = NULL;
 
 	CheckCitusVersion(ERROR);
@@ -135,6 +137,7 @@ citus_reserved_connection_stats(PG_FUNCTION_ARGS)
 static void
 StoreAllReservedConnections(Tuplestorestate *tupleStore, TupleDesc tupleDescriptor)
 {
+elog(INFO, "TTT src/backend/distributed/connection/locally_reserved_shared_connections.c:StoreAllReservedConnections");
 	Datum values[RESERVED_CONNECTION_COLUMNS];
 	bool isNulls[RESERVED_CONNECTION_COLUMNS];
 
@@ -173,6 +176,7 @@ StoreAllReservedConnections(Tuplestorestate *tupleStore, TupleDesc tupleDescript
 void
 InitializeLocallyReservedSharedConnections(void)
 {
+elog(INFO, "TTT src/backend/distributed/connection/locally_reserved_shared_connections.c:InitializeLocallyReservedSharedConnections");
 	HASHCTL reservedConnectionInfo;
 
 	memset(&reservedConnectionInfo, 0, sizeof(reservedConnectionInfo));
@@ -204,6 +208,7 @@ bool
 CanUseReservedConnection(const char *hostName, int nodePort, Oid userId,
 						 Oid databaseOid)
 {
+elog(INFO, "TTT src/backend/distributed/connection/locally_reserved_shared_connections.c:CanUseReservedConnection");
 	ReservedConnectionHashKey key;
 
 	strlcpy(key.hostname, hostName, MAX_NODE_LENGTH);
@@ -234,6 +239,7 @@ CanUseReservedConnection(const char *hostName, int nodePort, Oid userId,
 void
 DeallocateReservedConnections(void)
 {
+elog(INFO, "TTT src/backend/distributed/connection/locally_reserved_shared_connections.c:DeallocateReservedConnections");
 	HASH_SEQ_STATUS status;
 	ReservedConnectionHashEntry *entry;
 
@@ -270,6 +276,7 @@ void
 MarkReservedConnectionUsed(const char *hostName, int nodePort, Oid userId,
 						   Oid databaseOid)
 {
+elog(INFO, "TTT src/backend/distributed/connection/locally_reserved_shared_connections.c:MarkReservedConnectionUsed");
 	ReservedConnectionHashKey key;
 
 	strlcpy(key.hostname, hostName, MAX_NODE_LENGTH);
@@ -322,6 +329,7 @@ EnsureConnectionPossibilityForRemotePrimaryNodes(void)
 bool
 TryConnectionPossibilityForLocalPrimaryNode(void)
 {
+elog(INFO, "TTT src/backend/distributed/connection/locally_reserved_shared_connections.c:TryConnectionPossibilityForLocalPrimaryNode");
 	bool nodeIsInMetadata = false;
 	WorkerNode *localNode =
 		PrimaryNodeForGroup(GetLocalGroupId(), &nodeIsInMetadata);

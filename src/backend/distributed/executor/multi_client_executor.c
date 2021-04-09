@@ -32,6 +32,7 @@
 
 #ifdef HAVE_POLL_H
 #include <poll.h>
+#include "utils/elog.h"
 #endif
 
 
@@ -49,6 +50,7 @@ static PostgresPollingStatusType ClientPollingStatusArray[MAX_CONNECTION_COUNT];
 static int32
 AllocateConnectionId(void)
 {
+elog(INFO, "TTT src/backend/distributed/executor/multi_client_executor.c:AllocateConnectionId");
 	int32 connectionId = INVALID_CONNECTION_ID;
 
 	/* allocate connectionId from connection pool */
@@ -78,6 +80,7 @@ int32
 MultiClientConnect(const char *nodeName, uint32 nodePort, const char *nodeDatabase,
 				   const char *userName)
 {
+elog(INFO, "TTT src/backend/distributed/executor/multi_client_executor.c:MultiClientConnect");
 	int32 connectionId = AllocateConnectionId();
 	int connectionFlags = FORCE_NEW_CONNECTION; /* no cached connections for now */
 
@@ -120,6 +123,7 @@ MultiClientConnect(const char *nodeName, uint32 nodePort, const char *nodeDataba
 void
 MultiClientDisconnect(int32 connectionId)
 {
+elog(INFO, "TTT src/backend/distributed/executor/multi_client_executor.c:MultiClientDisconnect");
 	const int InvalidPollingStatus = -1;
 
 	Assert(connectionId != INVALID_CONNECTION_ID);
@@ -137,6 +141,7 @@ MultiClientDisconnect(int32 connectionId)
 bool
 MultiClientSendQuery(int32 connectionId, const char *query)
 {
+elog(INFO, "TTT src/backend/distributed/executor/multi_client_executor.c:MultiClientSendQuery");
 	bool success = true;
 
 	Assert(connectionId != INVALID_CONNECTION_ID);
@@ -170,6 +175,7 @@ MultiClientSendQuery(int32 connectionId, const char *query)
 ResultStatus
 MultiClientResultStatus(int32 connectionId)
 {
+elog(INFO, "TTT src/backend/distributed/executor/multi_client_executor.c:MultiClientResultStatus");
 	ResultStatus resultStatus = CLIENT_INVALID_RESULT_STATUS;
 
 	Assert(connectionId != INVALID_CONNECTION_ID);
@@ -211,6 +217,7 @@ MultiClientResultStatus(int32 connectionId)
 QueryStatus
 MultiClientQueryStatus(int32 connectionId)
 {
+elog(INFO, "TTT src/backend/distributed/executor/multi_client_executor.c:MultiClientQueryStatus");
 	int tupleCount PG_USED_FOR_ASSERTS_ONLY = 0;
 	bool copyResults = false;
 	QueryStatus queryStatus = CLIENT_INVALID_QUERY;

@@ -32,6 +32,7 @@
 #include "utils/guc.h"
 #include "utils/hsearch.h"
 #include "utils/memutils.h"
+#include "utils/elog.h"
 
 
 /* Config variables managed via guc.c */
@@ -65,6 +66,7 @@ static bool NodeIsReadableWorker(WorkerNode *node);
 WorkerNode *
 WorkerGetRandomCandidateNode(List *currentNodeList)
 {
+elog(INFO, "TTT src/backend/distributed/operations/worker_node_manager.c:WorkerGetRandomCandidateNode");
 	WorkerNode *workerNode = NULL;
 	bool wantSameRack = false;
 	uint32 tryCount = WORKER_RACK_TRIES;
@@ -139,6 +141,7 @@ WorkerNode *
 WorkerGetRoundRobinCandidateNode(List *workerNodeList, uint64 shardId,
 								 uint32 placementIndex)
 {
+elog(INFO, "TTT src/backend/distributed/operations/worker_node_manager.c:WorkerGetRoundRobinCandidateNode");
 	uint32 workerNodeCount = list_length(workerNodeList);
 	WorkerNode *candidateNode = NULL;
 
@@ -162,6 +165,7 @@ WorkerGetRoundRobinCandidateNode(List *workerNodeList, uint64 shardId,
 WorkerNode *
 WorkerGetLocalFirstCandidateNode(List *currentNodeList)
 {
+elog(INFO, "TTT src/backend/distributed/operations/worker_node_manager.c:WorkerGetLocalFirstCandidateNode");
 	WorkerNode *candidateNode = NULL;
 	uint32 currentNodeCount = list_length(currentNodeList);
 
@@ -213,6 +217,7 @@ WorkerGetLocalFirstCandidateNode(List *currentNodeList)
 static char *
 ClientHostAddress(StringInfo clientHostStringInfo)
 {
+elog(INFO, "TTT src/backend/distributed/operations/worker_node_manager.c:ClientHostAddress");
 	Port *port = MyProcPort;
 	char *clientHost = NULL;
 	char *errorMessage = NULL;
@@ -272,6 +277,7 @@ ClientHostAddress(StringInfo clientHostStringInfo)
 static WorkerNode *
 WorkerGetNodeWithName(const char *hostname)
 {
+elog(INFO, "TTT src/backend/distributed/operations/worker_node_manager.c:WorkerGetNodeWithName");
 	WorkerNode *workerNode = NULL;
 	HASH_SEQ_STATUS status;
 	HTAB *workerNodeHash = GetWorkerNodeHash();
@@ -300,6 +306,7 @@ WorkerGetNodeWithName(const char *hostname)
 uint32
 ActivePrimaryNonCoordinatorNodeCount(void)
 {
+elog(INFO, "TTT src/backend/distributed/operations/worker_node_manager.c:ActivePrimaryNonCoordinatorNodeCount");
 	List *workerNodeList = ActivePrimaryNonCoordinatorNodeList(NoLock);
 	uint32 liveWorkerCount = list_length(workerNodeList);
 
@@ -313,6 +320,7 @@ ActivePrimaryNonCoordinatorNodeCount(void)
 uint32
 ActivePrimaryNodeCount(void)
 {
+elog(INFO, "TTT src/backend/distributed/operations/worker_node_manager.c:ActivePrimaryNodeCount");
 	List *nodeList = ActivePrimaryNodeList(NoLock);
 	return list_length(nodeList);
 }
@@ -324,6 +332,7 @@ ActivePrimaryNodeCount(void)
 bool
 NodeIsCoordinator(WorkerNode *node)
 {
+elog(INFO, "TTT src/backend/distributed/operations/worker_node_manager.c:NodeIsCoordinator");
 	return node->groupId == COORDINATOR_GROUP_ID;
 }
 
@@ -337,6 +346,7 @@ NodeIsCoordinator(WorkerNode *node)
 static List *
 FilterActiveNodeListFunc(LOCKMODE lockMode, bool (*checkFunction)(WorkerNode *))
 {
+elog(INFO, "TTT src/backend/distributed/operations/worker_node_manager.c:FilterActiveNodeListFunc");
 	List *workerNodeList = NIL;
 	WorkerNode *workerNode = NULL;
 	HASH_SEQ_STATUS status;
@@ -375,6 +385,7 @@ FilterActiveNodeListFunc(LOCKMODE lockMode, bool (*checkFunction)(WorkerNode *))
 List *
 ActivePrimaryNonCoordinatorNodeList(LOCKMODE lockMode)
 {
+elog(INFO, "TTT src/backend/distributed/operations/worker_node_manager.c:ActivePrimaryNonCoordinatorNodeList");
 	EnsureModificationsCanRun();
 	return FilterActiveNodeListFunc(lockMode, NodeIsPrimaryWorker);
 }
@@ -399,6 +410,7 @@ ActivePrimaryNodeList(LOCKMODE lockMode)
 List *
 ActivePrimaryRemoteNodeList(LOCKMODE lockMode)
 {
+elog(INFO, "TTT src/backend/distributed/operations/worker_node_manager.c:NodeIsPrimaryWorker");
 	EnsureModificationsCanRun();
 	return FilterActiveNodeListFunc(lockMode, NodeIsPrimaryAndRemote);
 }
@@ -410,6 +422,7 @@ ActivePrimaryRemoteNodeList(LOCKMODE lockMode)
 static bool
 NodeIsPrimaryWorker(WorkerNode *node)
 {
+elog(INFO, "TTT src/backend/distributed/operations/worker_node_manager.c:CoordinatorAddedAsWorkerNode");
 	return !NodeIsCoordinator(node) && NodeIsPrimary(node);
 }
 
@@ -488,6 +501,7 @@ ErrorIfCoordinatorNotAddedAsWorkerNode()
 List *
 DistributedTablePlacementNodeList(LOCKMODE lockMode)
 {
+elog(INFO, "TTT src/backend/distributed/operations/worker_node_manager.c:NodeCanHaveDistTablePlacements");
 	EnsureModificationsCanRun();
 	return FilterActiveNodeListFunc(lockMode, NodeCanHaveDistTablePlacements);
 }
@@ -502,6 +516,7 @@ NodeCanHaveDistTablePlacements(WorkerNode *node)
 {
 	if (!NodeIsPrimary(node))
 	{
+elog(INFO, "TTT src/backend/distributed/operations/worker_node_manager.c:ActiveReadableNonCoordinatorNodeList");
 		return false;
 	}
 
@@ -516,6 +531,7 @@ NodeCanHaveDistTablePlacements(WorkerNode *node)
 List *
 ActiveReadableNonCoordinatorNodeList(void)
 {
+elog(INFO, "TTT src/backend/distributed/operations/worker_node_manager.c:ActiveReadableNodeList");
 	return FilterActiveNodeListFunc(NoLock, NodeIsReadableWorker);
 }
 
@@ -528,6 +544,7 @@ ActiveReadableNonCoordinatorNodeList(void)
 List *
 ActiveReadableNodeList(void)
 {
+elog(INFO, "TTT src/backend/distributed/operations/worker_node_manager.c:NodeIsReadableWorker");
 	return FilterActiveNodeListFunc(NoLock, NodeIsReadable);
 }
 
@@ -538,6 +555,7 @@ ActiveReadableNodeList(void)
 static bool
 NodeIsReadableWorker(WorkerNode *node)
 {
+elog(INFO, "TTT src/backend/distributed/operations/worker_node_manager.c:PrimaryNodesNotInList");
 	return !NodeIsCoordinator(node) && NodeIsReadable(node);
 }
 
@@ -561,6 +579,7 @@ PrimaryNodesNotInList(List *currentList)
 	{
 		if (ListMember(currentList, workerNode))
 		{
+elog(INFO, "TTT src/backend/distributed/operations/worker_node_manager.c:FindRandomNodeFromList");
 			continue;
 		}
 
@@ -578,6 +597,7 @@ PrimaryNodesNotInList(List *currentList)
 static WorkerNode *
 FindRandomNodeFromList(List *candidateWorkerNodeList)
 {
+elog(INFO, "TTT src/backend/distributed/operations/worker_node_manager.c:OddNumber");
 	uint32 candidateNodeCount = list_length(candidateWorkerNodeList);
 
 	/* nb, the random seed has already been set by the postmaster when starting up */
@@ -627,6 +647,7 @@ ListMember(List *currentList, WorkerNode *workerNode)
 int
 CompareWorkerNodes(const void *leftElement, const void *rightElement)
 {
+elog(INFO, "TTT src/backend/distributed/operations/worker_node_manager.c:WorkerNodeCompare");
 	const void *leftWorker = *((const void **) leftElement);
 	const void *rightWorker = *((const void **) rightElement);
 	Size ignoredKeySize = 0;
@@ -645,6 +666,7 @@ CompareWorkerNodes(const void *leftElement, const void *rightElement)
 int
 WorkerNodeCompare(const void *lhsKey, const void *rhsKey, Size keySize)
 {
+elog(INFO, "TTT src/backend/distributed/operations/worker_node_manager.c:NodeNamePortCompare");
 	const WorkerNode *workerLhs = (const WorkerNode *) lhsKey;
 	const WorkerNode *workerRhs = (const WorkerNode *) rhsKey;
 

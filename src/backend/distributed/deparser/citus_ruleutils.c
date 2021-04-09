@@ -65,6 +65,7 @@
 #include "utils/relcache.h"
 #include "utils/ruleutils.h"
 #include "utils/syscache.h"
+#include "utils/elog.h"
 
 
 static void deparse_index_columns(StringInfo buffer, List *indexParameterList,
@@ -84,6 +85,7 @@ static char * flatten_reloptions(Oid relid);
 char *
 pg_get_extensiondef_string(Oid tableRelationId)
 {
+elog(INFO, "TTT src/backend/distributed/deparser/citus_ruleutils.c:pg_get_extensiondef_string");
 	ForeignTable *foreignTable = GetForeignTable(tableRelationId);
 	ForeignServer *server = GetForeignServer(foreignTable->serverid);
 	ForeignDataWrapper *foreignDataWrapper = GetForeignDataWrapper(server->fdwid);
@@ -122,6 +124,7 @@ pg_get_extensiondef_string(Oid tableRelationId)
 Oid
 get_extension_schema(Oid ext_oid)
 {
+elog(INFO, "TTT src/backend/distributed/deparser/citus_ruleutils.c:get_extension_schema");
 	/* *INDENT-OFF* */
 	Oid			result;
 	Relation	rel;
@@ -167,6 +170,7 @@ get_extension_schema(Oid ext_oid)
 char *
 pg_get_serverdef_string(Oid tableRelationId)
 {
+elog(INFO, "TTT src/backend/distributed/deparser/citus_ruleutils.c:pg_get_serverdef_string");
 	ForeignTable *foreignTable = GetForeignTable(tableRelationId);
 	ForeignServer *server = GetForeignServer(foreignTable->serverid);
 	ForeignDataWrapper *foreignDataWrapper = GetForeignDataWrapper(server->fdwid);
@@ -204,6 +208,7 @@ pg_get_serverdef_string(Oid tableRelationId)
 char *
 pg_get_sequencedef_string(Oid sequenceRelationId)
 {
+elog(INFO, "TTT src/backend/distributed/deparser/citus_ruleutils.c:pg_get_sequencedef_string");
 	Form_pg_sequence pgSequenceForm = pg_get_sequencedef(sequenceRelationId);
 
 	/* build our DDL command */
@@ -225,6 +230,7 @@ pg_get_sequencedef_string(Oid sequenceRelationId)
 Form_pg_sequence
 pg_get_sequencedef(Oid sequenceRelationId)
 {
+elog(INFO, "TTT src/backend/distributed/deparser/citus_ruleutils.c:pg_get_sequencedef");
 	HeapTuple heapTuple = SearchSysCache1(SEQRELID, sequenceRelationId);
 	if (!HeapTupleIsValid(heapTuple))
 	{
@@ -251,6 +257,7 @@ char *
 pg_get_tableschemadef_string(Oid tableRelationId, bool includeSequenceDefaults,
 							 char *accessMethod)
 {
+elog(INFO, "TTT src/backend/distributed/deparser/citus_ruleutils.c:pg_get_tableschemadef_string");
 	char relationKind = 0;
 	bool firstAttributePrinted = false;
 	AttrNumber defaultValueIndex = 0;
@@ -503,6 +510,7 @@ pg_get_tableschemadef_string(Oid tableRelationId, bool includeSequenceDefaults,
 void
 EnsureRelationKindSupported(Oid relationId)
 {
+elog(INFO, "TTT src/backend/distributed/deparser/citus_ruleutils.c:EnsureRelationKindSupported");
 	char relationKind = get_rel_relkind(relationId);
 	if (!relationKind)
 	{
@@ -541,6 +549,7 @@ EnsureRelationKindSupported(Oid relationId)
 char *
 pg_get_tablecolumnoptionsdef_string(Oid tableRelationId)
 {
+elog(INFO, "TTT src/backend/distributed/deparser/citus_ruleutils.c:pg_get_tablecolumnoptionsdef_string");
 	List *columnOptionList = NIL;
 	ListCell *columnOptionCell = NULL;
 	bool firstOptionPrinted = false;
@@ -688,6 +697,7 @@ void
 deparse_shard_index_statement(IndexStmt *origStmt, Oid distrelid, int64 shardid,
 							  StringInfo buffer)
 {
+elog(INFO, "TTT src/backend/distributed/deparser/citus_ruleutils.c:deparse_shard_index_statement");
 	IndexStmt *indexStmt = copyObject(origStmt); /* copy to avoid modifications */
 
 	/* extend relation and index name using shard identifier */
@@ -880,6 +890,7 @@ deparse_index_columns(StringInfo buffer, List *indexParameterList, List *deparse
 char *
 pg_get_indexclusterdef_string(Oid indexRelationId)
 {
+elog(INFO, "TTT src/backend/distributed/deparser/citus_ruleutils.c:pg_get_indexclusterdef_string");
 	StringInfoData buffer = { NULL, 0, 0, 0 };
 
 	HeapTuple indexTuple = SearchSysCache(INDEXRELID, ObjectIdGetDatum(indexRelationId),

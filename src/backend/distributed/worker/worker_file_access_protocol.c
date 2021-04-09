@@ -21,6 +21,7 @@
 #include "foreign/foreign.h"
 #include "utils/builtins.h"
 #include "utils/lsyscache.h"
+#include "utils/elog.h"
 
 
 /* exports for SQL callable functions */
@@ -35,6 +36,7 @@ PG_FUNCTION_INFO_V1(worker_find_block_local_path);
 Datum
 worker_foreign_file_path(PG_FUNCTION_ARGS)
 {
+elog(INFO, "TTT src/backend/distributed/worker/worker_file_access_protocol.c:worker_foreign_file_path");
 	text *foreignTableName = PG_GETARG_TEXT_P(0);
 	text *foreignFilePath = NULL;
 	Oid relationId = ResolveRelationId(foreignTableName, false);

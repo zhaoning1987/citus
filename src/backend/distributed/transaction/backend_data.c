@@ -42,6 +42,7 @@
 #include "storage/spin.h"
 #include "storage/s_lock.h"
 #include "utils/timestamp.h"
+#include "utils/elog.h"
 
 
 #define GET_ACTIVE_TRANSACTION_QUERY "SELECT * FROM get_all_active_transactions();"
@@ -108,6 +109,7 @@ PG_FUNCTION_INFO_V1(get_all_active_transactions);
 Datum
 assign_distributed_transaction_id(PG_FUNCTION_ARGS)
 {
+elog(INFO, "TTT src/backend/distributed/transaction/backend_data.c:assign_distributed_transaction_id");
 	Oid userId = GetUserId();
 
 	/* prepare data before acquiring spinlock to protect against errors */
@@ -168,6 +170,7 @@ assign_distributed_transaction_id(PG_FUNCTION_ARGS)
 Datum
 get_current_transaction_id(PG_FUNCTION_ARGS)
 {
+elog(INFO, "TTT src/backend/distributed/transaction/backend_data.c:get_current_transaction_id");
 	TupleDesc tupleDescriptor = NULL;
 
 	Datum values[5];
@@ -227,6 +230,7 @@ get_current_transaction_id(PG_FUNCTION_ARGS)
 Datum
 get_global_active_transactions(PG_FUNCTION_ARGS)
 {
+elog(INFO, "TTT src/backend/distributed/transaction/backend_data.c:get_global_active_transactions");
 	TupleDesc tupleDescriptor = NULL;
 	List *workerNodeList = ActivePrimaryNonCoordinatorNodeList(NoLock);
 	List *connectionList = NIL;
@@ -338,6 +342,7 @@ get_global_active_transactions(PG_FUNCTION_ARGS)
 Datum
 get_all_active_transactions(PG_FUNCTION_ARGS)
 {
+elog(INFO, "TTT src/backend/distributed/transaction/backend_data.c:get_all_active_transactions");
 	TupleDesc tupleDescriptor = NULL;
 
 	CheckCitusVersion(ERROR);
@@ -359,6 +364,7 @@ get_all_active_transactions(PG_FUNCTION_ARGS)
 static void
 StoreAllActiveTransactions(Tuplestorestate *tupleStore, TupleDesc tupleDescriptor)
 {
+elog(INFO, "TTT src/backend/distributed/transaction/backend_data.c:StoreAllActiveTransactions");
 	Datum values[ACTIVE_TRANSACTION_COLUMN_COUNT];
 	bool isNulls[ACTIVE_TRANSACTION_COLUMN_COUNT];
 	bool showAllTransactions = superuser();
@@ -457,6 +463,7 @@ StoreAllActiveTransactions(Tuplestorestate *tupleStore, TupleDesc tupleDescripto
 void
 InitializeBackendManagement(void)
 {
+elog(INFO, "TTT src/backend/distributed/transaction/backend_data.c:InitializeBackendManagement");
 	/* allocate shared memory */
 	if (!IsUnderPostmaster)
 	{
@@ -476,6 +483,7 @@ InitializeBackendManagement(void)
 static void
 BackendManagementShmemInit(void)
 {
+elog(INFO, "TTT src/backend/distributed/transaction/backend_data.c:BackendManagementShmemInit");
 	bool alreadyInitialized = false;
 
 	/* we may update the shmem, acquire lock exclusively */
@@ -545,6 +553,7 @@ BackendManagementShmemInit(void)
 static size_t
 BackendManagementShmemSize(void)
 {
+elog(INFO, "TTT src/backend/distributed/transaction/backend_data.c:BackendManagementShmemSize");
 	Size size = 0;
 	int totalProcs = TotalProcCount();
 
@@ -569,6 +578,7 @@ BackendManagementShmemSize(void)
 int
 TotalProcCount(void)
 {
+elog(INFO, "TTT src/backend/distributed/transaction/backend_data.c:TotalProcCount");
 	int maxBackends = 0;
 	int totalProcs = 0;
 
@@ -687,6 +697,7 @@ UnSetDistributedTransactionId(void)
 void
 LockBackendSharedMemory(LWLockMode lockMode)
 {
+elog(INFO, "TTT src/backend/distributed/transaction/backend_data.c:UnlockBackendSharedMemory");
 	LWLockAcquire(&backendManagementShmemData->lock, lockMode);
 }
 
@@ -957,6 +968,7 @@ ActiveDistributedTransactionNumbers(void)
 LocalTransactionId
 GetMyProcLocalTransactionId(void)
 {
+elog(INFO, "TTT src/backend/distributed/transaction/backend_data.c:GetAllActiveClientBackendCount");
 	return MyProc->lxid;
 }
 

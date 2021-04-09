@@ -40,6 +40,7 @@
 #include "storage/ipc.h"
 #include "utils/hsearch.h"
 #include "utils/memutils.h"
+#include "utils/elog.h"
 
 
 int NodeConnectionTimeout = 30000;
@@ -94,6 +95,7 @@ static void CitusPQFinish(MultiConnection *connection);
 void
 InitializeConnectionManagement(void)
 {
+elog(INFO, "TTT src/backend/distributed/connection/connection_management.c:InitializeConnectionManagement");
 	HASHCTL info, connParamsInfo;
 
 	/*
@@ -134,6 +136,7 @@ InitializeConnectionManagement(void)
 void
 InvalidateConnParamsHashEntries(void)
 {
+elog(INFO, "TTT src/backend/distributed/connection/connection_management.c:InvalidateConnParamsHashEntries");
 	if (ConnParamsHash != NULL)
 	{
 		ConnParamsHashEntry *entry = NULL;
@@ -157,6 +160,7 @@ InvalidateConnParamsHashEntries(void)
 void
 AfterXactConnectionHandling(bool isCommit)
 {
+elog(INFO, "TTT src/backend/distributed/connection/connection_management.c:AfterXactConnectionHandling");
 	HASH_SEQ_STATUS status;
 	ConnectionHashEntry *entry;
 
@@ -189,6 +193,7 @@ AfterXactConnectionHandling(bool isCommit)
 MultiConnection *
 GetNodeConnection(uint32 flags, const char *hostname, int32 port)
 {
+elog(INFO, "TTT src/backend/distributed/connection/connection_management.c:GetNodeConnection");
 	return GetNodeUserDatabaseConnection(flags, hostname, port, NULL, NULL);
 }
 
@@ -202,6 +207,7 @@ GetNodeConnection(uint32 flags, const char *hostname, int32 port)
 MultiConnection *
 StartNodeConnection(uint32 flags, const char *hostname, int32 port)
 {
+elog(INFO, "TTT src/backend/distributed/connection/connection_management.c:StartNodeConnection");
 	MultiConnection *connection = StartNodeUserDatabaseConnection(flags, hostname, port,
 																  NULL, NULL);
 
@@ -224,6 +230,7 @@ MultiConnection *
 GetNodeUserDatabaseConnection(uint32 flags, const char *hostname, int32 port,
 							  const char *user, const char *database)
 {
+elog(INFO, "TTT src/backend/distributed/connection/connection_management.c:GetNodeUserDatabaseConnection");
 	MultiConnection *connection = StartNodeUserDatabaseConnection(flags, hostname, port,
 																  user, database);
 
@@ -255,6 +262,7 @@ MultiConnection *
 StartNodeUserDatabaseConnection(uint32 flags, const char *hostname, int32 port,
 								const char *user, const char *database)
 {
+elog(INFO, "TTT src/backend/distributed/connection/connection_management.c:StartNodeUserDatabaseConnection");
 	ConnectionHashKey key;
 	bool found;
 
@@ -404,6 +412,7 @@ StartNodeUserDatabaseConnection(uint32 flags, const char *hostname, int32 port,
 static MultiConnection *
 FindAvailableConnection(dlist_head *connections, uint32 flags)
 {
+elog(INFO, "TTT src/backend/distributed/connection/connection_management.c:FindAvailableConnection");
 	dlist_iter iter;
 
 	dlist_foreach(iter, connections)
@@ -1084,6 +1093,7 @@ ClaimConnectionExclusively(MultiConnection *connection)
 void
 UnclaimConnection(MultiConnection *connection)
 {
+elog(INFO, "TTT src/backend/distributed/connection/connection_management.c:ConnectionHashHash");
 	connection->claimedExclusively = false;
 }
 
@@ -1117,6 +1127,7 @@ ConnectionHashCompare(const void *a, const void *b, Size keysize)
 	}
 	else
 	{
+elog(INFO, "TTT src/backend/distributed/connection/connection_management.c:StartConnectionEstablishment");
 		return 0;
 	}
 }
@@ -1320,6 +1331,7 @@ ShouldShutdownConnection(MultiConnection *connection, const int cachedConnection
 bool
 IsCitusInitiatedRemoteBackend(void)
 {
+elog(INFO, "TTT src/backend/distributed/connection/connection_management.c:ResetConnection");
 	return application_name && strcmp(application_name, CITUS_APPLICATION_NAME) == 0;
 }
 

@@ -47,6 +47,7 @@
 #include "utils/rel.h"
 #include "utils/varlena.h"
 #include "utils/syscache.h"
+#include "utils/elog.h"
 
 static const char * ExtractEncryptedPassword(Oid roleOid);
 static const char * CreateAlterRoleIfExistsCommand(AlterRoleStmt *stmt);
@@ -82,6 +83,7 @@ bool EnableAlterRoleSetPropagation = true;
 ObjectAddress
 AlterRoleStmtObjectAddress(Node *node, bool missing_ok)
 {
+elog(INFO, "TTT src/backend/distributed/commands/role.c:AlterRoleStmtObjectAddress");
 	AlterRoleStmt *stmt = castNode(AlterRoleStmt, node);
 	return RoleSpecToObjectAddress(stmt->role, missing_ok);
 }
@@ -95,6 +97,7 @@ AlterRoleStmtObjectAddress(Node *node, bool missing_ok)
 ObjectAddress
 AlterRoleSetStmtObjectAddress(Node *node, bool missing_ok)
 {
+elog(INFO, "TTT src/backend/distributed/commands/role.c:AlterRoleSetStmtObjectAddress");
 	AlterRoleSetStmt *stmt = castNode(AlterRoleSetStmt, node);
 	return RoleSpecToObjectAddress(stmt->role, missing_ok);
 }
@@ -108,6 +111,7 @@ AlterRoleSetStmtObjectAddress(Node *node, bool missing_ok)
 static ObjectAddress
 RoleSpecToObjectAddress(RoleSpec *role, bool missing_ok)
 {
+elog(INFO, "TTT src/backend/distributed/commands/role.c:RoleSpecToObjectAddress");
 	ObjectAddress address = { 0 };
 
 	if (role != NULL)
@@ -129,6 +133,7 @@ RoleSpecToObjectAddress(RoleSpec *role, bool missing_ok)
 List *
 PostprocessAlterRoleStmt(Node *node, const char *queryString)
 {
+elog(INFO, "TTT src/backend/distributed/commands/role.c:PostprocessAlterRoleStmt");
 	ObjectAddress address = GetObjectAddressFromParseTree(node, false);
 	if (!ShouldPropagateObject(&address))
 	{
@@ -184,6 +189,7 @@ List *
 PreprocessAlterRoleSetStmt(Node *node, const char *queryString,
 						   ProcessUtilityContext processUtilityContext)
 {
+elog(INFO, "TTT src/backend/distributed/commands/role.c:PreprocessAlterRoleSetStmt");
 	if (!ShouldPropagate())
 	{
 		return NIL;
@@ -233,6 +239,7 @@ PreprocessAlterRoleSetStmt(Node *node, const char *queryString,
 static const char *
 CreateAlterRoleIfExistsCommand(AlterRoleStmt *stmt)
 {
+elog(INFO, "TTT src/backend/distributed/commands/role.c:CreateAlterRoleIfExistsCommand");
 	const char *alterRoleQuery = DeparseTreeNode((Node *) stmt);
 	return WrapQueryInAlterRoleIfExistsCall(alterRoleQuery, stmt->role);
 }
@@ -250,6 +257,7 @@ CreateAlterRoleIfExistsCommand(AlterRoleStmt *stmt)
 static const char *
 CreateAlterRoleSetIfExistsCommand(AlterRoleSetStmt *stmt)
 {
+elog(INFO, "TTT src/backend/distributed/commands/role.c:CreateAlterRoleSetIfExistsCommand");
 	char *alterRoleSetQuery = DeparseTreeNode((Node *) stmt);
 
 	/* ALTER ROLE ALL .. SET queries should not be wrapped in a alter_role_if_exists() call */
@@ -271,6 +279,7 @@ CreateAlterRoleSetIfExistsCommand(AlterRoleSetStmt *stmt)
 static const char *
 WrapQueryInAlterRoleIfExistsCall(const char *query, RoleSpec *role)
 {
+elog(INFO, "TTT src/backend/distributed/commands/role.c:WrapQueryInAlterRoleIfExistsCall");
 	StringInfoData buffer = { 0 };
 
 	const char *roleName = RoleSpecString(role, false);
@@ -325,6 +334,7 @@ CreateCreateOrAlterRoleCommand(const char *roleName,
 static const char *
 ExtractEncryptedPassword(Oid roleOid)
 {
+elog(INFO, "TTT src/backend/distributed/commands/role.c:ExtractEncryptedPassword");
 	Relation pgAuthId = table_open(AuthIdRelationId, AccessShareLock);
 	TupleDesc pgAuthIdDescription = RelationGetDescr(pgAuthId);
 	HeapTuple tuple = SearchSysCache1(AUTHOID, roleOid);
@@ -436,6 +446,7 @@ MakeVariableSetStmt(const char *config)
 static List *
 GenerateRoleOptionsList(HeapTuple tuple)
 {
+elog(INFO, "TTT src/backend/distributed/commands/role.c:GenerateRoleOptionsList");
 	Form_pg_authid role = ((Form_pg_authid) GETSTRUCT(tuple));
 
 	List *options = NIL;
@@ -583,6 +594,7 @@ GenerateAlterRoleSetCommandForRole(Oid roleid)
 static DefElem *
 makeDefElemInt(char *name, int value)
 {
+elog(INFO, "TTT src/backend/distributed/commands/role.c:GetDatabaseNameFromDbRoleSetting");
 	return makeDefElem(name, (Node *) makeInteger(value), -1);
 }
 

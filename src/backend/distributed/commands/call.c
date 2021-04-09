@@ -42,6 +42,7 @@
 #include "tcop/dest.h"
 #include "utils/lsyscache.h"
 #include "utils/syscache.h"
+#include "utils/elog.h"
 
 static bool CallFuncExprRemotely(CallStmt *callStmt,
 								 DistObjectCacheEntry *procedure,
@@ -53,6 +54,7 @@ static bool CallFuncExprRemotely(CallStmt *callStmt,
 bool
 CallDistributedProcedureRemotely(CallStmt *callStmt, DestReceiver *dest)
 {
+elog(INFO, "TTT src/backend/distributed/commands/call.c:CallDistributedProcedureRemotely");
 	FuncExpr *funcExpr = callStmt->funcexpr;
 	Oid functionId = funcExpr->funcid;
 

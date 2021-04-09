@@ -17,6 +17,7 @@
 #include "distributed/version_compat.h"
 #include "storage/dsm.h"
 #include "utils/builtins.h"
+#include "utils/elog.h"
 
 
 /* dynamic shared memory handle of the current progress */
@@ -40,6 +41,7 @@ ProgressMonitorData *
 CreateProgressMonitor(uint64 progressTypeMagicNumber, int stepCount, Size stepSize,
 					  Oid relationId)
 {
+elog(INFO, "TTT src/backend/distributed/progress/multi_progress.c:CreateProgressMonitor");
 	if (stepSize <= 0 || stepCount <= 0)
 	{
 		ereport(ERROR,
@@ -83,6 +85,7 @@ CreateProgressMonitor(uint64 progressTypeMagicNumber, int stepCount, Size stepSi
 ProgressMonitorData *
 GetCurrentProgressMonitor(void)
 {
+elog(INFO, "TTT src/backend/distributed/progress/multi_progress.c:GetCurrentProgressMonitor");
 	dsm_segment *dsmSegment = NULL;
 	ProgressMonitorData *monitor = MonitorDataFromDSMHandle(currentProgressDSMHandle,
 															&dsmSegment);
@@ -99,6 +102,7 @@ GetCurrentProgressMonitor(void)
 void
 FinalizeCurrentProgressMonitor(void)
 {
+elog(INFO, "TTT src/backend/distributed/progress/multi_progress.c:FinalizeCurrentProgressMonitor");
 	dsm_segment *dsmSegment = dsm_find_mapping(currentProgressDSMHandle);
 
 	if (dsmSegment != NULL)
@@ -122,6 +126,7 @@ FinalizeCurrentProgressMonitor(void)
 List *
 ProgressMonitorList(uint64 commandTypeMagicNumber, List **attachedDSMSegments)
 {
+elog(INFO, "TTT src/backend/distributed/progress/multi_progress.c:ProgressMonitorList");
 	/*
 	 * The expected magic number should reside in the first progress field and the
 	 * actual segment handle in the second but the slot ordering is 1-indexed in the
@@ -203,6 +208,7 @@ ProgressMonitorList(uint64 commandTypeMagicNumber, List **attachedDSMSegments)
 ProgressMonitorData *
 MonitorDataFromDSMHandle(dsm_handle dsmHandle, dsm_segment **attachedSegment)
 {
+elog(INFO, "TTT src/backend/distributed/progress/multi_progress.c:MonitorDataFromDSMHandle");
 	dsm_segment *dsmSegment = dsm_find_mapping(dsmHandle);
 	ProgressMonitorData *monitor = NULL;
 

@@ -26,6 +26,7 @@
 #include "distributed/citus_ruleutils.h"
 #include "distributed/commands.h"
 #include "distributed/deparser.h"
+#include "utils/elog.h"
 
 #define AlterEnumIsRename(stmt) (stmt->oldVal != NULL)
 #define AlterEnumIsAddValue(stmt) (stmt->oldVal == NULL)
@@ -63,6 +64,7 @@ static void AppendAlterTypeOwnerStmt(StringInfo buf, AlterOwnerStmt *stmt);
 char *
 DeparseCompositeTypeStmt(Node *node)
 {
+elog(INFO, "TTT src/backend/distributed/deparser/deparse_type_stmts.c:DeparseCompositeTypeStmt");
 	CompositeTypeStmt *stmt = castNode(CompositeTypeStmt, node);
 	StringInfoData sql = { 0 };
 	initStringInfo(&sql);
@@ -76,6 +78,7 @@ DeparseCompositeTypeStmt(Node *node)
 char *
 DeparseCreateEnumStmt(Node *node)
 {
+elog(INFO, "TTT src/backend/distributed/deparser/deparse_type_stmts.c:DeparseCreateEnumStmt");
 	CreateEnumStmt *stmt = castNode(CreateEnumStmt, node);
 	StringInfoData sql = { 0 };
 	initStringInfo(&sql);
@@ -89,6 +92,7 @@ DeparseCreateEnumStmt(Node *node)
 char *
 DeparseAlterEnumStmt(Node *node)
 {
+elog(INFO, "TTT src/backend/distributed/deparser/deparse_type_stmts.c:DeparseAlterEnumStmt");
 	AlterEnumStmt *stmt = castNode(AlterEnumStmt, node);
 	StringInfoData sql = { 0 };
 	initStringInfo(&sql);
@@ -102,6 +106,7 @@ DeparseAlterEnumStmt(Node *node)
 char *
 DeparseDropTypeStmt(Node *node)
 {
+elog(INFO, "TTT src/backend/distributed/deparser/deparse_type_stmts.c:DeparseDropTypeStmt");
 	DropStmt *stmt = castNode(DropStmt, node);
 	StringInfoData str = { 0 };
 	initStringInfo(&str);
@@ -117,6 +122,7 @@ DeparseDropTypeStmt(Node *node)
 char *
 DeparseAlterTypeStmt(Node *node)
 {
+elog(INFO, "TTT src/backend/distributed/deparser/deparse_type_stmts.c:DeparseAlterTypeStmt");
 	AlterTableStmt *stmt = castNode(AlterTableStmt, node);
 	StringInfoData str = { 0 };
 	initStringInfo(&str);
@@ -189,6 +195,7 @@ AppendAlterTypeCmd(StringInfo buf, AlterTableCmd *alterTableCmd)
 static void
 AppendAlterTypeCmdAddColumn(StringInfo buf, AlterTableCmd *alterTableCmd)
 {
+elog(INFO, "TTT src/backend/distributed/deparser/deparse_type_stmts.c:AppendAlterTypeCmdAddColumn");
 	Assert(alterTableCmd->subtype == AT_AddColumn);
 
 	appendStringInfoString(buf, " ADD ATTRIBUTE ");
@@ -308,6 +315,7 @@ AppendTypeNameList(StringInfo buf, List *objects)
 static void
 AppendCompositeTypeStmt(StringInfo str, CompositeTypeStmt *stmt)
 {
+elog(INFO, "TTT src/backend/distributed/deparser/deparse_type_stmts.c:AppendCompositeTypeStmt");
 	const char *identifier = quote_qualified_identifier(stmt->typevar->schemaname,
 														stmt->typevar->relname);
 	appendStringInfo(str, "CREATE TYPE %s AS (", identifier);
@@ -356,6 +364,7 @@ AppendStringList(StringInfo str, List *strings)
 static void
 AppendColumnDefList(StringInfo str, List *columnDefs)
 {
+elog(INFO, "TTT src/backend/distributed/deparser/deparse_type_stmts.c:AppendColumnDefList");
 	ListCell *columnDefCell = NULL;
 	foreach(columnDefCell, columnDefs)
 	{
@@ -378,6 +387,7 @@ AppendColumnDefList(StringInfo str, List *columnDefs)
 static void
 AppendColumnDef(StringInfo str, ColumnDef *columnDef)
 {
+elog(INFO, "TTT src/backend/distributed/deparser/deparse_type_stmts.c:AppendColumnDef");
 	int32 typmod = 0;
 	Oid typeOid = InvalidOid;
 	bits16 formatFlags = FORMAT_TYPE_TYPEMOD_GIVEN | FORMAT_TYPE_FORCE_QUALIFY;
@@ -396,6 +406,7 @@ AppendColumnDef(StringInfo str, ColumnDef *columnDef)
 
 	if (OidIsValid(collationOid))
 	{
+elog(INFO, "TTT src/backend/distributed/deparser/deparse_type_stmts.c:DeparseRenameTypeStmt");
 		const char *identifier = FormatCollateBEQualified(collationOid);
 		appendStringInfo(str, " COLLATE %s", identifier);
 	}
@@ -420,6 +431,7 @@ DeparseRenameTypeStmt(Node *node)
 static void
 AppendRenameTypeStmt(StringInfo buf, RenameStmt *stmt)
 {
+elog(INFO, "TTT src/backend/distributed/deparser/deparse_type_stmts.c:DeparseRenameTypeAttributeStmt");
 	List *names = (List *) stmt->object;
 
 	appendStringInfo(buf, "ALTER TYPE %s RENAME TO %s;", NameListToQuotedString(names),
@@ -454,6 +466,7 @@ AppendRenameTypeAttributeStmt(StringInfo buf, RenameStmt *stmt)
 
 	if (stmt->behavior == DROP_CASCADE)
 	{
+elog(INFO, "TTT src/backend/distributed/deparser/deparse_type_stmts.c:DeparseAlterTypeSchemaStmt");
 		appendStringInfoString(buf, " CASCADE");
 	}
 
@@ -479,6 +492,7 @@ DeparseAlterTypeSchemaStmt(Node *node)
 static void
 AppendAlterTypeSchemaStmt(StringInfo buf, AlterObjectSchemaStmt *stmt)
 {
+elog(INFO, "TTT src/backend/distributed/deparser/deparse_type_stmts.c:DeparseAlterTypeOwnerStmt");
 	Assert(stmt->objectType == OBJECT_TYPE);
 
 	List *names = (List *) stmt->object;

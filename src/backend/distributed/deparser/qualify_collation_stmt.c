@@ -22,6 +22,7 @@
 
 #include "distributed/deparser.h"
 #include "distributed/listutils.h"
+#include "utils/elog.h"
 
 static Node * QualifyCollationName(List *func);
 
@@ -34,6 +35,7 @@ static Node * QualifyCollationName(List *func);
 void
 QualifyRenameCollationStmt(Node *node)
 {
+elog(INFO, "TTT src/backend/distributed/deparser/qualify_collation_stmt.c:QualifyRenameCollationStmt");
 	RenameStmt *stmt = castNode(RenameStmt, node);
 	Assert(stmt->renameType == OBJECT_COLLATION);
 
@@ -49,6 +51,7 @@ QualifyRenameCollationStmt(Node *node)
 void
 QualifyAlterCollationSchemaStmt(Node *node)
 {
+elog(INFO, "TTT src/backend/distributed/deparser/qualify_collation_stmt.c:QualifyAlterCollationSchemaStmt");
 	AlterObjectSchemaStmt *stmt = castNode(AlterObjectSchemaStmt, node);
 	Assert(stmt->objectType == OBJECT_COLLATION);
 
@@ -64,6 +67,7 @@ QualifyAlterCollationSchemaStmt(Node *node)
 void
 QualifyAlterCollationOwnerStmt(Node *node)
 {
+elog(INFO, "TTT src/backend/distributed/deparser/qualify_collation_stmt.c:QualifyAlterCollationOwnerStmt");
 	AlterOwnerStmt *stmt = castNode(AlterOwnerStmt, node);
 	Assert(stmt->objectType == OBJECT_COLLATION);
 
@@ -79,6 +83,7 @@ QualifyAlterCollationOwnerStmt(Node *node)
 void
 QualifyDropCollationStmt(Node *node)
 {
+elog(INFO, "TTT src/backend/distributed/deparser/qualify_collation_stmt.c:QualifyDropCollationStmt");
 	DropStmt *stmt = castNode(DropStmt, node);
 	List *names = NIL;
 	List *name = NIL;

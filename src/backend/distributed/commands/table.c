@@ -42,6 +42,7 @@
 #include "utils/builtins.h"
 #include "utils/lsyscache.h"
 #include "utils/syscache.h"
+#include "utils/elog.h"
 
 
 /* controlled via GUC, should be accessed via GetEnableLocalReferenceForeignKeys() */
@@ -112,6 +113,7 @@ List *
 PreprocessDropTableStmt(Node *node, const char *queryString,
 						ProcessUtilityContext processUtilityContext)
 {
+elog(INFO, "TTT src/backend/distributed/commands/table.c:PreprocessDropTableStmt");
 	DropStmt *dropTableStatement = castNode(DropStmt, node);
 
 	Assert(dropTableStatement->removeType == OBJECT_TABLE);
@@ -184,6 +186,7 @@ PreprocessDropTableStmt(Node *node, const char *queryString,
 void
 PostprocessCreateTableStmt(CreateStmt *createStatement, const char *queryString)
 {
+elog(INFO, "TTT src/backend/distributed/commands/table.c:PostprocessCreateTableStmt");
 	PostprocessCreateTableStmtForeignKeys(createStatement);
 
 	if (createStatement->inhRelations != NIL && createStatement->partbound != NULL)
@@ -202,6 +205,7 @@ PostprocessCreateTableStmt(CreateStmt *createStatement, const char *queryString)
 static void
 PostprocessCreateTableStmtForeignKeys(CreateStmt *createStatement)
 {
+elog(INFO, "TTT src/backend/distributed/commands/table.c:PostprocessCreateTableStmtForeignKeys");
 	if (!ShouldEnableLocalReferenceForeignKeys())
 	{
 		/*
@@ -256,6 +260,7 @@ PostprocessCreateTableStmtForeignKeys(CreateStmt *createStatement)
 bool
 ShouldEnableLocalReferenceForeignKeys(void)
 {
+elog(INFO, "TTT src/backend/distributed/commands/table.c:ShouldEnableLocalReferenceForeignKeys");
 	if (!EnableLocalReferenceForeignKeys)
 	{
 		return false;
@@ -276,6 +281,7 @@ static void
 PostprocessCreateTableStmtPartitionOf(CreateStmt *createStatement, const
 									  char *queryString)
 {
+elog(INFO, "TTT src/backend/distributed/commands/table.c:PostprocessCreateTableStmtPartitionOf");
 	RangeVar *parentRelation = linitial(createStatement->inhRelations);
 	bool missingOk = false;
 	Oid parentRelationId = RangeVarGetRelid(parentRelation, NoLock, missingOk);
@@ -362,6 +368,7 @@ List *
 PostprocessAlterTableStmtAttachPartition(AlterTableStmt *alterTableStatement,
 										 const char *queryString)
 {
+elog(INFO, "TTT src/backend/distributed/commands/table.c:PostprocessAlterTableStmtAttachPartition");
 	List *commandList = alterTableStatement->cmds;
 	AlterTableCmd *alterTableCommand = NULL;
 	foreach_ptr(alterTableCommand, commandList)
@@ -417,6 +424,7 @@ PostprocessAlterTableStmtAttachPartition(AlterTableStmt *alterTableStatement,
 List *
 PostprocessAlterTableSchemaStmt(Node *node, const char *queryString)
 {
+elog(INFO, "TTT src/backend/distributed/commands/table.c:PostprocessAlterTableSchemaStmt");
 	AlterObjectSchemaStmt *stmt = castNode(AlterObjectSchemaStmt, node);
 	Assert(stmt->objectType == OBJECT_TABLE);
 
@@ -449,6 +457,7 @@ List *
 PreprocessAlterTableStmt(Node *node, const char *alterTableCommand,
 						 ProcessUtilityContext processUtilityContext)
 {
+elog(INFO, "TTT src/backend/distributed/commands/table.c:PreprocessAlterTableStmt");
 	AlterTableStmt *alterTableStatement = castNode(AlterTableStmt, node);
 
 	/* first check whether a distributed relation is affected */
@@ -737,6 +746,7 @@ PreprocessAlterTableStmt(Node *node, const char *alterTableCommand,
 static bool
 AlterTableDefinesFKeyBetweenPostgresAndNonDistTable(AlterTableStmt *alterTableStatement)
 {
+elog(INFO, "TTT src/backend/distributed/commands/table.c:AlterTableDefinesFKeyBetweenPostgresAndNonDistTable");
 	List *foreignKeyConstraintList =
 		GetAlterTableAddFKeyConstraintList(alterTableStatement);
 	if (list_length(foreignKeyConstraintList) == 0)
@@ -812,6 +822,7 @@ RelationIdListContainsPostgresTable(List *relationIdList)
 static void
 ConvertPostgresLocalTablesToCitusLocalTables(AlterTableStmt *alterTableStatement)
 {
+elog(INFO, "TTT src/backend/distributed/commands/table.c:ConvertPostgresLocalTablesToCitusLocalTables");
 	List *rightRelationRangeVarList =
 		GetAlterTableAddFKeyRightRelationRangeVarList(alterTableStatement);
 	RangeVar *leftRelationRangeVar = alterTableStatement->relation;

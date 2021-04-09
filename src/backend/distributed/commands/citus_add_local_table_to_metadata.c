@@ -43,6 +43,7 @@
 #include "utils/lsyscache.h"
 #include "utils/ruleutils.h"
 #include "utils/syscache.h"
+#include "utils/elog.h"
 
 
 static void citus_add_local_table_to_metadata_internal(Oid relationId,
@@ -91,6 +92,7 @@ PG_FUNCTION_INFO_V1(remove_local_tables_from_metadata);
 Datum
 citus_add_local_table_to_metadata(PG_FUNCTION_ARGS)
 {
+elog(INFO, "TTT src/backend/distributed/commands/citus_add_local_table_to_metadata.c:citus_add_local_table_to_metadata");
 	Oid relationId = PG_GETARG_OID(0);
 	bool cascadeViaForeignKeys = PG_GETARG_BOOL(1);
 
@@ -107,6 +109,7 @@ citus_add_local_table_to_metadata(PG_FUNCTION_ARGS)
 static void
 citus_add_local_table_to_metadata_internal(Oid relationId, bool cascadeViaForeignKeys)
 {
+elog(INFO, "TTT src/backend/distributed/commands/citus_add_local_table_to_metadata.c:citus_add_local_table_to_metadata_internal");
 	CheckCitusVersion(ERROR);
 
 	if (ShouldEnableLocalReferenceForeignKeys())
@@ -140,6 +143,7 @@ citus_add_local_table_to_metadata_internal(Oid relationId, bool cascadeViaForeig
 Datum
 create_citus_local_table(PG_FUNCTION_ARGS)
 {
+elog(INFO, "TTT src/backend/distributed/commands/citus_add_local_table_to_metadata.c:create_citus_local_table");
 	ereport(NOTICE, (errmsg("create_citus_local_table is deprecated in favour of "
 							"citus_add_local_table_to_metadata")));
 
@@ -164,6 +168,7 @@ create_citus_local_table(PG_FUNCTION_ARGS)
 Datum
 remove_local_tables_from_metadata(PG_FUNCTION_ARGS)
 {
+elog(INFO, "TTT src/backend/distributed/commands/citus_add_local_table_to_metadata.c:remove_local_tables_from_metadata");
 	CheckCitusVersion(ERROR);
 	EnsureCoordinator();
 
@@ -187,6 +192,7 @@ remove_local_tables_from_metadata(PG_FUNCTION_ARGS)
 void
 CreateCitusLocalTable(Oid relationId, bool cascadeViaForeignKeys)
 {
+elog(INFO, "TTT src/backend/distributed/commands/citus_add_local_table_to_metadata.c:CreateCitusLocalTable");
 	/*
 	 * These checks should be done before acquiring any locks on relation.
 	 * This is because we don't allow creating citus local tables in worker
@@ -326,6 +332,7 @@ CreateCitusLocalTable(Oid relationId, bool cascadeViaForeignKeys)
 static void
 ErrorIfUnsupportedCreateCitusLocalTable(Relation relation)
 {
+elog(INFO, "TTT src/backend/distributed/commands/citus_add_local_table_to_metadata.c:ErrorIfUnsupportedCreateCitusLocalTable");
 	if (!RelationIsValid(relation))
 	{
 		ereport(ERROR, (errmsg("cannot add local table to metadata, relation does "
@@ -363,6 +370,7 @@ ErrorIfUnsupportedCreateCitusLocalTable(Relation relation)
 static void
 ErrorIfUnsupportedCitusLocalTableKind(Oid relationId)
 {
+elog(INFO, "TTT src/backend/distributed/commands/citus_add_local_table_to_metadata.c:ErrorIfUnsupportedCitusLocalTableKind");
 	const char *relationName = get_rel_name(relationId);
 
 	if (IsChildTable(relationId) || IsParentTable(relationId))
@@ -414,6 +422,7 @@ ErrorIfUnsupportedCitusLocalTableKind(Oid relationId)
 static void
 ErrorIfUnsupportedCitusLocalColumnDefinition(Relation relation)
 {
+elog(INFO, "TTT src/backend/distributed/commands/citus_add_local_table_to_metadata.c:ErrorIfUnsupportedCitusLocalColumnDefinition");
 	TupleDesc relationDesc = RelationGetDescr(relation);
 	if (RelationUsesIdentityColumns(relationDesc))
 	{
@@ -438,6 +447,7 @@ ErrorIfUnsupportedCitusLocalColumnDefinition(Relation relation)
 static List *
 GetShellTableDDLEventsForCitusLocalTable(Oid relationId)
 {
+elog(INFO, "TTT src/backend/distributed/commands/citus_add_local_table_to_metadata.c:GetShellTableDDLEventsForCitusLocalTable");
 	/*
 	 * As we don't allow foreign keys with other tables initially, below we
 	 * only pick self-referencing foreign keys.
@@ -479,6 +489,7 @@ GetShellTableDDLEventsForCitusLocalTable(Oid relationId)
 static uint64
 ConvertLocalTableToShard(Oid relationId)
 {
+elog(INFO, "TTT src/backend/distributed/commands/citus_add_local_table_to_metadata.c:ConvertLocalTableToShard");
 	uint64 shardId = GetNextShardId();
 
 	RenameRelationToShardRelation(relationId, shardId);

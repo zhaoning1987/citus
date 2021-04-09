@@ -37,6 +37,7 @@
 #include "utils/lsyscache.h"
 #include "utils/rel.h"
 #include "utils/syscache.h"
+#include "utils/elog.h"
 
 
 static void AddInsertAliasIfNeeded(Query *query);
@@ -56,6 +57,7 @@ static char * DeparseTaskQuery(Task *task, Query *query);
 void
 RebuildQueryStrings(Job *workerJob)
 {
+elog(INFO, "TTT src/backend/distributed/planner/deparse_shard_query.c:RebuildQueryStrings");
 	Query *originalQuery = workerJob->jobQuery;
 	List *taskList = workerJob->taskList;
 	Task *task = NULL;
@@ -150,6 +152,7 @@ RebuildQueryStrings(Job *workerJob)
 static void
 AddInsertAliasIfNeeded(Query *query)
 {
+elog(INFO, "TTT src/backend/distributed/planner/deparse_shard_query.c:AddInsertAliasIfNeeded");
 	Assert(query->commandType == CMD_INSERT);
 
 	if (query->onConflict == NULL &&
@@ -180,6 +183,7 @@ AddInsertAliasIfNeeded(Query *query)
 static void
 UpdateTaskQueryString(Query *query, Task *task)
 {
+elog(INFO, "TTT src/backend/distributed/planner/deparse_shard_query.c:UpdateTaskQueryString");
 	List *oldValuesLists = NIL;
 	RangeTblEntry *valuesRTE = NULL;
 
@@ -228,6 +232,7 @@ UpdateTaskQueryString(Query *query, Task *task)
 bool
 UpdateRelationToShardNames(Node *node, List *relationShardList)
 {
+elog(INFO, "TTT src/backend/distributed/planner/deparse_shard_query.c:UpdateRelationToShardNames");
 	uint64 shardId = INVALID_SHARD_ID;
 
 	if (node == NULL)
@@ -295,6 +300,7 @@ UpdateRelationToShardNames(Node *node, List *relationShardList)
 bool
 UpdateRelationsToLocalShardTables(Node *node, List *relationShardList)
 {
+elog(INFO, "TTT src/backend/distributed/planner/deparse_shard_query.c:UpdateRelationsToLocalShardTables");
 	if (node == NULL)
 	{
 		return false;
@@ -353,6 +359,7 @@ static bool
 ReplaceRelationConstraintByShardConstraint(List *relationShardList,
 										   OnConflictExpr *onConflict)
 {
+elog(INFO, "TTT src/backend/distributed/planner/deparse_shard_query.c:ReplaceRelationConstraintByShardConstraint");
 	Oid constraintId = onConflict->constraint;
 
 	if (!OidIsValid(constraintId))
@@ -412,6 +419,7 @@ ReplaceRelationConstraintByShardConstraint(List *relationShardList,
 static RelationShard *
 FindRelationShard(Oid inputRelationId, List *relationShardList)
 {
+elog(INFO, "TTT src/backend/distributed/planner/deparse_shard_query.c:FindRelationShard");
 	RelationShard *relationShard = NULL;
 
 	/*
@@ -438,6 +446,7 @@ FindRelationShard(Oid inputRelationId, List *relationShardList)
 static void
 ConvertRteToSubqueryWithEmptyResult(RangeTblEntry *rte)
 {
+elog(INFO, "TTT src/backend/distributed/planner/deparse_shard_query.c:ConvertRteToSubqueryWithEmptyResult");
 	Relation relation = table_open(rte->relid, NoLock);
 	TupleDesc tupleDescriptor = RelationGetDescr(relation);
 	int columnCount = tupleDescriptor->natts;
@@ -494,6 +503,7 @@ ConvertRteToSubqueryWithEmptyResult(RangeTblEntry *rte)
 static bool
 ShouldLazyDeparseQuery(Task *task)
 {
+elog(INFO, "TTT src/backend/distributed/planner/deparse_shard_query.c:ShouldLazyDeparseQuery");
 	return TaskAccessesLocalNode(task);
 }
 
@@ -507,6 +517,7 @@ ShouldLazyDeparseQuery(Task *task)
 void
 SetTaskQueryIfShouldLazyDeparse(Task *task, Query *query)
 {
+elog(INFO, "TTT src/backend/distributed/planner/deparse_shard_query.c:SetTaskQueryIfShouldLazyDeparse");
 	if (ShouldLazyDeparseQuery(task))
 	{
 		task->taskQuery.queryType = TASK_QUERY_OBJECT;
@@ -589,6 +600,7 @@ DeparseTaskQuery(Task *task, Query *query)
 int
 GetTaskQueryType(Task *task)
 {
+elog(INFO, "TTT src/backend/distributed/planner/deparse_shard_query.c:TaskQueryStringAtIndex");
 	return task->taskQuery.queryType;
 }
 

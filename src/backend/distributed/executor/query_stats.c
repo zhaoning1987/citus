@@ -13,6 +13,7 @@
 
 #include "distributed/query_stats.h"
 #include "utils/builtins.h"
+#include "utils/elog.h"
 
 PG_FUNCTION_INFO_V1(citus_stat_statements_reset);
 PG_FUNCTION_INFO_V1(citus_query_stats);
@@ -26,6 +27,7 @@ static char * CitusExecutorName(MultiExecutorType executorType);
 void
 InitializeCitusQueryStats(void)
 {
+elog(INFO, "TTT src/backend/distributed/executor/query_stats.c:InitializeCitusQueryStats");
 	/* placeholder for future implementation */
 }
 
@@ -35,6 +37,7 @@ void
 CitusQueryStatsExecutorsEntry(uint64 queryId, MultiExecutorType executorType,
 							  char *partitionKey)
 {
+elog(INFO, "TTT src/backend/distributed/executor/query_stats.c:CitusQueryStatsExecutorsEntry");
 	/* placeholder for future implementation */
 }
 
@@ -45,6 +48,7 @@ CitusQueryStatsExecutorsEntry(uint64 queryId, MultiExecutorType executorType,
 Datum
 citus_stat_statements_reset(PG_FUNCTION_ARGS)
 {
+elog(INFO, "TTT src/backend/distributed/executor/query_stats.c:citus_stat_statements_reset");
 	ereport(ERROR, (errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
 					errmsg("citus_stat_statements_reset() is only supported on "
 						   "Citus Enterprise")));
@@ -58,6 +62,7 @@ citus_stat_statements_reset(PG_FUNCTION_ARGS)
 Datum
 citus_query_stats(PG_FUNCTION_ARGS)
 {
+elog(INFO, "TTT src/backend/distributed/executor/query_stats.c:citus_query_stats");
 	ereport(ERROR, (errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
 					errmsg("citus_query_stats() is only supported on "
 						   "Citus Enterprise")));
@@ -72,6 +77,7 @@ citus_query_stats(PG_FUNCTION_ARGS)
 Datum
 citus_executor_name(PG_FUNCTION_ARGS)
 {
+elog(INFO, "TTT src/backend/distributed/executor/query_stats.c:citus_executor_name");
 	MultiExecutorType executorType = PG_GETARG_UINT32(0);
 
 	char *executorName = CitusExecutorName(executorType);

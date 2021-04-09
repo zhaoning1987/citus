@@ -40,6 +40,7 @@
 #include "utils/lsyscache.h"
 #include "utils/rel.h"
 #include "utils/syscache.h"
+#include "utils/elog.h"
 
 
 /* Config variables managed via guc.c */
@@ -112,6 +113,7 @@ static JoinOrderNode * MakeJoinOrderNode(TableEntry *tableEntry,
 List *
 JoinExprList(FromExpr *fromExpr)
 {
+elog(INFO, "TTT src/backend/distributed/planner/multi_join_order.c:JoinExprList");
 	List *joinList = NIL;
 	List *fromList = fromExpr->fromlist;
 	ListCell *fromCell = NULL;
@@ -154,6 +156,7 @@ JoinExprList(FromExpr *fromExpr)
 static bool
 JoinExprListWalker(Node *node, List **joinList)
 {
+elog(INFO, "TTT src/backend/distributed/planner/multi_join_order.c:JoinExprListWalker");
 	bool walkerResult = false;
 
 	if (node == NULL)
@@ -186,6 +189,7 @@ JoinExprListWalker(Node *node, List **joinList)
 static bool
 ExtractLeftMostRangeTableIndex(Node *node, int *rangeTableIndex)
 {
+elog(INFO, "TTT src/backend/distributed/planner/multi_join_order.c:ExtractLeftMostRangeTableIndex");
 	bool walkerResult = false;
 
 	Assert(node != NULL);
@@ -220,6 +224,7 @@ static bool
 JoinOnColumns(List *currentPartitionColumnList, Var *candidateColumn,
 			  List *joinClauseList)
 {
+elog(INFO, "TTT src/backend/distributed/planner/multi_join_order.c:JoinOnColumns");
 	if (candidateColumn == NULL || list_length(currentPartitionColumnList) == 0)
 	{
 		/*
@@ -272,6 +277,7 @@ JoinOnColumns(List *currentPartitionColumnList, Var *candidateColumn,
 bool
 NodeIsEqualsOpExpr(Node *node)
 {
+elog(INFO, "TTT src/backend/distributed/planner/multi_join_order.c:NodeIsEqualsOpExpr");
 	if (!IsA(node, OpExpr))
 	{
 		return false;
@@ -291,6 +297,7 @@ NodeIsEqualsOpExpr(Node *node)
 List *
 JoinOrderList(List *tableEntryList, List *joinClauseList)
 {
+elog(INFO, "TTT src/backend/distributed/planner/multi_join_order.c:JoinOrderList");
 	List *candidateJoinOrderList = NIL;
 	ListCell *tableEntryCell = NULL;
 
@@ -340,6 +347,7 @@ JoinOrderList(List *tableEntryList, List *joinClauseList)
 static List *
 JoinOrderForTable(TableEntry *firstTable, List *tableEntryList, List *joinClauseList)
 {
+elog(INFO, "TTT src/backend/distributed/planner/multi_join_order.c:JoinOrderForTable");
 	JoinRuleType firstJoinRule = JOIN_RULE_INVALID_FIRST;
 	int joinedTableCount = 1;
 	int totalTableCount = list_length(tableEntryList);
@@ -435,6 +443,7 @@ JoinOrderForTable(TableEntry *firstTable, List *tableEntryList, List *joinClause
 static List *
 BestJoinOrder(List *candidateJoinOrders)
 {
+elog(INFO, "TTT src/backend/distributed/planner/multi_join_order.c:BestJoinOrder");
 	uint32 highestValidIndex = JOIN_RULE_LAST - 1;
 	uint32 candidateCount PG_USED_FOR_ASSERTS_ONLY = 0;
 
@@ -489,6 +498,7 @@ BestJoinOrder(List *candidateJoinOrders)
 static List *
 FewestOfJoinRuleType(List *candidateJoinOrders, JoinRuleType ruleType)
 {
+elog(INFO, "TTT src/backend/distributed/planner/multi_join_order.c:FewestOfJoinRuleType");
 	List *fewestJoinOrders = NULL;
 	uint32 fewestRuleCount = INT_MAX;
 	ListCell *joinOrderCell = NULL;
@@ -544,6 +554,7 @@ JoinRuleTypeCount(List *joinOrder, JoinRuleType ruleTypeToCount)
 static List *
 LatestLargeDataTransfer(List *candidateJoinOrders)
 {
+elog(INFO, "TTT src/backend/distributed/planner/multi_join_order.c:LatestLargeDataTransfer");
 	List *latestJoinOrders = NIL;
 	uint32 latestJoinLocation = 0;
 	ListCell *joinOrderCell = NULL;

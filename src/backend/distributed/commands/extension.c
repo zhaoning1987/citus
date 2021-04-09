@@ -29,6 +29,7 @@
 #include "nodes/makefuncs.h"
 #include "utils/lsyscache.h"
 #include "utils/builtins.h"
+#include "utils/elog.h"
 
 
 /* Local functions forward declarations for helper functions */
@@ -52,6 +53,7 @@ static Node * RecreateExtensionStmt(Oid extensionOid);
 void
 ErrorIfUnstableCreateOrAlterExtensionStmt(Node *parseTree)
 {
+elog(INFO, "TTT src/backend/distributed/commands/extension.c:ErrorIfUnstableCreateOrAlterExtensionStmt");
 	char *newExtensionVersion = ExtractNewExtensionVersion(parseTree);
 
 	if (newExtensionVersion != NULL)
@@ -86,6 +88,7 @@ ErrorIfUnstableCreateOrAlterExtensionStmt(Node *parseTree)
 static char *
 ExtractNewExtensionVersion(Node *parseTree)
 {
+elog(INFO, "TTT src/backend/distributed/commands/extension.c:ExtractNewExtensionVersion");
 	List *optionsList = NIL;
 
 	if (IsA(parseTree, CreateExtensionStmt))
@@ -130,6 +133,7 @@ ExtractNewExtensionVersion(Node *parseTree)
 List *
 PostprocessCreateExtensionStmt(Node *node, const char *queryString)
 {
+elog(INFO, "TTT src/backend/distributed/commands/extension.c:PostprocessCreateExtensionStmt");
 	CreateExtensionStmt *stmt = castNode(CreateExtensionStmt, node);
 
 	if (!ShouldPropagateExtensionCommand(node))
@@ -202,6 +206,7 @@ PostprocessCreateExtensionStmt(Node *node, const char *queryString)
 static void
 AddSchemaFieldIfMissing(CreateExtensionStmt *createExtensionStmt)
 {
+elog(INFO, "TTT src/backend/distributed/commands/extension.c:AddSchemaFieldIfMissing");
 	List *optionsList = createExtensionStmt->options;
 
 	DefElem *schemaNameValue = GetExtensionOption(optionsList, "schema");
@@ -242,6 +247,7 @@ List *
 PreprocessDropExtensionStmt(Node *node, const char *queryString,
 							ProcessUtilityContext processUtilityContext)
 {
+elog(INFO, "TTT src/backend/distributed/commands/extension.c:PreprocessDropExtensionStmt");
 	DropStmt *stmt = castNode(DropStmt, node);
 
 	if (!ShouldPropagateExtensionCommand(node))
@@ -319,6 +325,7 @@ PreprocessDropExtensionStmt(Node *node, const char *queryString,
 static List *
 FilterDistributedExtensions(List *extensionObjectList)
 {
+elog(INFO, "TTT src/backend/distributed/commands/extension.c:FilterDistributedExtensions");
 	List *extensionNameList = NIL;
 
 	Value *objectName = NULL;
@@ -358,6 +365,7 @@ FilterDistributedExtensions(List *extensionObjectList)
 static List *
 ExtensionNameListToObjectAddressList(List *extensionObjectList)
 {
+elog(INFO, "TTT src/backend/distributed/commands/extension.c:ExtensionNameListToObjectAddressList");
 	List *extensionObjectAddressList = NIL;
 
 	Value *objectName;
@@ -390,6 +398,7 @@ List *
 PreprocessAlterExtensionSchemaStmt(Node *node, const char *queryString,
 								   ProcessUtilityContext processUtilityContext)
 {
+elog(INFO, "TTT src/backend/distributed/commands/extension.c:PreprocessAlterExtensionSchemaStmt");
 	if (!ShouldPropagateExtensionCommand(node))
 	{
 		return NIL;
@@ -435,6 +444,7 @@ PreprocessAlterExtensionSchemaStmt(Node *node, const char *queryString,
 List *
 PostprocessAlterExtensionSchemaStmt(Node *node, const char *queryString)
 {
+elog(INFO, "TTT src/backend/distributed/commands/extension.c:PostprocessAlterExtensionSchemaStmt");
 	ObjectAddress extensionAddress = GetObjectAddressFromParseTree(node, false);
 
 	if (!ShouldPropagateExtensionCommand(node))
@@ -510,6 +520,7 @@ PreprocessAlterExtensionUpdateStmt(Node *node, const char *queryString,
 void
 PostprocessAlterExtensionCitusUpdateStmt(Node *node)
 {
+elog(INFO, "TTT src/backend/distributed/commands/extension.c:PostprocessAlterExtensionCitusUpdateStmt");
 	/*
 	 * We should not postprocess this command in workers as they do not keep track
 	 * of citus.pg_dist_object.
@@ -593,6 +604,7 @@ MarkExistingObjectDependenciesDistributedIfSupported()
 	ObjectAddress *objectAddress = NULL;
 	foreach_ptr(objectAddress, uniqueObjectAddresses)
 	{
+elog(INFO, "TTT src/backend/distributed/commands/extension.c:PreprocessAlterExtensionContentsStmt");
 		MarkObjectDistributed(objectAddress);
 	}
 }

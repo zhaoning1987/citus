@@ -48,6 +48,7 @@
 #include "utils/palloc.h"
 #include "utils/rel.h"
 #include "utils/syscache.h"
+#include "utils/elog.h"
 
 /* local function forward declarations */
 static void ErrorIfTableCannotBeReplicated(Oid relationId);
@@ -107,6 +108,7 @@ bool DeferShardDeleteOnMove = false;
 Datum
 citus_copy_shard_placement(PG_FUNCTION_ARGS)
 {
+elog(INFO, "TTT src/backend/distributed/operations/repair_shards.c:citus_copy_shard_placement");
 	int64 shardId = PG_GETARG_INT64(0);
 	text *sourceNodeNameText = PG_GETARG_TEXT_P(1);
 	int32 sourceNodePort = PG_GETARG_INT32(2);
@@ -154,6 +156,7 @@ citus_copy_shard_placement(PG_FUNCTION_ARGS)
 Datum
 master_copy_shard_placement(PG_FUNCTION_ARGS)
 {
+elog(INFO, "TTT src/backend/distributed/operations/repair_shards.c:master_copy_shard_placement");
 	return citus_copy_shard_placement(fcinfo);
 }
 
@@ -176,6 +179,7 @@ master_copy_shard_placement(PG_FUNCTION_ARGS)
 Datum
 citus_move_shard_placement(PG_FUNCTION_ARGS)
 {
+elog(INFO, "TTT src/backend/distributed/operations/repair_shards.c:citus_move_shard_placement");
 	int64 shardId = PG_GETARG_INT64(0);
 	char *sourceNodeName = text_to_cstring(PG_GETARG_TEXT_P(1));
 	int32 sourceNodePort = PG_GETARG_INT32(2);
@@ -292,6 +296,7 @@ citus_move_shard_placement(PG_FUNCTION_ARGS)
 Datum
 master_move_shard_placement(PG_FUNCTION_ARGS)
 {
+elog(INFO, "TTT src/backend/distributed/operations/repair_shards.c:master_move_shard_placement");
 	return citus_move_shard_placement(fcinfo);
 }
 
@@ -304,6 +309,7 @@ master_move_shard_placement(PG_FUNCTION_ARGS)
 void
 ErrorIfMoveCitusLocalTable(Oid relationId)
 {
+elog(INFO, "TTT src/backend/distributed/operations/repair_shards.c:ErrorIfMoveCitusLocalTable");
 	if (!IsCitusTableType(relationId, CITUS_LOCAL_TABLE))
 	{
 		return;
@@ -324,6 +330,7 @@ ErrorIfMoveCitusLocalTable(Oid relationId)
 void
 BlockWritesToShardList(List *shardList)
 {
+elog(INFO, "TTT src/backend/distributed/operations/repair_shards.c:BlockWritesToShardList");
 	ShardInterval *shard = NULL;
 	foreach_ptr(shard, shardList)
 	{
@@ -369,6 +376,7 @@ BlockWritesToShardList(List *shardList)
 static void
 ErrorIfTableCannotBeReplicated(Oid relationId)
 {
+elog(INFO, "TTT src/backend/distributed/operations/repair_shards.c:ErrorIfTableCannotBeReplicated");
 	/*
 	 * Note that ShouldSyncTableMetadata() returns true for both MX tables
 	 * and reference tables.
@@ -415,6 +423,7 @@ ErrorIfTableCannotBeReplicated(Oid relationId)
 char
 LookupShardTransferMode(Oid shardReplicationModeOid)
 {
+elog(INFO, "TTT src/backend/distributed/operations/repair_shards.c:LookupShardTransferMode");
 	char shardReplicationMode = 0;
 
 	Datum enumLabelDatum = DirectFunctionCall1(enum_out, shardReplicationModeOid);
@@ -449,6 +458,7 @@ static void
 RepairShardPlacement(int64 shardId, const char *sourceNodeName, int32 sourceNodePort,
 					 const char *targetNodeName, int32 targetNodePort)
 {
+elog(INFO, "TTT src/backend/distributed/operations/repair_shards.c:RepairShardPlacement");
 	ShardInterval *shardInterval = LoadShardInterval(shardId);
 	Oid distributedTableId = shardInterval->relationId;
 
@@ -646,6 +656,7 @@ ReplicateColocatedShardPlacement(int64 shardId, char *sourceNodeName,
 static void
 EnsureTableListOwner(List *tableIdList)
 {
+elog(INFO, "TTT src/backend/distributed/operations/repair_shards.c:EnsureTableListOwner");
 	Oid tableId = InvalidOid;
 	foreach_oid(tableId, tableIdList)
 	{

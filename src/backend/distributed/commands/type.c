@@ -77,6 +77,7 @@
 #include "utils/regproc.h"
 #include "utils/syscache.h"
 #include "utils/typcache.h"
+#include "utils/elog.h"
 
 #define AlterEnumIsRename(stmt) (stmt->oldVal != NULL)
 #define AlterEnumIsAddValue(stmt) (stmt->oldVal == NULL)
@@ -119,6 +120,7 @@ List *
 PreprocessCompositeTypeStmt(Node *node, const char *queryString,
 							ProcessUtilityContext processUtilityContext)
 {
+elog(INFO, "TTT src/backend/distributed/commands/type.c:PreprocessCompositeTypeStmt");
 	if (!ShouldPropagateTypeCreate())
 	{
 		return NIL;
@@ -176,6 +178,7 @@ PreprocessCompositeTypeStmt(Node *node, const char *queryString,
 List *
 PostprocessCompositeTypeStmt(Node *node, const char *queryString)
 {
+elog(INFO, "TTT src/backend/distributed/commands/type.c:PostprocessCompositeTypeStmt");
 	/* same check we perform during planning of the statement */
 	if (!ShouldPropagateTypeCreate())
 	{
@@ -205,6 +208,7 @@ List *
 PreprocessAlterTypeStmt(Node *node, const char *queryString,
 						ProcessUtilityContext processUtilityContext)
 {
+elog(INFO, "TTT src/backend/distributed/commands/type.c:PreprocessAlterTypeStmt");
 	AlterTableStmt *stmt = castNode(AlterTableStmt, node);
 	Assert(stmt->relkind == OBJECT_TYPE);
 
@@ -249,6 +253,7 @@ List *
 PreprocessCreateEnumStmt(Node *node, const char *queryString,
 						 ProcessUtilityContext processUtilityContext)
 {
+elog(INFO, "TTT src/backend/distributed/commands/type.c:PreprocessCreateEnumStmt");
 	if (!ShouldPropagateTypeCreate())
 	{
 		return NIL;
@@ -290,6 +295,7 @@ PreprocessCreateEnumStmt(Node *node, const char *queryString,
 List *
 PostprocessCreateEnumStmt(Node *node, const char *queryString)
 {
+elog(INFO, "TTT src/backend/distributed/commands/type.c:PostprocessCreateEnumStmt");
 	if (!ShouldPropagateTypeCreate())
 	{
 		return NIL;
@@ -322,6 +328,7 @@ List *
 PreprocessAlterEnumStmt(Node *node, const char *queryString,
 						ProcessUtilityContext processUtilityContext)
 {
+elog(INFO, "TTT src/backend/distributed/commands/type.c:PreprocessAlterEnumStmt");
 	List *commands = NIL;
 
 	ObjectAddress typeAddress = GetObjectAddressFromParseTree(node, false);
@@ -390,6 +397,7 @@ PreprocessAlterEnumStmt(Node *node, const char *queryString,
 List *
 PostprocessAlterEnumStmt(Node *node, const char *queryString)
 {
+elog(INFO, "TTT src/backend/distributed/commands/type.c:PostprocessAlterEnumStmt");
 	/*
 	 * Before pg12 ALTER ENUM ... ADD VALUE could not be within a xact block. Normally we
 	 * would propagate the statements in a xact block to perform 2pc on changes via ddl.
@@ -453,6 +461,7 @@ List *
 PreprocessDropTypeStmt(Node *node, const char *queryString,
 					   ProcessUtilityContext processUtilityContext)
 {
+elog(INFO, "TTT src/backend/distributed/commands/type.c:PreprocessDropTypeStmt");
 	DropStmt *stmt = castNode(DropStmt, node);
 
 	/*
@@ -522,6 +531,7 @@ List *
 PreprocessRenameTypeStmt(Node *node, const char *queryString,
 						 ProcessUtilityContext processUtilityContext)
 {
+elog(INFO, "TTT src/backend/distributed/commands/type.c:PreprocessRenameTypeStmt");
 	ObjectAddress typeAddress = GetObjectAddressFromParseTree(node, false);
 	if (!ShouldPropagateObject(&typeAddress))
 	{
@@ -621,6 +631,7 @@ PreprocessAlterTypeSchemaStmt(Node *node, const char *queryString,
 List *
 PostprocessAlterTypeSchemaStmt(Node *node, const char *queryString)
 {
+elog(INFO, "TTT src/backend/distributed/commands/type.c:PostprocessAlterTypeSchemaStmt");
 	AlterObjectSchemaStmt *stmt = castNode(AlterObjectSchemaStmt, node);
 	Assert(stmt->objectType == OBJECT_TYPE);
 

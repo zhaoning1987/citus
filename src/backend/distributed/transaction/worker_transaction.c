@@ -31,6 +31,7 @@
 #include "distributed/worker_manager.h"
 #include "distributed/worker_transaction.h"
 #include "utils/memutils.h"
+#include "utils/elog.h"
 
 
 static void SendCommandToMetadataWorkersParams(const char *command,
@@ -58,6 +59,7 @@ static void SendCommandToWorkersOutsideTransaction(TargetWorkerSet targetWorkerS
 void
 SendCommandToWorker(const char *nodeName, int32 nodePort, const char *command)
 {
+elog(INFO, "TTT src/backend/distributed/transaction/worker_transaction.c:SendCommandToWorker");
 	const char *nodeUser = CitusExtensionOwnerName();
 	SendCommandToWorkerAsUser(nodeName, nodePort, nodeUser, command);
 }
@@ -71,6 +73,7 @@ void
 SendCommandToWorkersAsUser(TargetWorkerSet targetWorkerSet, const char *nodeUser,
 						   const char *command)
 {
+elog(INFO, "TTT src/backend/distributed/transaction/worker_transaction.c:SendCommandToWorkersAsUser");
 	List *workerNodeList = TargetWorkerSetNodeList(targetWorkerSet, ShareLock);
 
 	/* run commands serially */
@@ -93,6 +96,7 @@ void
 SendCommandToWorkerAsUser(const char *nodeName, int32 nodePort, const char *nodeUser,
 						  const char *command)
 {
+elog(INFO, "TTT src/backend/distributed/transaction/worker_transaction.c:SendCommandToWorkerAsUser");
 	uint32 connectionFlags = 0;
 
 	UseCoordinatedTransaction();
@@ -118,6 +122,7 @@ SendCommandToWorkerAsUser(const char *nodeName, int32 nodePort, const char *node
 void
 SendCommandToWorkersWithMetadata(const char *command)
 {
+elog(INFO, "TTT src/backend/distributed/transaction/worker_transaction.c:SendCommandToWorkersWithMetadata");
 	SendCommandToMetadataWorkersParams(command, CitusExtensionOwnerName(),
 									   0, NULL, NULL);
 }
@@ -130,6 +135,7 @@ SendCommandToWorkersWithMetadata(const char *command)
 List *
 TargetWorkerSetNodeList(TargetWorkerSet targetWorkerSet, LOCKMODE lockMode)
 {
+elog(INFO, "TTT src/backend/distributed/transaction/worker_transaction.c:TargetWorkerSetNodeList");
 	List *workerNodeList = NIL;
 	if (targetWorkerSet == ALL_SHARD_NODES)
 	{
@@ -166,6 +172,7 @@ TargetWorkerSetNodeList(TargetWorkerSet targetWorkerSet, LOCKMODE lockMode)
 void
 SendBareCommandListToMetadataWorkers(List *commandList)
 {
+elog(INFO, "TTT src/backend/distributed/transaction/worker_transaction.c:SendBareCommandListToMetadataWorkers");
 	TargetWorkerSet targetWorkerSet = NON_COORDINATOR_METADATA_NODES;
 	List *workerNodeList = TargetWorkerSetNodeList(targetWorkerSet, ShareLock);
 	char *nodeUser = CitusExtensionOwnerName();
@@ -205,6 +212,7 @@ SendBareCommandListToMetadataWorkers(List *commandList)
 int
 SendBareOptionalCommandListToAllWorkersAsUser(List *commandList, const char *user)
 {
+elog(INFO, "TTT src/backend/distributed/transaction/worker_transaction.c:SendBareOptionalCommandListToAllWorkersAsUser");
 	TargetWorkerSet targetWorkerSet = NON_COORDINATOR_NODES;
 	List *workerNodeList = TargetWorkerSetNodeList(targetWorkerSet, ShareLock);
 	int maxError = RESPONSE_OKAY;
@@ -273,6 +281,7 @@ SendCommandToWorkersOptionalInParallel(TargetWorkerSet targetWorkerSet, const
 									   char *command,
 									   const char *user)
 {
+elog(INFO, "TTT src/backend/distributed/transaction/worker_transaction.c:SendCommandToWorkersOptionalInParallel");
 	bool failOnError = false;
 	SendCommandToWorkersOutsideTransaction(targetWorkerSet, command, user,
 										   failOnError);
@@ -330,6 +339,7 @@ SendCommandToWorkersOutsideTransaction(TargetWorkerSet targetWorkerSet, const
 static List *
 OpenConnectionsToWorkersInParallel(TargetWorkerSet targetWorkerSet, const char *user)
 {
+elog(INFO, "TTT src/backend/distributed/transaction/worker_transaction.c:OpenConnectionsToWorkersInParallel");
 	List *connectionList = NIL;
 
 	List *workerNodeList = TargetWorkerSetNodeList(targetWorkerSet, ShareLock);
@@ -469,6 +479,7 @@ SendCommandToWorkersParamsInternal(TargetWorkerSet targetWorkerSet, const char *
 void
 EnsureNoModificationsHaveBeenDone()
 {
+elog(INFO, "TTT src/backend/distributed/transaction/worker_transaction.c:EnsureNoModificationsHaveBeenDone");
 	if (XactModificationLevel > XACT_MODIFICATION_NONE)
 	{
 		ereport(ERROR, (errcode(ERRCODE_ACTIVE_SQL_TRANSACTION),

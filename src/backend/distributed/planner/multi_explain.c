@@ -63,6 +63,7 @@
 #include "utils/json.h"
 #include "utils/lsyscache.h"
 #include "utils/snapmgr.h"
+#include "utils/elog.h"
 
 
 /* Config variables that enable printing distributed query plans */
@@ -179,6 +180,7 @@ PG_FUNCTION_INFO_V1(worker_save_query_explain_analyze);
 void
 CitusExplainScan(CustomScanState *node, List *ancestors, struct ExplainState *es)
 {
+elog(INFO, "TTT src/backend/distributed/planner/multi_explain.c:CitusExplainScan");
 	CitusScanState *scanState = (CitusScanState *) node;
 	DistributedPlan *distributedPlan = scanState->distributedPlan;
 	EState *executorState = ScanStateGetExecutorState(scanState);
@@ -215,6 +217,7 @@ void
 NonPushableInsertSelectExplainScan(CustomScanState *node, List *ancestors,
 								   struct ExplainState *es)
 {
+elog(INFO, "TTT src/backend/distributed/planner/multi_explain.c:NonPushableInsertSelectExplainScan");
 	CitusScanState *scanState = (CitusScanState *) node;
 	DistributedPlan *distributedPlan = scanState->distributedPlan;
 	Query *insertSelectQuery = distributedPlan->insertSelectQuery;
@@ -267,6 +270,7 @@ NonPushableInsertSelectExplainScan(CustomScanState *node, List *ancestors,
 static void
 ExplainSubPlans(DistributedPlan *distributedPlan, ExplainState *es)
 {
+elog(INFO, "TTT src/backend/distributed/planner/multi_explain.c:ExplainSubPlans");
 	ListCell *subPlanCell = NULL;
 	uint64 planId = distributedPlan->planId;
 
@@ -361,6 +365,7 @@ ExplainSubPlans(DistributedPlan *distributedPlan, ExplainState *es)
 static void
 ExplainPropertyBytes(const char *qlabel, int64 bytes, ExplainState *es)
 {
+elog(INFO, "TTT src/backend/distributed/planner/multi_explain.c:ExplainPropertyBytes");
 	Datum textDatum = DirectFunctionCall1(pg_size_pretty, Int64GetDatum(bytes));
 	ExplainPropertyText(qlabel, text_to_cstring(DatumGetTextP(textDatum)), es);
 }
@@ -374,6 +379,7 @@ ExplainPropertyBytes(const char *qlabel, int64 bytes, ExplainState *es)
 static bool
 ShowReceivedTupleData(CitusScanState *scanState, ExplainState *es)
 {
+elog(INFO, "TTT src/backend/distributed/planner/multi_explain.c:ShowReceivedTupleData");
 	TupleDesc tupDesc = ScanStateGetTupleDescriptor(scanState);
 	return es->analyze && tupDesc != NULL && tupDesc->natts > 0;
 }
@@ -388,6 +394,7 @@ static void
 ExplainJob(CitusScanState *scanState, Job *job, ExplainState *es,
 		   ParamListInfo params)
 {
+elog(INFO, "TTT src/backend/distributed/planner/multi_explain.c:ExplainJob");
 	List *dependentJobList = job->dependentJobList;
 	int dependentJobCount = list_length(dependentJobList);
 	ListCell *dependentJobCell = NULL;
@@ -470,6 +477,7 @@ ExplainJob(CitusScanState *scanState, Job *job, ExplainState *es,
 static uint64
 TaskReceivedTupleData(Task *task)
 {
+elog(INFO, "TTT src/backend/distributed/planner/multi_explain.c:TaskReceivedTupleData");
 	if (task->taskType == MODIFY_TASK)
 	{
 		return task->totalReceivedTupleData * list_length(task->taskPlacementList);
@@ -525,6 +533,7 @@ ExplainMapMergeJob(MapMergeJob *mapMergeJob, ExplainState *es)
 
 	if (es->format == EXPLAIN_FORMAT_TEXT)
 	{
+elog(INFO, "TTT src/backend/distributed/planner/multi_explain.c:CompareTasksByFetchedExplainAnalyzeDuration");
 		es->indent -= 3;
 	}
 }
@@ -621,6 +630,7 @@ RemoteExplain(Task *task, ExplainState *es, ParamListInfo params)
 	}
 	else
 	{
+elog(INFO, "TTT src/backend/distributed/planner/multi_explain.c:GetSavedRemoteExplain");
 		return FetchRemoteExplainFromWorkers(task, es, params);
 	}
 }
@@ -807,6 +817,7 @@ ExplainTask(CitusScanState *scanState, Task *task, int placementIndex,
 
 	if (es->format == EXPLAIN_FORMAT_TEXT)
 	{
+elog(INFO, "TTT src/backend/distributed/planner/multi_explain.c:ExplainTaskPlacement");
 		es->indent -= 3;
 	}
 }
@@ -887,6 +898,7 @@ ExplainTaskPlacement(ShardPlacement *taskPlacement, List *explainOutputList,
 
 	if (es->format == EXPLAIN_FORMAT_TEXT)
 	{
+elog(INFO, "TTT src/backend/distributed/planner/multi_explain.c:BuildRemoteExplainQuery");
 		es->indent = savedIndentation;
 	}
 }
@@ -951,6 +963,7 @@ ExplainFormatStr(ExplainFormat format)
 
 		default:
 		{
+elog(INFO, "TTT src/backend/distributed/planner/multi_explain.c:worker_last_saved_explain_analyze");
 			return "TEXT";
 		}
 	}
@@ -1095,6 +1108,7 @@ worker_save_query_explain_analyze(PG_FUNCTION_ARGS)
 void
 FreeSavedExplainPlan(void)
 {
+elog(INFO, "TTT src/backend/distributed/planner/multi_explain.c:FreeSavedExplainPlan");
 	if (SavedExplainPlan)
 	{
 		pfree(SavedExplainPlan);
@@ -1250,6 +1264,7 @@ CitusExplainOneQuery(Query *query, int cursorOptions, IntoClause *into,
 	/* calc differences of buffer counters. */
 	if (es->buffers)
 	{
+elog(INFO, "TTT src/backend/distributed/planner/multi_explain.c:CreateExplainAnlyzeDestination");
 		memset(&bufusage, 0, sizeof(BufferUsage));
 		BufferUsageAccumDiff(&bufusage, &pgBufferUsage, &bufusage_start);
 	}
@@ -1375,6 +1390,7 @@ ResetExplainAnalyzeData(List *taskList)
 	Task *task = NULL;
 	foreach_ptr(task, taskList)
 	{
+elog(INFO, "TTT src/backend/distributed/planner/multi_explain.c:ExplainAnalyzeDestTupleDescForQuery");
 		if (task->fetchedExplainAnalyzePlan != NULL)
 		{
 			pfree(task->fetchedExplainAnalyzePlan);
@@ -1419,6 +1435,7 @@ ExplainAnalyzeDestTupleDescForQuery(TupleDestination *self, int queryNumber)
 bool
 RequestedForExplainAnalyze(CitusScanState *node)
 {
+elog(INFO, "TTT src/backend/distributed/planner/multi_explain.c:ExplainAnalyzeTaskList");
 	return (node->customScanState.ss.ps.state->es_instrument != 0);
 }
 

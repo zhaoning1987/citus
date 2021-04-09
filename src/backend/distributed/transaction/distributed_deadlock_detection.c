@@ -27,6 +27,7 @@
 #include "nodes/pg_list.h"
 #include "utils/hsearch.h"
 #include "utils/timestamp.h"
+#include "utils/elog.h"
 
 
 /* used only for finding the deadlock cycle path */
@@ -74,6 +75,7 @@ PG_FUNCTION_INFO_V1(check_distributed_deadlocks);
 Datum
 check_distributed_deadlocks(PG_FUNCTION_ARGS)
 {
+elog(INFO, "TTT src/backend/distributed/transaction/distributed_deadlock_detection.c:check_distributed_deadlocks");
 	bool deadlockFound = CheckForDistributedDeadlocks();
 
 	return BoolGetDatum(deadlockFound);
@@ -103,6 +105,7 @@ check_distributed_deadlocks(PG_FUNCTION_ARGS)
 bool
 CheckForDistributedDeadlocks(void)
 {
+elog(INFO, "TTT src/backend/distributed/transaction/distributed_deadlock_detection.c:CheckForDistributedDeadlocks");
 	HASH_SEQ_STATUS status;
 	TransactionNode *transactionNode = NULL;
 	int32 localGroupId = GetLocalGroupId();
@@ -233,6 +236,7 @@ CheckDeadlockForTransactionNode(TransactionNode *startingTransactionNode,
 								int maxStackDepth,
 								List **deadlockPath)
 {
+elog(INFO, "TTT src/backend/distributed/transaction/distributed_deadlock_detection.c:CheckDeadlockForTransactionNode");
 	List *toBeVisitedNodes = NIL;
 	const int rootStackDepth = 0;
 	TransactionNode **transactionNodeStack =
@@ -297,6 +301,7 @@ static void
 PrependOutgoingNodesToQueue(TransactionNode *transactionNode, int currentStackDepth,
 							List **toBeVisitedNodes)
 {
+elog(INFO, "TTT src/backend/distributed/transaction/distributed_deadlock_detection.c:PrependOutgoingNodesToQueue");
 	/* as we traverse outgoing edges, increment the depth */
 	currentStackDepth++;
 
@@ -323,6 +328,7 @@ BuildDeadlockPathList(QueuedTransactionNode *cycledTransactionNode,
 					  TransactionNode **transactionNodeStack,
 					  List **deadlockPath)
 {
+elog(INFO, "TTT src/backend/distributed/transaction/distributed_deadlock_detection.c:BuildDeadlockPathList");
 	int deadlockStackDepth = cycledTransactionNode->currentStackDepth;
 
 	*deadlockPath = NIL;
@@ -341,6 +347,7 @@ BuildDeadlockPathList(QueuedTransactionNode *cycledTransactionNode,
 static void
 ResetVisitedFields(HTAB *adjacencyList)
 {
+elog(INFO, "TTT src/backend/distributed/transaction/distributed_deadlock_detection.c:ResetVisitedFields");
 	HASH_SEQ_STATUS status;
 	TransactionNode *resetNode = NULL;
 
@@ -368,6 +375,7 @@ ResetVisitedFields(HTAB *adjacencyList)
 static bool
 AssociateDistributedTransactionWithBackendProc(TransactionNode *transactionNode)
 {
+elog(INFO, "TTT src/backend/distributed/transaction/distributed_deadlock_detection.c:AssociateDistributedTransactionWithBackendProc");
 	int32 localGroupId PG_USED_FOR_ASSERTS_ONLY = GetLocalGroupId();
 
 	for (int backendIndex = 0; backendIndex < MaxBackends; ++backendIndex)
@@ -442,6 +450,7 @@ AssociateDistributedTransactionWithBackendProc(TransactionNode *transactionNode)
 extern HTAB *
 BuildAdjacencyListsForWaitGraph(WaitGraph *waitGraph)
 {
+elog(INFO, "TTT src/backend/distributed/transaction/distributed_deadlock_detection.c:BuildAdjacencyListsForWaitGraph");
 	HASHCTL info;
 	int edgeCount = waitGraph->edgeCount;
 
@@ -496,6 +505,7 @@ BuildAdjacencyListsForWaitGraph(WaitGraph *waitGraph)
 static TransactionNode *
 GetOrCreateTransactionNode(HTAB *adjacencyList, DistributedTransactionId *transactionId)
 {
+elog(INFO, "TTT src/backend/distributed/transaction/distributed_deadlock_detection.c:GetOrCreateTransactionNode");
 	bool found = false;
 
 	TransactionNode *transactionNode = (TransactionNode *) hash_search(adjacencyList,

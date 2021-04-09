@@ -26,6 +26,7 @@
 #include "parser/parse_func.h"
 #include "utils/lsyscache.h"
 #include "utils/syscache.h"
+#include "utils/elog.h"
 
 /* forward declaration for qualify functions */
 static void QualifyFunction(ObjectWithArgs *func, ObjectType type);
@@ -36,6 +37,7 @@ static void QualifyFunctionSchemaName(ObjectWithArgs *func, ObjectType type);
 void
 AssertObjectTypeIsFunctional(ObjectType type)
 {
+elog(INFO, "TTT src/backend/distributed/deparser/qualify_function_stmt.c:AssertObjectTypeIsFunctional");
 	Assert(type == OBJECT_AGGREGATE ||
 		   type == OBJECT_FUNCTION ||
 		   type == OBJECT_PROCEDURE ||
@@ -54,6 +56,7 @@ AssertObjectTypeIsFunctional(ObjectType type)
 void
 QualifyAlterFunctionStmt(Node *node)
 {
+elog(INFO, "TTT src/backend/distributed/deparser/qualify_function_stmt.c:QualifyAlterFunctionStmt");
 	AlterFunctionStmt *stmt = castNode(AlterFunctionStmt, node);
 	AssertObjectTypeIsFunctional(stmt->objtype);
 
@@ -69,6 +72,7 @@ QualifyAlterFunctionStmt(Node *node)
 void
 QualifyRenameFunctionStmt(Node *node)
 {
+elog(INFO, "TTT src/backend/distributed/deparser/qualify_function_stmt.c:QualifyRenameFunctionStmt");
 	RenameStmt *stmt = castNode(RenameStmt, node);
 	AssertObjectTypeIsFunctional(stmt->renameType);
 
@@ -84,6 +88,7 @@ QualifyRenameFunctionStmt(Node *node)
 void
 QualifyAlterFunctionSchemaStmt(Node *node)
 {
+elog(INFO, "TTT src/backend/distributed/deparser/qualify_function_stmt.c:QualifyAlterFunctionSchemaStmt");
 	AlterObjectSchemaStmt *stmt = castNode(AlterObjectSchemaStmt, node);
 	AssertObjectTypeIsFunctional(stmt->objectType);
 
@@ -99,6 +104,7 @@ QualifyAlterFunctionSchemaStmt(Node *node)
 void
 QualifyAlterFunctionOwnerStmt(Node *node)
 {
+elog(INFO, "TTT src/backend/distributed/deparser/qualify_function_stmt.c:QualifyAlterFunctionOwnerStmt");
 	AlterOwnerStmt *stmt = castNode(AlterOwnerStmt, node);
 	AssertObjectTypeIsFunctional(stmt->objectType);
 
@@ -114,6 +120,7 @@ QualifyAlterFunctionOwnerStmt(Node *node)
 void
 QualifyAlterFunctionDependsStmt(Node *node)
 {
+elog(INFO, "TTT src/backend/distributed/deparser/qualify_function_stmt.c:QualifyAlterFunctionDependsStmt");
 	AlterObjectDependsStmt *stmt = castNode(AlterObjectDependsStmt, node);
 	AssertObjectTypeIsFunctional(stmt->objectType);
 
@@ -127,6 +134,7 @@ QualifyAlterFunctionDependsStmt(Node *node)
 void
 QualifyFunction(ObjectWithArgs *func, ObjectType type)
 {
+elog(INFO, "TTT src/backend/distributed/deparser/qualify_function_stmt.c:QualifyFunction");
 	char *functionName = NULL;
 	char *schemaName = NULL;
 

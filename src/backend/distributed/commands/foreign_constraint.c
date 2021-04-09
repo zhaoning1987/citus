@@ -40,6 +40,7 @@
 #include "utils/relcache.h"
 #include "utils/ruleutils.h"
 #include "utils/syscache.h"
+#include "utils/elog.h"
 
 
 #define BehaviorIsRestrictOrNoAction(x) \
@@ -91,6 +92,7 @@ static void UpdateConstraintIsValid(Oid constraintId, bool isValid);
 bool
 ConstraintIsAForeignKeyToReferenceTable(char *inputConstaintName, Oid relationId)
 {
+elog(INFO, "TTT src/backend/distributed/commands/foreign_constraint.c:ConstraintIsAForeignKeyToReferenceTable");
 	int flags = INCLUDE_REFERENCING_CONSTRAINTS | INCLUDE_REFERENCE_TABLES;
 	List *foreignKeyOids = GetForeignKeyOids(relationId, flags);
 
@@ -132,6 +134,7 @@ ErrorIfUnsupportedForeignConstraintExists(Relation relation, char referencingDis
 										  Var *referencingDistKey,
 										  uint32 referencingColocationId)
 {
+elog(INFO, "TTT src/backend/distributed/commands/foreign_constraint.c:ErrorIfUnsupportedForeignConstraintExists");
 	Oid referencingTableId = relation->rd_id;
 
 	int flags = INCLUDE_REFERENCING_CONSTRAINTS | INCLUDE_ALL_TABLE_TYPES;
@@ -314,6 +317,7 @@ EnsureSupportedFKeyBetweenCitusLocalAndRefTable(Form_pg_constraint fKeyConstrain
 												char referencedReplicationModel,
 												Oid referencedTableId)
 {
+elog(INFO, "TTT src/backend/distributed/commands/foreign_constraint.c:EnsureSupportedFKeyBetweenCitusLocalAndRefTable");
 	bool referencingIsReferenceTable =
 		(referencingReplicationModel == REPLICATION_MODEL_2PC);
 	bool referencedIsCitusLocalTable =
@@ -353,6 +357,7 @@ EnsureSupportedFKeyBetweenCitusLocalAndRefTable(Form_pg_constraint fKeyConstrain
 static void
 EnsureSupportedFKeyOnDistKey(Form_pg_constraint fKeyConstraintForm)
 {
+elog(INFO, "TTT src/backend/distributed/commands/foreign_constraint.c:EnsureSupportedFKeyOnDistKey");
 	/*
 	 * ON DELETE SET NULL and ON DELETE SET DEFAULT is not supported. Because we do
 	 * not want to set partition column to NULL or default value.
@@ -395,6 +400,7 @@ EnsureSupportedFKeyOnDistKey(Form_pg_constraint fKeyConstraintForm)
 static void
 EnsureReferencingTableNotReplicated(Oid referencingTableId)
 {
+elog(INFO, "TTT src/backend/distributed/commands/foreign_constraint.c:EnsureReferencingTableNotReplicated");
 	bool referencingNotReplicated = true;
 	bool referencingIsCitus = IsCitusTable(referencingTableId);
 
@@ -432,6 +438,7 @@ EnsureReferencingTableNotReplicated(Oid referencingTableId)
 void
 ErrorOutForFKeyBetweenPostgresAndCitusLocalTable(Oid localTableId)
 {
+elog(INFO, "TTT src/backend/distributed/commands/foreign_constraint.c:ErrorOutForFKeyBetweenPostgresAndCitusLocalTable");
 	char *localTableName = get_rel_name(localTableId);
 	ereport(ERROR, (errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
 					errmsg("cannot create foreign key constraint as \"%s\" is "
@@ -509,6 +516,7 @@ ForeignConstraintFindDistKeys(HeapTuple pgConstraintTuple,
 bool
 ColumnAppearsInForeignKey(char *columnName, Oid relationId)
 {
+elog(INFO, "TTT src/backend/distributed/commands/foreign_constraint.c:ColumnAppearsInForeignKey");
 	int searchForeignKeyColumnFlags = SEARCH_REFERENCING_RELATION |
 									  SEARCH_REFERENCED_RELATION;
 	List *foreignKeysColumnAppeared =
@@ -524,6 +532,7 @@ ColumnAppearsInForeignKey(char *columnName, Oid relationId)
 bool
 ColumnAppearsInForeignKeyToReferenceTable(char *columnName, Oid relationId)
 {
+elog(INFO, "TTT src/backend/distributed/commands/foreign_constraint.c:ColumnAppearsInForeignKeyToReferenceTable");
 	int searchForeignKeyColumnFlags = SEARCH_REFERENCING_RELATION |
 									  SEARCH_REFERENCED_RELATION;
 	List *foreignKeyIdsColumnAppeared =
@@ -553,6 +562,7 @@ static List *
 GetForeignKeyIdsForColumn(char *columnName, Oid relationId,
 						  int searchForeignKeyColumnFlags)
 {
+elog(INFO, "TTT src/backend/distributed/commands/foreign_constraint.c:GetForeignKeyIdsForColumn");
 	bool searchReferencing = searchForeignKeyColumnFlags & SEARCH_REFERENCING_RELATION;
 	bool searchReferenced = searchForeignKeyColumnFlags & SEARCH_REFERENCED_RELATION;
 
@@ -627,6 +637,7 @@ GetForeignKeyIdsForColumn(char *columnName, Oid relationId,
 List *
 GetReferencingForeignConstaintCommands(Oid relationId)
 {
+elog(INFO, "TTT src/backend/distributed/commands/foreign_constraint.c:GetReferencingForeignConstaintCommands");
 	int flags = INCLUDE_REFERENCING_CONSTRAINTS | INCLUDE_ALL_TABLE_TYPES;
 	return GetForeignConstraintCommandsInternal(relationId, flags);
 }

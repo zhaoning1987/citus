@@ -17,6 +17,7 @@
 #include "distributed/metadata_cache.h"
 #include "distributed/shard_cleaner.h"
 #include "distributed/worker_transaction.h"
+#include "utils/elog.h"
 
 
 /* declarations for dynamic loading */
@@ -41,6 +42,7 @@ static int DropMarkedShards(void);
 Datum
 master_defer_delete_shards(PG_FUNCTION_ARGS)
 {
+elog(INFO, "TTT src/backend/distributed/operations/shard_cleaner.c:master_defer_delete_shards");
 	CheckCitusVersion(ERROR);
 	EnsureCoordinator();
 
@@ -57,6 +59,7 @@ master_defer_delete_shards(PG_FUNCTION_ARGS)
 int
 TryDropMarkedShards(void)
 {
+elog(INFO, "TTT src/backend/distributed/operations/shard_cleaner.c:TryDropMarkedShards");
 	int droppedShardCount = 0;
 	MemoryContext savedContext = CurrentMemoryContext;
 

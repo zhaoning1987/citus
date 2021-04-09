@@ -51,6 +51,7 @@
 #include "utils/errcodes.h"
 #include "utils/lsyscache.h"
 #include "utils/palloc.h"
+#include "utils/elog.h"
 
 
 /* declarations for dynamic loading */
@@ -64,6 +65,7 @@ PG_FUNCTION_INFO_V1(master_create_worker_shards);
 Datum
 master_create_worker_shards(PG_FUNCTION_ARGS)
 {
+elog(INFO, "TTT src/backend/distributed/operations/create_shards.c:master_create_worker_shards");
 	text *tableNameText = PG_GETARG_TEXT_P(0);
 	int32 shardCount = PG_GETARG_INT32(1);
 	int32 replicationFactor = PG_GETARG_INT32(2);
@@ -108,6 +110,7 @@ void
 CreateShardsWithRoundRobinPolicy(Oid distributedTableId, int32 shardCount,
 								 int32 replicationFactor, bool useExclusiveConnections)
 {
+elog(INFO, "TTT src/backend/distributed/operations/create_shards.c:CreateShardsWithRoundRobinPolicy");
 	CitusTableCacheEntry *cacheEntry = GetCitusTableCacheEntry(distributedTableId);
 	bool colocatedShard = false;
 	List *insertedShardPlacements = NIL;
@@ -240,6 +243,7 @@ void
 CreateColocatedShards(Oid targetRelationId, Oid sourceRelationId, bool
 					  useExclusiveConnections)
 {
+elog(INFO, "TTT src/backend/distributed/operations/create_shards.c:CreateColocatedShards");
 	bool colocatedShard = true;
 	List *insertedShardPlacements = NIL;
 
@@ -332,6 +336,7 @@ CreateColocatedShards(Oid targetRelationId, Oid sourceRelationId, bool
 void
 CreateReferenceTableShard(Oid distributedTableId)
 {
+elog(INFO, "TTT src/backend/distributed/operations/create_shards.c:CreateReferenceTableShard");
 	int workerStartIndex = 0;
 	text *shardMinValue = NULL;
 	text *shardMaxValue = NULL;
@@ -394,6 +399,7 @@ CreateReferenceTableShard(Oid distributedTableId)
 void
 CheckHashPartitionedTable(Oid distributedTableId)
 {
+elog(INFO, "TTT src/backend/distributed/operations/create_shards.c:CheckHashPartitionedTable");
 	char partitionType = PartitionMethod(distributedTableId);
 	if (partitionType != DISTRIBUTE_BY_HASH)
 	{

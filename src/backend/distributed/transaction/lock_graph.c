@@ -31,6 +31,7 @@
 #include "utils/builtins.h"
 #include "utils/hsearch.h"
 #include "utils/timestamp.h"
+#include "utils/elog.h"
 
 
 /*
@@ -75,6 +76,7 @@ PG_FUNCTION_INFO_V1(dump_global_wait_edges);
 Datum
 dump_global_wait_edges(PG_FUNCTION_ARGS)
 {
+elog(INFO, "TTT src/backend/distributed/transaction/lock_graph.c:dump_global_wait_edges");
 	WaitGraph *waitGraph = BuildGlobalWaitGraph();
 
 	ReturnWaitGraph(waitGraph, fcinfo);
@@ -91,6 +93,7 @@ dump_global_wait_edges(PG_FUNCTION_ARGS)
 WaitGraph *
 BuildGlobalWaitGraph(void)
 {
+elog(INFO, "TTT src/backend/distributed/transaction/lock_graph.c:BuildGlobalWaitGraph");
 	List *workerNodeList = ActiveReadableNodeList();
 	char *nodeUser = CitusExtensionOwnerName();
 	List *connectionList = NIL;
@@ -176,6 +179,7 @@ BuildGlobalWaitGraph(void)
 static void
 AddWaitEdgeFromResult(WaitGraph *waitGraph, PGresult *result, int rowIndex)
 {
+elog(INFO, "TTT src/backend/distributed/transaction/lock_graph.c:AddWaitEdgeFromResult");
 	WaitEdge *waitEdge = AllocWaitEdge(waitGraph);
 
 	waitEdge->waitingPid = ParseIntField(result, rowIndex, 0);
@@ -197,6 +201,7 @@ AddWaitEdgeFromResult(WaitGraph *waitGraph, PGresult *result, int rowIndex)
 int64
 ParseIntField(PGresult *result, int rowIndex, int colIndex)
 {
+elog(INFO, "TTT src/backend/distributed/transaction/lock_graph.c:ParseIntField");
 	if (PQgetisnull(result, rowIndex, colIndex))
 	{
 		return 0;
@@ -215,6 +220,7 @@ ParseIntField(PGresult *result, int rowIndex, int colIndex)
 bool
 ParseBoolField(PGresult *result, int rowIndex, int colIndex)
 {
+elog(INFO, "TTT src/backend/distributed/transaction/lock_graph.c:ParseBoolField");
 	if (PQgetisnull(result, rowIndex, colIndex))
 	{
 		return false;
@@ -237,6 +243,7 @@ ParseBoolField(PGresult *result, int rowIndex, int colIndex)
 TimestampTz
 ParseTimestampTzField(PGresult *result, int rowIndex, int colIndex)
 {
+elog(INFO, "TTT src/backend/distributed/transaction/lock_graph.c:ParseTimestampTzField");
 	if (PQgetisnull(result, rowIndex, colIndex))
 	{
 		return DT_NOBEGIN;
@@ -257,6 +264,7 @@ ParseTimestampTzField(PGresult *result, int rowIndex, int colIndex)
 Datum
 dump_local_wait_edges(PG_FUNCTION_ARGS)
 {
+elog(INFO, "TTT src/backend/distributed/transaction/lock_graph.c:dump_local_wait_edges");
 	WaitGraph *waitGraph = BuildLocalWaitGraph();
 	ReturnWaitGraph(waitGraph, fcinfo);
 
@@ -336,6 +344,7 @@ ReturnWaitGraph(WaitGraph *waitGraph, FunctionCallInfo fcinfo)
 static WaitGraph *
 BuildLocalWaitGraph(void)
 {
+elog(INFO, "TTT src/backend/distributed/transaction/lock_graph.c:BuildLocalWaitGraph");
 	PROCStack remaining;
 	int totalProcs = TotalProcCount();
 
@@ -457,6 +466,7 @@ BuildLocalWaitGraph(void)
 static bool
 IsProcessWaitingForSafeOperations(PGPROC *proc)
 {
+elog(INFO, "TTT src/backend/distributed/transaction/lock_graph.c:IsProcessWaitingForSafeOperations");
 	if (proc->waitStatus != STATUS_WAITING)
 	{
 		return false;
@@ -725,6 +735,7 @@ AddProcToVisit(PROCStack *remaining, PGPROC *proc)
 bool
 IsProcessWaitingForLock(PGPROC *proc)
 {
+elog(INFO, "TTT src/backend/distributed/transaction/lock_graph.c:IsSameLockGroup");
 	return proc->waitStatus == STATUS_WAITING;
 }
 

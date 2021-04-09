@@ -61,6 +61,7 @@
 #include "utils/memutils.h"
 #include "utils/snapmgr.h"
 #include "utils/syscache.h"
+#include "utils/elog.h"
 
 
 static List * GetDistributedTableDDLEvents(Oid relationId);
@@ -103,6 +104,7 @@ static bool got_SIGALRM = false;
 Datum
 start_metadata_sync_to_node(PG_FUNCTION_ARGS)
 {
+elog(INFO, "TTT src/backend/distributed/metadata/metadata_sync.c:start_metadata_sync_to_node");
 	text *nodeName = PG_GETARG_TEXT_P(0);
 	int32 nodePort = PG_GETARG_INT32(1);
 
@@ -121,6 +123,7 @@ start_metadata_sync_to_node(PG_FUNCTION_ARGS)
 void
 StartMetadataSyncToNode(const char *nodeNameString, int32 nodePort)
 {
+elog(INFO, "TTT src/backend/distributed/metadata/metadata_sync.c:StartMetadataSyncToNode");
 	char *escapedNodeName = quote_literal_cstr(nodeNameString);
 
 	/* fail if metadata synchronization doesn't succeed */
@@ -185,6 +188,7 @@ StartMetadataSyncToNode(const char *nodeNameString, int32 nodePort)
 Datum
 stop_metadata_sync_to_node(PG_FUNCTION_ARGS)
 {
+elog(INFO, "TTT src/backend/distributed/metadata/metadata_sync.c:stop_metadata_sync_to_node");
 	text *nodeName = PG_GETARG_TEXT_P(0);
 	int32 nodePort = PG_GETARG_INT32(1);
 	char *nodeNameString = text_to_cstring(nodeName);
@@ -218,6 +222,7 @@ stop_metadata_sync_to_node(PG_FUNCTION_ARGS)
 bool
 ClusterHasKnownMetadataWorkers()
 {
+elog(INFO, "TTT src/backend/distributed/metadata/metadata_sync.c:ClusterHasKnownMetadataWorkers");
 	bool workerWithMetadata = false;
 
 	if (!IsCoordinator())
@@ -243,6 +248,7 @@ ClusterHasKnownMetadataWorkers()
 bool
 ShouldSyncTableMetadata(Oid relationId)
 {
+elog(INFO, "TTT src/backend/distributed/metadata/metadata_sync.c:ShouldSyncTableMetadata");
 	if (!OidIsValid(relationId) || !IsCitusTable(relationId))
 	{
 		return false;
@@ -276,6 +282,7 @@ ShouldSyncTableMetadata(Oid relationId)
 static bool
 SyncMetadataSnapshotToNode(WorkerNode *workerNode, bool raiseOnError)
 {
+elog(INFO, "TTT src/backend/distributed/metadata/metadata_sync.c:SyncMetadataSnapshotToNode");
 	char *extensionOwner = CitusExtensionOwnerName();
 
 	/* generate and add the local group id's update query */
@@ -328,6 +335,7 @@ bool
 SendOptionalCommandListToWorkerInTransaction(const char *nodeName, int32 nodePort,
 											 const char *nodeUser, List *commandList)
 {
+elog(INFO, "TTT src/backend/distributed/metadata/metadata_sync.c:SendOptionalCommandListToWorkerInTransaction");
 	int connectionFlags = FORCE_NEW_CONNECTION;
 	bool failed = false;
 
@@ -379,6 +387,7 @@ SendOptionalCommandListToWorkerInTransaction(const char *nodeName, int32 nodePor
 List *
 MetadataCreateCommands(void)
 {
+elog(INFO, "TTT src/backend/distributed/metadata/metadata_sync.c:MetadataCreateCommands");
 	List *metadataSnapshotCommandList = NIL;
 	List *distributedTableList = CitusTableList();
 	List *propagatedTableList = NIL;
@@ -524,6 +533,7 @@ MetadataCreateCommands(void)
 static List *
 GetDistributedTableDDLEvents(Oid relationId)
 {
+elog(INFO, "TTT src/backend/distributed/metadata/metadata_sync.c:GetDistributedTableDDLEvents");
 	CitusTableCacheEntry *cacheEntry = GetCitusTableCacheEntry(relationId);
 
 	List *commandList = NIL;
@@ -607,6 +617,7 @@ GetDistributedTableDDLEvents(Oid relationId)
 List *
 MetadataDropCommands(void)
 {
+elog(INFO, "TTT src/backend/distributed/metadata/metadata_sync.c:MetadataDropCommands");
 	List *dropSnapshotCommandList = NIL;
 	List *detachPartitionCommandList = DetachPartitionCommandList();
 

@@ -33,6 +33,7 @@
 #include "common/hashfn.h"
 #endif
 #include "utils/lsyscache.h"
+#include "utils/elog.h"
 
 
 /* Config variables managed via guc.c */
@@ -128,6 +129,7 @@ static bool HoldsConflictingLockWithReferencedRelations(Oid relationId,
 void
 ResetRelationAccessHash()
 {
+elog(INFO, "TTT src/backend/distributed/transaction/relation_access_tracking.c:ResetRelationAccessHash");
 	hash_delete_all(RelationAccessHash);
 }
 
@@ -138,6 +140,7 @@ ResetRelationAccessHash()
 void
 AllocateRelationAccessHash(void)
 {
+elog(INFO, "TTT src/backend/distributed/transaction/relation_access_tracking.c:AllocateRelationAccessHash");
 	HASHCTL info;
 
 	memset(&info, 0, sizeof(info));
@@ -161,6 +164,7 @@ AllocateRelationAccessHash(void)
 void
 RecordRelationAccessIfNonDistTable(Oid relationId, ShardPlacementAccessType accessType)
 {
+elog(INFO, "TTT src/backend/distributed/transaction/relation_access_tracking.c:RecordRelationAccessIfNonDistTable");
 	if (!ShouldRecordRelationAccess())
 	{
 		return;
@@ -189,6 +193,7 @@ RecordRelationAccessIfNonDistTable(Oid relationId, ShardPlacementAccessType acce
 static char *
 PlacementAccessTypeToText(ShardPlacementAccessType accessType)
 {
+elog(INFO, "TTT src/backend/distributed/transaction/relation_access_tracking.c:PlacementAccessTypeToText");
 	switch (accessType)
 	{
 		case PLACEMENT_ACCESS_SELECT:
@@ -227,6 +232,7 @@ PlacementAccessTypeToText(ShardPlacementAccessType accessType)
 static void
 RecordRelationAccessBase(Oid relationId, ShardPlacementAccessType accessType)
 {
+elog(INFO, "TTT src/backend/distributed/transaction/relation_access_tracking.c:RecordRelationAccessBase");
 	/*
 	 * We call this only for reference tables, and we don't support partitioned
 	 * reference tables.
@@ -248,6 +254,7 @@ RecordRelationAccessBase(Oid relationId, ShardPlacementAccessType accessType)
 static void
 RecordPlacementAccessToCache(Oid relationId, ShardPlacementAccessType accessType)
 {
+elog(INFO, "TTT src/backend/distributed/transaction/relation_access_tracking.c:RecordPlacementAccessToCache");
 	RelationAccessHashKey hashKey;
 	bool found = false;
 
@@ -275,6 +282,7 @@ RecordPlacementAccessToCache(Oid relationId, ShardPlacementAccessType accessType
 void
 RecordParallelRelationAccessForTaskList(List *taskList)
 {
+elog(INFO, "TTT src/backend/distributed/transaction/relation_access_tracking.c:RecordParallelRelationAccessForTaskList");
 	if (MultiShardConnectionType == SEQUENTIAL_CONNECTION)
 	{
 		/* sequential mode prevents parallel access */
@@ -440,6 +448,7 @@ RecordRelationParallelDDLAccessForTask(Task *task)
 
 	if (task->anchorShardId != INVALID_SHARD_ID)
 	{
+elog(INFO, "TTT src/backend/distributed/transaction/relation_access_tracking.c:RecordParallelSelectAccess");
 		RecordParallelDDLAccess(RelationIdForShard(task->anchorShardId));
 	}
 }
@@ -451,6 +460,7 @@ RecordRelationParallelDDLAccessForTask(Task *task)
 void
 RecordParallelSelectAccess(Oid relationId)
 {
+elog(INFO, "TTT src/backend/distributed/transaction/relation_access_tracking.c:RecordParallelModifyAccess");
 	RecordParallelRelationAccess(relationId, PLACEMENT_ACCESS_SELECT);
 }
 
@@ -461,6 +471,7 @@ RecordParallelSelectAccess(Oid relationId)
 void
 RecordParallelModifyAccess(Oid relationId)
 {
+elog(INFO, "TTT src/backend/distributed/transaction/relation_access_tracking.c:RecordParallelDDLAccess");
 	RecordParallelRelationAccess(relationId, PLACEMENT_ACCESS_DML);
 }
 
@@ -471,6 +482,7 @@ RecordParallelModifyAccess(Oid relationId)
 void
 RecordParallelDDLAccess(Oid relationId)
 {
+elog(INFO, "TTT src/backend/distributed/transaction/relation_access_tracking.c:RecordParallelRelationAccess");
 	RecordParallelRelationAccess(relationId, PLACEMENT_ACCESS_DDL);
 }
 
@@ -596,6 +608,7 @@ ParallelQueryExecutedInTransaction(void)
 RelationAccessMode
 GetRelationSelectAccessMode(Oid relationId)
 {
+elog(INFO, "TTT src/backend/distributed/transaction/relation_access_tracking.c:GetRelationDMLAccessMode");
 	return GetRelationAccessMode(relationId, PLACEMENT_ACCESS_SELECT);
 }
 
@@ -606,6 +619,7 @@ GetRelationSelectAccessMode(Oid relationId)
 RelationAccessMode
 GetRelationDMLAccessMode(Oid relationId)
 {
+elog(INFO, "TTT src/backend/distributed/transaction/relation_access_tracking.c:GetRelationDDLAccessMode");
 	return GetRelationAccessMode(relationId, PLACEMENT_ACCESS_DML);
 }
 
@@ -616,6 +630,7 @@ GetRelationDMLAccessMode(Oid relationId)
 RelationAccessMode
 GetRelationDDLAccessMode(Oid relationId)
 {
+elog(INFO, "TTT src/backend/distributed/transaction/relation_access_tracking.c:GetRelationAccessMode");
 	return GetRelationAccessMode(relationId, PLACEMENT_ACCESS_DDL);
 }
 
@@ -661,6 +676,7 @@ GetRelationAccessMode(Oid relationId, ShardPlacementAccessType accessType)
 	}
 	else
 	{
+elog(INFO, "TTT src/backend/distributed/transaction/relation_access_tracking.c:ShouldRecordRelationAccess");
 		return RELATION_REFERENCE_ACCESSED;
 	}
 }
@@ -679,6 +695,7 @@ GetRelationAccessMode(Oid relationId, ShardPlacementAccessType accessType)
 bool
 ShouldRecordRelationAccess()
 {
+elog(INFO, "TTT src/backend/distributed/transaction/relation_access_tracking.c:CheckConflictingRelationAccesses");
 	if (EnforceForeignKeyRestrictions &&
 		(IsMultiStatementTransaction() || InCoordinatedTransaction()))
 	{

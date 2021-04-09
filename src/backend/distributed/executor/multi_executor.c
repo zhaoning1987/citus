@@ -48,6 +48,7 @@
 #include "tcop/utility.h"
 #include "utils/snapmgr.h"
 #include "utils/memutils.h"
+#include "utils/elog.h"
 
 
 /*
@@ -89,6 +90,7 @@ static bool CitusCustomScanStateWalker(PlanState *planState,
 void
 CitusExecutorStart(QueryDesc *queryDesc, int eflags)
 {
+elog(INFO, "TTT src/backend/distributed/executor/multi_executor.c:CitusExecutorStart");
 	PlannedStmt *plannedStmt = queryDesc->plannedstmt;
 
 	/*
@@ -133,6 +135,7 @@ void
 CitusExecutorRun(QueryDesc *queryDesc,
 				 ScanDirection direction, uint64 count, bool execute_once)
 {
+elog(INFO, "TTT src/backend/distributed/executor/multi_executor.c:CitusExecutorRun");
 	DestReceiver *dest = queryDesc->dest;
 
 	ParamListInfo savedBoundParams = executorBoundParams;
@@ -258,6 +261,7 @@ CitusExecutorRun(QueryDesc *queryDesc,
 static List *
 FindCitusCustomScanStates(PlanState *planState)
 {
+elog(INFO, "TTT src/backend/distributed/executor/multi_executor.c:FindCitusCustomScanStates");
 	List *citusCustomScanStates = NIL;
 	CitusCustomScanStateWalker(planState, &citusCustomScanStates);
 	return citusCustomScanStates;
@@ -271,6 +275,7 @@ FindCitusCustomScanStates(PlanState *planState)
 static bool
 CitusCustomScanStateWalker(PlanState *planState, List **citusCustomScanStates)
 {
+elog(INFO, "TTT src/backend/distributed/executor/multi_executor.c:CitusCustomScanStateWalker");
 	if (IsCitusCustomState(planState))
 	{
 		CitusScanState *css = (CitusScanState *) planState;
@@ -292,6 +297,7 @@ CitusCustomScanStateWalker(PlanState *planState, List **citusCustomScanStates)
 TupleTableSlot *
 ReturnTupleFromTuplestore(CitusScanState *scanState)
 {
+elog(INFO, "TTT src/backend/distributed/executor/multi_executor.c:ReturnTupleFromTuplestore");
 	Tuplestorestate *tupleStore = scanState->tuplestorestate;
 	bool forwardScanDirection = true;
 
@@ -392,6 +398,7 @@ void
 ReadFileIntoTupleStore(char *fileName, char *copyFormat, TupleDesc tupleDescriptor,
 					   Tuplestorestate *tupstore)
 {
+elog(INFO, "TTT src/backend/distributed/executor/multi_executor.c:ReadFileIntoTupleStore");
 	/*
 	 * Trick BeginCopyFrom into using our tuple descriptor by pretending it belongs
 	 * to a relation.
@@ -449,6 +456,7 @@ ReadFileIntoTupleStore(char *fileName, char *copyFormat, TupleDesc tupleDescript
 void
 SortTupleStore(CitusScanState *scanState)
 {
+elog(INFO, "TTT src/backend/distributed/executor/multi_executor.c:SortTupleStore");
 	TupleDesc tupleDescriptor = ScanStateGetTupleDescriptor(scanState);
 	Tuplestorestate *tupleStore = scanState->tuplestorestate;
 
@@ -545,6 +553,7 @@ SortTupleStore(CitusScanState *scanState)
 static Relation
 StubRelation(TupleDesc tupleDescriptor)
 {
+elog(INFO, "TTT src/backend/distributed/executor/multi_executor.c:StubRelation");
 	Relation stubRelation = palloc0(sizeof(RelationData));
 	stubRelation->rd_att = tupleDescriptor;
 	stubRelation->rd_rel = palloc0(sizeof(FormData_pg_class));
@@ -562,6 +571,7 @@ void
 ExecuteQueryStringIntoDestReceiver(const char *queryString, ParamListInfo params,
 								   DestReceiver *dest)
 {
+elog(INFO, "TTT src/backend/distributed/executor/multi_executor.c:ExecuteQueryStringIntoDestReceiver");
 	Query *query = ParseQueryString(queryString, NULL, 0);
 
 	ExecuteQueryIntoDestReceiver(query, params, dest);
@@ -681,6 +691,7 @@ SetLocalMultiShardModifyModeToSequential()
 static bool
 AlterTableConstraintCheck(QueryDesc *queryDesc)
 {
+elog(INFO, "TTT src/backend/distributed/executor/multi_executor.c:AlterTableConstraintCheck");
 	if (!AlterTableInProgress())
 	{
 		return false;

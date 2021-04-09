@@ -50,6 +50,7 @@
 #include "utils/portal.h"
 #include "utils/rel.h"
 #include "utils/snapmgr.h"
+#include "utils/elog.h"
 
 /* Config variables managed via guc.c */
 bool EnableRepartitionedInsertSelect = true;
@@ -84,6 +85,7 @@ static void WrapTaskListForProjection(List *taskList, List *projectedTargetEntri
 TupleTableSlot *
 NonPushableInsertSelectExecScan(CustomScanState *node)
 {
+elog(INFO, "TTT src/backend/distributed/executor/insert_select_executor.c:NonPushableInsertSelectExecScan");
 	CitusScanState *scanState = (CitusScanState *) node;
 
 	if (!scanState->finishedRemoteScan)
@@ -306,6 +308,7 @@ NonPushableInsertSelectExecScan(CustomScanState *node)
 Query *
 BuildSelectForInsertSelect(Query *insertSelectQuery)
 {
+elog(INFO, "TTT src/backend/distributed/executor/insert_select_executor.c:BuildSelectForInsertSelect");
 	RangeTblEntry *selectRte = ExtractSelectRangeTableEntry(insertSelectQuery);
 	Query *selectQuery = selectRte->subquery;
 
@@ -343,6 +346,7 @@ BuildSelectForInsertSelect(Query *insertSelectQuery)
 static Query *
 WrapSubquery(Query *subquery)
 {
+elog(INFO, "TTT src/backend/distributed/executor/insert_select_executor.c:WrapSubquery");
 	ParseState *pstate = make_parsestate(NULL);
 	List *newTargetList = NIL;
 
@@ -402,6 +406,7 @@ static List *
 TwoPhaseInsertSelectTaskList(Oid targetRelationId, Query *insertSelectQuery,
 							 char *resultIdPrefix)
 {
+elog(INFO, "TTT src/backend/distributed/executor/insert_select_executor.c:TwoPhaseInsertSelectTaskList");
 	List *taskList = NIL;
 
 	/*
@@ -495,6 +500,7 @@ ExecutePlanIntoColocatedIntermediateResults(Oid targetRelationId,
 											EState *executorState,
 											char *intermediateResultIdPrefix)
 {
+elog(INFO, "TTT src/backend/distributed/executor/insert_select_executor.c:ExecutePlanIntoColocatedIntermediateResults");
 	ParamListInfo paramListInfo = executorState->es_param_list_info;
 	bool stopOnFailure = false;
 
@@ -536,6 +542,7 @@ static void
 ExecutePlanIntoRelation(Oid targetRelationId, List *insertTargetList,
 						PlannedStmt *selectPlan, EState *executorState)
 {
+elog(INFO, "TTT src/backend/distributed/executor/insert_select_executor.c:ExecutePlanIntoRelation");
 	ParamListInfo paramListInfo = executorState->es_param_list_info;
 	bool stopOnFailure = false;
 
@@ -572,6 +579,7 @@ ExecutePlanIntoRelation(Oid targetRelationId, List *insertTargetList,
 static List *
 BuildColumnNameListFromTargetList(Oid targetRelationId, List *insertTargetList)
 {
+elog(INFO, "TTT src/backend/distributed/executor/insert_select_executor.c:BuildColumnNameListFromTargetList");
 	List *columnNameList = NIL;
 
 	/* build the list of column names for the COPY statement */
@@ -593,6 +601,7 @@ BuildColumnNameListFromTargetList(Oid targetRelationId, List *insertTargetList)
 static int
 PartitionColumnIndexFromColumnList(Oid relationId, List *columnNameList)
 {
+elog(INFO, "TTT src/backend/distributed/executor/insert_select_executor.c:PartitionColumnIndexFromColumnList");
 	Var *partitionColumn = PartitionColumn(relationId, 0);
 	int partitionColumnIndex = 0;
 
@@ -621,6 +630,7 @@ PartitionColumnIndexFromColumnList(Oid relationId, List *columnNameList)
 bool
 IsSupportedRedistributionTarget(Oid targetRelationId)
 {
+elog(INFO, "TTT src/backend/distributed/executor/insert_select_executor.c:IsSupportedRedistributionTarget");
 	CitusTableCacheEntry *tableEntry = GetCitusTableCacheEntry(targetRelationId);
 
 	if (!IsCitusTableTypeCacheEntry(tableEntry, HASH_DISTRIBUTED) &&

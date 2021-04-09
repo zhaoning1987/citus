@@ -61,6 +61,7 @@
 #include "utils/lsyscache.h"
 #include "utils/rel.h"
 #include "utils/syscache.h"
+#include "utils/elog.h"
 
 #define StartsWith(msg, prefix) \
 	(strncmp(msg, prefix, strlen(prefix)) == 0)
@@ -503,6 +504,7 @@ MultiLogicalPlanOptimize(MultiTreeRoot *multiLogicalPlan)
 static MultiSelect *
 AndSelectNode(MultiSelect *selectNode)
 {
+elog(INFO, "TTT src/backend/distributed/planner/multi_logical_optimizer.c:OrSelectNode");
 	MultiSelect *andSelectNode = NULL;
 	List *selectClauseList = selectNode->selectClauseList;
 	List *orSelectClauseList = OrSelectClauseList(selectClauseList);
@@ -527,6 +529,7 @@ AndSelectNode(MultiSelect *selectNode)
 static MultiSelect *
 OrSelectNode(MultiSelect *selectNode)
 {
+elog(INFO, "TTT src/backend/distributed/planner/multi_logical_optimizer.c:OrSelectClauseList");
 	MultiSelect *orSelectNode = NULL;
 	List *selectClauseList = selectNode->selectClauseList;
 	List *orSelectClauseList = OrSelectClauseList(selectClauseList);
@@ -548,6 +551,7 @@ OrSelectNode(MultiSelect *selectNode)
 static List *
 OrSelectClauseList(List *selectClauseList)
 {
+elog(INFO, "TTT src/backend/distributed/planner/multi_logical_optimizer.c:PushDownNodeLoop");
 	List *orSelectClauseList = NIL;
 
 	Node *selectClause = NULL;
@@ -666,6 +670,7 @@ PushDownNodeLoop(MultiUnaryNode *currentNode)
 static void
 PullUpCollectLoop(MultiCollect *collectNode)
 {
+elog(INFO, "TTT src/backend/distributed/planner/multi_logical_optimizer.c:AddressProjectSpecialConditions");
 	MultiUnaryNode *currentNode = (MultiUnaryNode *) collectNode;
 
 	PullUpStatus pullUpStatus = CanPullUp(currentNode);
@@ -764,6 +769,7 @@ AddressProjectSpecialConditions(MultiProject *projectNode)
 static PushDownStatus
 CanPushDown(MultiUnaryNode *parentNode)
 {
+elog(INFO, "TTT src/backend/distributed/planner/multi_logical_optimizer.c:CanPullUp");
 	PushDownStatus pushDownStatus = PUSH_DOWN_INVALID_FIRST;
 	MultiNode *childNode = parentNode->childNode;
 	bool unaryChild = UnaryOperator(childNode);
@@ -798,6 +804,7 @@ CanPullUp(MultiUnaryNode *childNode)
 
 	if (unaryParent)
 	{
+elog(INFO, "TTT src/backend/distributed/planner/multi_logical_optimizer.c:Commutative");
 		/*
 		 * Evaluate if parent can be pushed down below the child node, since it
 		 * is equivalent to pulling up the child above its parent.
@@ -852,6 +859,7 @@ Commutative(MultiUnaryNode *parentNode, MultiUnaryNode *childNode)
 		(parentNodeTag == T_MultiCollect && childNodeTag == T_MultiCollect) ||
 		(parentNodeTag == T_MultiCollect && childNodeTag == T_MultiSelect))
 	{
+elog(INFO, "TTT src/backend/distributed/planner/multi_logical_optimizer.c:Distributive");
 		pushDownStatus = PUSH_DOWN_VALID;
 	}
 	if (parentNodeTag == T_MultiSelect)
@@ -918,6 +926,7 @@ Distributive(MultiUnaryNode *parentNode, MultiBinaryNode *childNode)
 	if ((parentNodeTag == T_MultiSelect && childNodeTag == T_MultiJoin) ||
 		(parentNodeTag == T_MultiSelect && childNodeTag == T_MultiCartesianProduct))
 	{
+elog(INFO, "TTT src/backend/distributed/planner/multi_logical_optimizer.c:Factorizable");
 		MultiSelect *selectNode = (MultiSelect *) parentNode;
 		List *selectClauseList = selectNode->selectClauseList;
 
@@ -945,6 +954,7 @@ Distributive(MultiUnaryNode *parentNode, MultiBinaryNode *childNode)
 static PullUpStatus
 Factorizable(MultiBinaryNode *parentNode, MultiUnaryNode *childNode)
 {
+elog(INFO, "TTT src/backend/distributed/planner/multi_logical_optimizer.c:SelectClauseTableIdList");
 	PullUpStatus pullUpStatus = PULL_UP_NOT_VALID;
 	CitusNodeTag parentNodeTag = CitusNodeTag(parentNode);
 	CitusNodeTag childNodeTag = CitusNodeTag(childNode);
@@ -974,6 +984,7 @@ Factorizable(MultiBinaryNode *parentNode, MultiUnaryNode *childNode)
 static List *
 SelectClauseTableIdList(List *selectClauseList)
 {
+elog(INFO, "TTT src/backend/distributed/planner/multi_logical_optimizer.c:GenerateLeftNode");
 	List *tableIdList = NIL;
 
 	Node *selectClause = NULL;
@@ -983,6 +994,7 @@ SelectClauseTableIdList(List *selectClauseList)
 
 		if (list_length(selectColumnList) == 0)
 		{
+elog(INFO, "TTT src/backend/distributed/planner/multi_logical_optimizer.c:GenerateRightNode");
 			/* filter is a constant, e.g. false or 1=0 */
 			continue;
 		}
@@ -1005,6 +1017,7 @@ SelectClauseTableIdList(List *selectClauseList)
 static MultiUnaryNode *
 GenerateLeftNode(MultiUnaryNode *currentNode, MultiBinaryNode *binaryNode)
 {
+elog(INFO, "TTT src/backend/distributed/planner/multi_logical_optimizer.c:GenerateNode");
 	MultiNode *leftChildNode = binaryNode->leftChildNode;
 	MultiUnaryNode *leftNodeGenerated = GenerateNode(currentNode, leftChildNode);
 
@@ -1044,6 +1057,7 @@ GenerateNode(MultiUnaryNode *currentNode, MultiNode *childNode)
 
 	if (currentNodeType == T_MultiProject)
 	{
+elog(INFO, "TTT src/backend/distributed/planner/multi_logical_optimizer.c:TableIdListColumns");
 		MultiProject *projectNode = (MultiProject *) currentNode;
 		List *columnList = copyObject(projectNode->columnList);
 
@@ -1109,6 +1123,7 @@ TableIdListColumns(List *tableIdList, List *columnList)
 static List *
 TableIdListSelectClauses(List *tableIdList, List *selectClauseList)
 {
+elog(INFO, "TTT src/backend/distributed/planner/multi_logical_optimizer.c:PushDownBelowUnaryChild");
 	List *tableSelectClauseList = NIL;
 
 	Node *selectClause = NULL;
@@ -1122,6 +1137,7 @@ TableIdListSelectClauses(List *tableIdList, List *selectClauseList)
 		}
 		else
 		{
+elog(INFO, "TTT src/backend/distributed/planner/multi_logical_optimizer.c:PlaceUnaryNodeChild");
 			Var *selectColumn = (Var *) linitial(selectColumnList);
 			int selectClauseTableId = (int) selectColumn->varno;
 
@@ -1141,6 +1157,7 @@ TableIdListSelectClauses(List *tableIdList, List *selectClauseList)
 static void
 PushDownBelowUnaryChild(MultiUnaryNode *currentNode, MultiUnaryNode *childNode)
 {
+elog(INFO, "TTT src/backend/distributed/planner/multi_logical_optimizer.c:PlaceBinaryNodeLeftChild");
 	MultiNode *parentNode = ParentNode((MultiNode *) currentNode);
 	MultiNode *childChildNode = ChildNode(childNode);
 
@@ -1180,6 +1197,7 @@ PlaceBinaryNodeLeftChild(MultiBinaryNode *binaryNode, MultiUnaryNode *newLeftChi
 {
 	if (newLeftChildNode == NULL)
 	{
+elog(INFO, "TTT src/backend/distributed/planner/multi_logical_optimizer.c:PullUpUnaryNode");
 		return;
 	}
 
@@ -1224,6 +1242,7 @@ RemoveUnaryNode(MultiUnaryNode *unaryNode)
 static void
 PullUpUnaryNode(MultiUnaryNode *unaryNode)
 {
+elog(INFO, "TTT src/backend/distributed/planner/multi_logical_optimizer.c:ParentSetNewChild");
 	MultiNode *parentNode = ParentNode((MultiNode *) unaryNode);
 	bool unaryParent = UnaryOperator(parentNode);
 	bool binaryParent = BinaryOperator(parentNode);
@@ -1375,6 +1394,7 @@ TransformSubqueryNode(MultiTable *subqueryNode,
 	 */
 	if (IsA(groupByExpression, Var))
 	{
+elog(INFO, "TTT src/backend/distributed/planner/multi_logical_optimizer.c:MasterExtendedOpNode");
 		partitionNode->partitionColumn = (Var *) groupByExpression;
 	}
 	else if (IsA(groupByExpression, FuncExpr))
@@ -1553,6 +1573,7 @@ MasterAggregateMutator(Node *originalNode, MasterAggregateWalkerContext *walkerC
 
 			if (column->vartype == RECORDOID || column->vartype == RECORDARRAYOID)
 			{
+elog(INFO, "TTT src/backend/distributed/planner/multi_logical_optimizer.c:MasterAggregateExpression");
 				column->vartypmod = BlessRecordExpression((Expr *) originalNode);
 			}
 
@@ -2181,6 +2202,7 @@ MasterAggregateExpression(Aggref *originalAggregate,
 		 */
 		if (masterReturnType == ANYELEMENTOID)
 		{
+elog(INFO, "TTT src/backend/distributed/planner/multi_logical_optimizer.c:MasterAverageExpression");
 			newMasterAggregate->aggtype = workerReturnType;
 
 			Expr *firstArg = FirstAggregateArgument(originalAggregate);
@@ -2581,6 +2603,7 @@ ProcessHavingClauseForWorkerQuery(Node *originalHavingQual,
 		 */
 		if (IsA(originalHavingQual, List))
 		{
+elog(INFO, "TTT src/backend/distributed/planner/multi_logical_optimizer.c:ProcessDistinctClauseForWorkerQuery");
 			*workerHavingQual =
 				(Node *) make_ands_explicit((List *) originalHavingQual);
 		}
@@ -2700,6 +2723,7 @@ ProcessWindowFunctionsForWorkerQuery(List *windowClauseList,
 									 QueryWindowClause *queryWindowClause,
 									 QueryTargetList *queryTargetList)
 {
+elog(INFO, "TTT src/backend/distributed/planner/multi_logical_optimizer.c:ProcessWindowFunctionPullUpForWorkerQuery");
 	if (windowClauseList == NIL)
 	{
 		return;
@@ -2854,6 +2878,7 @@ BuildOrderByLimitReference(bool hasDistinctOn, bool groupedByDisjointPartitionCo
 bool
 TargetListHasAggregates(List *targetEntryList)
 {
+elog(INFO, "TTT src/backend/distributed/planner/multi_logical_optimizer.c:ExpandWorkerTargetEntry");
 	TargetEntry *targetEntry = NULL;
 	foreach_ptr(targetEntry, targetEntryList)
 	{
@@ -2918,6 +2943,7 @@ ExpandWorkerTargetEntry(List *expressionList, TargetEntry *originalTargetEntry,
 		 */
 		if (IsA(newExpression, Var) && addToGroupByClause)
 		{
+elog(INFO, "TTT src/backend/distributed/planner/multi_logical_optimizer.c:GenerateWorkerTargetEntry");
 			AppendTargetEntryToGroupClause(newTargetEntry, queryGroupClause);
 		}
 	}
@@ -2962,6 +2988,7 @@ static TargetEntry *
 GenerateWorkerTargetEntry(TargetEntry *targetEntry, Expr *workerExpression,
 						  AttrNumber targetProjectionNumber)
 {
+elog(INFO, "TTT src/backend/distributed/planner/multi_logical_optimizer.c:AppendTargetEntryToGroupClause");
 	TargetEntry *newTargetEntry = NULL;
 
 	/*
@@ -3037,6 +3064,7 @@ AppendTargetEntryToGroupClause(TargetEntry *targetEntry,
 static bool
 WorkerAggregateWalker(Node *node, WorkerAggregateWalkerContext *walkerContext)
 {
+elog(INFO, "TTT src/backend/distributed/planner/multi_logical_optimizer.c:WorkerAggregateExpressionList");
 	bool walkerResult = false;
 	if (node == NULL)
 	{
@@ -3449,6 +3477,7 @@ GetAggregateType(Aggref *aggregateExpression)
 
 		if (aggFunctionId == TDigestExtensionAggTDigestPercentile3a())
 		{
+elog(INFO, "TTT src/backend/distributed/planner/multi_logical_optimizer.c:AggregateArgumentType");
 			return AGGREGATE_TDIGEST_PERCENTILE_ADD_DOUBLEARRAY;
 		}
 
@@ -3486,6 +3515,7 @@ GetAggregateType(Aggref *aggregateExpression)
 
 	if (AggregateEnabledCustom(aggregateExpression))
 	{
+elog(INFO, "TTT src/backend/distributed/planner/multi_logical_optimizer.c:AggregateEnabledCustom");
 		return AGGREGATE_CUSTOM_COMBINE;
 	}
 
@@ -3608,6 +3638,7 @@ AggregateFunctionOid(const char *functionName, Oid inputType)
 			if (procForm->proargtypes.values[0] == inputType ||
 				procForm->proargtypes.values[0] == ANYELEMENTOID)
 			{
+elog(INFO, "TTT src/backend/distributed/planner/multi_logical_optimizer.c:WorkerPartialAggOid");
 #if PG_VERSION_NUM < PG_VERSION_12
 				functionOid = HeapTupleGetOid(heapTuple);
 #else
@@ -3623,6 +3654,7 @@ AggregateFunctionOid(const char *functionName, Oid inputType)
 
 	if (functionOid == InvalidOid)
 	{
+elog(INFO, "TTT src/backend/distributed/planner/multi_logical_optimizer.c:CoordCombineAggOid");
 		ereport(ERROR, (errmsg("no matching oid for function: %s", functionName)));
 	}
 
@@ -3641,6 +3673,7 @@ AggregateFunctionOid(const char *functionName, Oid inputType)
 static Oid
 CitusFunctionOidWithSignature(char *functionName, int numargs, Oid *argtypes)
 {
+elog(INFO, "TTT src/backend/distributed/planner/multi_logical_optimizer.c:TypeOid");
 	List *aggregateName = list_make2(makeString("pg_catalog"), makeString(functionName));
 	FuncCandidateList clist = FuncnameGetCandidates(aggregateName, numargs, NIL, false,
 													false, true);
@@ -3679,6 +3712,7 @@ WorkerPartialAggOid()
 static Oid
 CoordCombineAggOid()
 {
+elog(INFO, "TTT src/backend/distributed/planner/multi_logical_optimizer.c:CountDistinctHashFunctionName");
 	Oid argtypes[] = {
 		OIDOID,
 		CSTRINGOID,
@@ -3712,6 +3746,7 @@ TypeOid(Oid schemaId, const char *typeName)
 static SortGroupClause *
 CreateSortGroupClause(Var *column)
 {
+elog(INFO, "TTT src/backend/distributed/planner/multi_logical_optimizer.c:CountDistinctStorageSize");
 	Oid lessThanOperator = InvalidOid;
 	Oid equalsOperator = InvalidOid;
 	bool hashable = false;
@@ -3736,6 +3771,7 @@ CreateSortGroupClause(Var *column)
 static const char *
 CountDistinctHashFunctionName(Oid argumentType)
 {
+elog(INFO, "TTT src/backend/distributed/planner/multi_logical_optimizer.c:MakeIntegerConst");
 	/* resolve hash function name based on input argument type */
 	switch (argumentType)
 	{
@@ -3753,6 +3789,7 @@ CountDistinctHashFunctionName(Oid argumentType)
 		case BPCHAROID:
 		case VARCHAROID:
 		{
+elog(INFO, "TTT src/backend/distributed/planner/multi_logical_optimizer.c:MakeIntegerConstInt64");
 			return HLL_HASH_TEXT_FUNC_NAME;
 		}
 
@@ -3772,6 +3809,7 @@ CountDistinctHashFunctionName(Oid argumentType)
 static int
 CountDistinctStorageSize(double approximationErrorRate)
 {
+elog(INFO, "TTT src/backend/distributed/planner/multi_logical_optimizer.c:HasNonDistributableAggregates");
 	double desiredStorageSize = pow((1.04 / approximationErrorRate), 2);
 	double logOfDesiredStorageSize = log(desiredStorageSize) / log(2);
 
@@ -3883,6 +3921,7 @@ static bool
 CanPushDownExpression(Node *expression,
 					  const ExtendedOpNodeProperties *extendedOpNodeProperties)
 {
+elog(INFO, "TTT src/backend/distributed/planner/multi_logical_optimizer.c:DeferErrorIfHasNonDistributableAggregates");
 	if (contain_nextval_expression_walker(expression, NULL))
 	{
 		/* nextval can only be evaluated on the coordinator */
@@ -3981,6 +4020,7 @@ DeferErrorIfHasNonDistributableAggregates(MultiNode *logicalPlanNode)
 		 */
 		if (aggregateType == AGGREGATE_ARRAY_AGG)
 		{
+elog(INFO, "TTT src/backend/distributed/planner/multi_logical_optimizer.c:DeferErrorIfUnsupportedJsonAggregate");
 			error = DeferErrorIfUnsupportedArrayAggregate(aggregateExpression);
 		}
 		else if (aggregateType == AGGREGATE_JSONB_AGG ||
@@ -4019,6 +4059,7 @@ DeferErrorIfHasNonDistributableAggregates(MultiNode *logicalPlanNode)
 static DeferredErrorMessage *
 DeferErrorIfUnsupportedArrayAggregate(Aggref *arrayAggregateExpression)
 {
+elog(INFO, "TTT src/backend/distributed/planner/multi_logical_optimizer.c:DeferErrorIfUnsupportedAggregateDistinct");
 	/* if array_agg has order by, we error out */
 	if (arrayAggregateExpression->aggorder)
 	{
@@ -4313,6 +4354,7 @@ TablePartitioningSupportsDistinct(List *tableNodeList, MultiExtendedOp *opNode,
 				tablePartitionColumn->varno == distinctColumn->varno &&
 				tablePartitionColumn->varattno == distinctColumn->varattno)
 			{
+elog(INFO, "TTT src/backend/distributed/planner/multi_logical_optimizer.c:SubqueryMultiTableList");
 				tableDistinctSupported = true;
 			}
 
@@ -4344,6 +4386,7 @@ TablePartitioningSupportsDistinct(List *tableNodeList, MultiExtendedOp *opNode,
 bool
 GroupedByColumn(List *groupClauseList, List *targetList, Var *column)
 {
+elog(INFO, "TTT src/backend/distributed/planner/multi_logical_optimizer.c:GroupTargetEntryList");
 	bool groupedByColumn = false;
 
 	if (column == NULL)
@@ -4363,6 +4406,7 @@ GroupedByColumn(List *groupClauseList, List *targetList, Var *column)
 			if (groupColumn->varno == column->varno &&
 				groupColumn->varattno == column->varattno)
 			{
+elog(INFO, "TTT src/backend/distributed/planner/multi_logical_optimizer.c:IsPartitionColumn");
 				groupedByColumn = true;
 				break;
 			}
@@ -4685,6 +4729,7 @@ WorkerLimitCount(Node *limitCount, Node *limitOffset, OrderByLimitReference
 	else if (orderByLimitReference.groupClauseIsEmpty ||
 			 orderByLimitReference.groupedByDisjointPartitionColumn)
 	{
+elog(INFO, "TTT src/backend/distributed/planner/multi_logical_optimizer.c:WorkerSortClauseList");
 		canPushDownLimit = LIMIT_CAN_PUSHDOWN;
 	}
 	else if (orderByLimitReference.sortClauseIsEmpty)
@@ -4754,6 +4799,7 @@ static List *
 WorkerSortClauseList(Node *limitCount, List *groupClauseList, List *sortClauseList,
 					 OrderByLimitReference orderByLimitReference)
 {
+elog(INFO, "TTT src/backend/distributed/planner/multi_logical_optimizer.c:GenerateNewTargetEntriesForSortClauses");
 	List *workerSortClauseList = NIL;
 
 	/* if no limit node and no hasDistinctOn, no need to push down sort clauses */
@@ -4823,6 +4869,7 @@ GenerateNewTargetEntriesForSortClauses(List *originalTargetList,
 									   AttrNumber *targetProjectionNumber,
 									   Index *nextSortGroupRefIndex)
 {
+elog(INFO, "TTT src/backend/distributed/planner/multi_logical_optimizer.c:CanPushDownLimitApproximate");
 	List *createdTargetList = NIL;
 
 	SortGroupClause *sgClause = NULL;
@@ -4850,6 +4897,7 @@ GenerateNewTargetEntriesForSortClauses(List *originalTargetList,
 		 */
 		if (!IsA(targetExpr, Aggref))
 		{
+elog(INFO, "TTT src/backend/distributed/planner/multi_logical_optimizer.c:HasOrderByAggregate");
 			createNewTargetEntry = true;
 		}
 		else
@@ -4924,6 +4972,7 @@ CanPushDownLimitApproximate(List *sortClauseList, List *targetList)
 static bool
 HasOrderByAggregate(List *sortClauseList, List *targetList)
 {
+elog(INFO, "TTT src/backend/distributed/planner/multi_logical_optimizer.c:HasOrderByComplexExpression");
 	bool hasOrderByAggregate = false;
 
 	SortGroupClause *sortClause = NULL;
@@ -4950,6 +4999,7 @@ HasOrderByAggregate(List *sortClauseList, List *targetList)
 static bool
 HasOrderByNonCommutativeAggregate(List *sortClauseList, List *targetList)
 {
+elog(INFO, "TTT src/backend/distributed/planner/multi_logical_optimizer.c:HasOrderByHllType");
 	bool hasOrderByNonCommutativeAggregate = false;
 
 	SortGroupClause *sortClause = NULL;
@@ -4990,6 +5040,7 @@ HasOrderByNonCommutativeAggregate(List *sortClauseList, List *targetList)
 static bool
 HasOrderByComplexExpression(List *sortClauseList, List *targetList)
 {
+elog(INFO, "TTT src/backend/distributed/planner/multi_logical_optimizer.c:ShouldProcessDistinctOrderAndLimitForWorker");
 	bool hasOrderByComplexExpression = false;
 
 	SortGroupClause *sortClause = NULL;
@@ -5022,6 +5073,7 @@ HasOrderByComplexExpression(List *sortClauseList, List *targetList)
 static bool
 HasOrderByHllType(List *sortClauseList, List *targetList)
 {
+elog(INFO, "TTT src/backend/distributed/planner/multi_logical_optimizer.c:WorkerColumnName");
 	bool hasOrderByHllType = false;
 
 	/* check whether HLL is loaded */

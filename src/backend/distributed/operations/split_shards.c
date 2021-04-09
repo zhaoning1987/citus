@@ -35,6 +35,7 @@
 #include "utils/errcodes.h"
 #include "utils/lsyscache.h"
 #include "utils/typcache.h"
+#include "utils/elog.h"
 
 
 /* declarations for dynamic loading */
@@ -49,6 +50,7 @@ PG_FUNCTION_INFO_V1(worker_hash);
 Datum
 isolate_tenant_to_new_shard(PG_FUNCTION_ARGS)
 {
+elog(INFO, "TTT src/backend/distributed/operations/split_shards.c:isolate_tenant_to_new_shard");
 	ereport(ERROR, (errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
 					errmsg("isolate_tenant_to_new_shard() is only supported on "
 						   "Citus Enterprise")));

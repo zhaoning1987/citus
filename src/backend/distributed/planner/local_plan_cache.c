@@ -24,6 +24,7 @@
 #include "optimizer/planner.h"
 #endif
 #include "optimizer/clauses.h"
+#include "utils/elog.h"
 
 
 /*
@@ -34,6 +35,7 @@
 void
 CacheLocalPlanForShardQuery(Task *task, DistributedPlan *originalDistributedPlan)
 {
+elog(INFO, "TTT src/backend/distributed/planner/local_plan_cache.c:CacheLocalPlanForShardQuery");
 	PlannedStmt *localPlan = GetCachedLocalPlan(task, originalDistributedPlan);
 	if (localPlan != NULL)
 	{
@@ -112,6 +114,7 @@ CacheLocalPlanForShardQuery(Task *task, DistributedPlan *originalDistributedPlan
 PlannedStmt *
 GetCachedLocalPlan(Task *task, DistributedPlan *distributedPlan)
 {
+elog(INFO, "TTT src/backend/distributed/planner/local_plan_cache.c:GetCachedLocalPlan");
 	if (distributedPlan == NULL || distributedPlan->workerJob == NULL)
 	{
 		return NULL;

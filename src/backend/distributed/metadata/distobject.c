@@ -40,6 +40,7 @@
 #include "utils/fmgroids.h"
 #include "utils/regproc.h"
 #include "utils/rel.h"
+#include "utils/elog.h"
 
 
 static int ExecuteCommandAsSuperuser(char *query, int paramCount, Oid *paramTypes,
@@ -58,6 +59,7 @@ PG_FUNCTION_INFO_V1(master_unmark_object_distributed);
 Datum
 citus_unmark_object_distributed(PG_FUNCTION_ARGS)
 {
+elog(INFO, "TTT src/backend/distributed/metadata/distobject.c:citus_unmark_object_distributed");
 	Oid classid = PG_GETARG_OID(0);
 	Oid objid = PG_GETARG_OID(1);
 	int32 objsubid = PG_GETARG_INT32(2);
@@ -92,6 +94,7 @@ citus_unmark_object_distributed(PG_FUNCTION_ARGS)
 Datum
 master_unmark_object_distributed(PG_FUNCTION_ARGS)
 {
+elog(INFO, "TTT src/backend/distributed/metadata/distobject.c:master_unmark_object_distributed");
 	return citus_unmark_object_distributed(fcinfo);
 }
 
@@ -107,6 +110,7 @@ master_unmark_object_distributed(PG_FUNCTION_ARGS)
 bool
 ObjectExists(const ObjectAddress *address)
 {
+elog(INFO, "TTT src/backend/distributed/metadata/distobject.c:ObjectExists");
 	if (address == NULL)
 	{
 		return false;
@@ -143,6 +147,7 @@ ObjectExists(const ObjectAddress *address)
 void
 MarkObjectDistributed(const ObjectAddress *distAddress)
 {
+elog(INFO, "TTT src/backend/distributed/metadata/distobject.c:MarkObjectDistributed");
 	int paramCount = 3;
 	Oid paramTypes[3] = {
 		OIDOID,
@@ -174,6 +179,7 @@ MarkObjectDistributed(const ObjectAddress *distAddress)
 bool
 CitusExtensionObject(const ObjectAddress *objectAddress)
 {
+elog(INFO, "TTT src/backend/distributed/metadata/distobject.c:CitusExtensionObject");
 	if (objectAddress->classId != ExtensionRelationId)
 	{
 		return false;
@@ -200,6 +206,7 @@ static int
 ExecuteCommandAsSuperuser(char *query, int paramCount, Oid *paramTypes,
 						  Datum *paramValues)
 {
+elog(INFO, "TTT src/backend/distributed/metadata/distobject.c:ExecuteCommandAsSuperuser");
 	Oid savedUserId = InvalidOid;
 	int savedSecurityContext = 0;
 
@@ -235,6 +242,7 @@ ExecuteCommandAsSuperuser(char *query, int paramCount, Oid *paramTypes,
 void
 UnmarkObjectDistributed(const ObjectAddress *address)
 {
+elog(INFO, "TTT src/backend/distributed/metadata/distobject.c:UnmarkObjectDistributed");
 	int paramCount = 3;
 	Oid paramTypes[3] = {
 		OIDOID,
@@ -266,6 +274,7 @@ UnmarkObjectDistributed(const ObjectAddress *address)
 bool
 IsObjectDistributed(const ObjectAddress *address)
 {
+elog(INFO, "TTT src/backend/distributed/metadata/distobject.c:IsObjectDistributed");
 	ScanKeyData key[3];
 	bool result = false;
 
@@ -303,6 +312,7 @@ IsObjectDistributed(const ObjectAddress *address)
 bool
 ClusterHasDistributedFunctionWithDistArgument(void)
 {
+elog(INFO, "TTT src/backend/distributed/metadata/distobject.c:ClusterHasDistributedFunctionWithDistArgument");
 	bool foundDistributedFunction = false;
 
 	HeapTuple pgDistObjectTup = NULL;

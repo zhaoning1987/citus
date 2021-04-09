@@ -20,6 +20,7 @@
 #include "distributed/deparser.h"
 #include "nodes/nodes.h"
 #include "utils/guc.h"
+#include "utils/elog.h"
 
 
 static void QualifyVarSetCurrent(VariableSetStmt *setStmt);
@@ -32,6 +33,7 @@ static void QualifyVarSetCurrent(VariableSetStmt *setStmt);
 void
 QualifyAlterRoleSetStmt(Node *node)
 {
+elog(INFO, "TTT src/backend/distributed/deparser/qualify_role_stmt.c:QualifyAlterRoleSetStmt");
 	AlterRoleSetStmt *stmt = castNode(AlterRoleSetStmt, node);
 	VariableSetStmt *setStmt = stmt->setstmt;
 

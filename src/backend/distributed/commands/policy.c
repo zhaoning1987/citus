@@ -15,12 +15,14 @@
 #include "distributed/commands.h"
 #include "distributed/metadata_cache.h"
 #include "utils/builtins.h"
+#include "utils/elog.h"
 
 
 /* placeholder for CreatePolicyCommands */
 List *
 CreatePolicyCommands(Oid relationId)
 {
+elog(INFO, "TTT src/backend/distributed/commands/policy.c:CreatePolicyCommands");
 	/* placeholder for future implementation */
 	return NIL;
 }
@@ -31,6 +33,7 @@ List *
 PreprocessCreatePolicyStmt(Node *node, const char *queryString,
 						   ProcessUtilityContext processUtilityContext)
 {
+elog(INFO, "TTT src/backend/distributed/commands/policy.c:PreprocessCreatePolicyStmt");
 	CreatePolicyStmt *stmt = castNode(CreatePolicyStmt, node);
 	Oid relationId = RangeVarGetRelid(stmt->table,
 									  AccessExclusiveLock,
@@ -52,6 +55,7 @@ List *
 PreprocessAlterPolicyStmt(Node *node, const char *queryString,
 						  ProcessUtilityContext processUtilityContext)
 {
+elog(INFO, "TTT src/backend/distributed/commands/policy.c:PreprocessAlterPolicyStmt");
 	/* placeholder for future implementation */
 	return NIL;
 }
@@ -61,6 +65,7 @@ PreprocessAlterPolicyStmt(Node *node, const char *queryString,
 void
 ErrorIfUnsupportedPolicy(Relation relation)
 {
+elog(INFO, "TTT src/backend/distributed/commands/policy.c:ErrorIfUnsupportedPolicy");
 	if (relation_has_policies(relation))
 	{
 		ereport(ERROR, (errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
@@ -76,6 +81,7 @@ List *
 PreprocessDropPolicyStmt(Node *node, const char *queryString,
 						 ProcessUtilityContext processUtilityContext)
 {
+elog(INFO, "TTT src/backend/distributed/commands/policy.c:PreprocessDropPolicyStmt");
 	/* placeholder for future implementation */
 	return NIL;
 }
@@ -85,6 +91,7 @@ PreprocessDropPolicyStmt(Node *node, const char *queryString,
 bool
 IsPolicyRenameStmt(RenameStmt *stmt)
 {
+elog(INFO, "TTT src/backend/distributed/commands/policy.c:IsPolicyRenameStmt");
 	/* placeholder for future implementation */
 	return false;
 }
@@ -103,6 +110,7 @@ CreatePolicyEventExtendNames(CreatePolicyStmt *stmt, const char *schemaName, uin
 void
 AlterPolicyEventExtendNames(AlterPolicyStmt *stmt, const char *schemaName, uint64 shardId)
 {
+elog(INFO, "TTT src/backend/distributed/commands/policy.c:AlterPolicyEventExtendNames");
 	/* placeholder for future implementation */
 }
 

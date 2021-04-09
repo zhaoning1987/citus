@@ -52,6 +52,7 @@
 #include "utils/lsyscache.h"
 #include "utils/regproc.h"
 #include "utils/varlena.h"
+#include "utils/elog.h"
 
 
 /* Local functions forward declarations */
@@ -95,6 +96,7 @@ PG_FUNCTION_INFO_V1(master_expire_table_cache);
 Datum
 worker_fetch_partition_file(PG_FUNCTION_ARGS)
 {
+elog(INFO, "TTT src/backend/distributed/worker/worker_data_fetch_protocol.c:worker_fetch_partition_file");
 	uint64 jobId = PG_GETARG_INT64(0);
 	uint32 partitionTaskId = PG_GETARG_UINT32(1);
 	uint32 partitionFileId = PG_GETARG_UINT32(2);
@@ -136,6 +138,7 @@ worker_fetch_partition_file(PG_FUNCTION_ARGS)
 StringInfo
 TaskFilename(StringInfo directoryName, uint32 taskId)
 {
+elog(INFO, "TTT src/backend/distributed/worker/worker_data_fetch_protocol.c:TaskFilename");
 	StringInfo taskFilename = makeStringInfo();
 	appendStringInfo(taskFilename, "%s/%s%0*u",
 					 directoryName->data,
@@ -152,6 +155,7 @@ TaskFilename(StringInfo directoryName, uint32 taskId)
 StringInfo
 UserTaskFilename(StringInfo directoryName, uint32 taskId)
 {
+elog(INFO, "TTT src/backend/distributed/worker/worker_data_fetch_protocol.c:UserTaskFilename");
 	StringInfo taskFilename = TaskFilename(directoryName, taskId);
 
 	appendStringInfo(taskFilename, ".%u", GetUserId());
@@ -169,6 +173,7 @@ static void
 FetchRegularFileAsSuperUser(const char *nodeName, uint32 nodePort,
 							StringInfo remoteFilename, StringInfo localFilename)
 {
+elog(INFO, "TTT src/backend/distributed/worker/worker_data_fetch_protocol.c:FetchRegularFileAsSuperUser");
 	char *userName = CurrentUserName();
 	uint32 randomId = (uint32) random();
 
@@ -219,6 +224,7 @@ static bool
 ReceiveRegularFile(const char *nodeName, uint32 nodePort, const char *nodeUser,
 				   StringInfo transmitCommand, StringInfo filePath)
 {
+elog(INFO, "TTT src/backend/distributed/worker/worker_data_fetch_protocol.c:ReceiveRegularFile");
 	char filename[MAXPGPATH];
 	const int fileFlags = (O_APPEND | O_CREAT | O_RDWR | O_TRUNC | PG_BINARY);
 	const int fileMode = (S_IRUSR | S_IWUSR);
@@ -339,6 +345,7 @@ ReceiveRegularFile(const char *nodeName, uint32 nodePort, const char *nodeUser,
 static void
 ReceiveResourceCleanup(int32 connectionId, const char *filename, int32 fileDescriptor)
 {
+elog(INFO, "TTT src/backend/distributed/worker/worker_data_fetch_protocol.c:ReceiveResourceCleanup");
 	if (connectionId != INVALID_CONNECTION_ID)
 	{
 		MultiClientDisconnect(connectionId);
@@ -367,6 +374,7 @@ ReceiveResourceCleanup(int32 connectionId, const char *filename, int32 fileDescr
 static void
 CitusDeleteFile(const char *filename)
 {
+elog(INFO, "TTT src/backend/distributed/worker/worker_data_fetch_protocol.c:CitusDeleteFile");
 	int deleted = unlink(filename);
 	if (deleted != 0)
 	{
@@ -384,6 +392,7 @@ CitusDeleteFile(const char *filename)
 Datum
 worker_apply_shard_ddl_command(PG_FUNCTION_ARGS)
 {
+elog(INFO, "TTT src/backend/distributed/worker/worker_data_fetch_protocol.c:worker_apply_shard_ddl_command");
 	uint64 shardId = PG_GETARG_INT64(0);
 	text *schemaNameText = PG_GETARG_TEXT_P(1);
 	text *ddlCommandText = PG_GETARG_TEXT_P(2);
@@ -411,6 +420,7 @@ worker_apply_shard_ddl_command(PG_FUNCTION_ARGS)
 Datum
 worker_apply_inter_shard_ddl_command(PG_FUNCTION_ARGS)
 {
+elog(INFO, "TTT src/backend/distributed/worker/worker_data_fetch_protocol.c:worker_apply_inter_shard_ddl_command");
 	uint64 leftShardId = PG_GETARG_INT64(0);
 	text *leftShardSchemaNameText = PG_GETARG_TEXT_P(1);
 	uint64 rightShardId = PG_GETARG_INT64(2);
@@ -444,6 +454,7 @@ worker_apply_inter_shard_ddl_command(PG_FUNCTION_ARGS)
 Datum
 worker_apply_sequence_command(PG_FUNCTION_ARGS)
 {
+elog(INFO, "TTT src/backend/distributed/worker/worker_data_fetch_protocol.c:worker_apply_sequence_command");
 	text *commandText = PG_GETARG_TEXT_P(0);
 	Oid sequenceTypeId = PG_GETARG_OID(1);
 	const char *commandString = text_to_cstring(commandText);

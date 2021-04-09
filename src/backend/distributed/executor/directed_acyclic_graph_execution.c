@@ -21,6 +21,7 @@
 #include "distributed/transmit.h"
 #include "distributed/worker_manager.h"
 #include "distributed/worker_transaction.h"
+#include "utils/elog.h"
 
 typedef struct TaskHashKey
 {
@@ -52,6 +53,7 @@ static bool IsTaskAlreadyCompleted(Task *task, HTAB *completedTasks);
 void
 ExecuteTasksInDependencyOrder(List *allTasks, List *excludedTasks, List *jobIds)
 {
+elog(INFO, "TTT src/backend/distributed/executor/directed_acyclic_graph_execution.c:ExecuteTasksInDependencyOrder");
 	HTAB *completedTasks = CreateTaskHashTable();
 
 	/* We only execute depended jobs' tasks, therefore to not execute */
@@ -81,6 +83,7 @@ ExecuteTasksInDependencyOrder(List *allTasks, List *excludedTasks, List *jobIds)
 static List *
 FindExecutableTasks(List *allTasks, HTAB *completedTasks)
 {
+elog(INFO, "TTT src/backend/distributed/executor/directed_acyclic_graph_execution.c:FindExecutableTasks");
 	List *curTasks = NIL;
 
 	Task *task = NULL;
@@ -103,6 +106,7 @@ FindExecutableTasks(List *allTasks, HTAB *completedTasks)
 static void
 AddCompletedTasks(List *curCompletedTasks, HTAB *completedTasks)
 {
+elog(INFO, "TTT src/backend/distributed/executor/directed_acyclic_graph_execution.c:AddCompletedTasks");
 	bool found;
 
 	Task *task = NULL;
@@ -120,6 +124,7 @@ AddCompletedTasks(List *curCompletedTasks, HTAB *completedTasks)
 static HTAB *
 CreateTaskHashTable()
 {
+elog(INFO, "TTT src/backend/distributed/executor/directed_acyclic_graph_execution.c:CreateTaskHashTable");
 	uint32 hashFlags = (HASH_ELEM | HASH_FUNCTION | HASH_CONTEXT | HASH_COMPARE);
 	HASHCTL info = InitHashTableInfo();
 	return hash_create("citus task completed list (jobId, taskId)",
@@ -134,6 +139,7 @@ CreateTaskHashTable()
 static bool
 IsTaskAlreadyCompleted(Task *task, HTAB *completedTasks)
 {
+elog(INFO, "TTT src/backend/distributed/executor/directed_acyclic_graph_execution.c:IsTaskAlreadyCompleted");
 	bool found;
 
 	TaskHashKey taskKey = { task->jobId, task->taskId };
@@ -149,6 +155,7 @@ IsTaskAlreadyCompleted(Task *task, HTAB *completedTasks)
 static bool
 IsAllDependencyCompleted(Task *targetTask, HTAB *completedTasks)
 {
+elog(INFO, "TTT src/backend/distributed/executor/directed_acyclic_graph_execution.c:IsAllDependencyCompleted");
 	bool found = false;
 
 	Task *task = NULL;
@@ -174,6 +181,7 @@ IsAllDependencyCompleted(Task *targetTask, HTAB *completedTasks)
 static HASHCTL
 InitHashTableInfo()
 {
+elog(INFO, "TTT src/backend/distributed/executor/directed_acyclic_graph_execution.c:InitHashTableInfo");
 	HASHCTL info;
 
 	memset(&info, 0, sizeof(info));

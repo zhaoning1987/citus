@@ -36,6 +36,7 @@
 #include "distributed/local_multi_copy.h"
 #include "distributed/shard_utils.h"
 #include "distributed/version_compat.h"
+#include "utils/elog.h"
 
 /* managed via GUC, default is 512 kB */
 int LocalCopyFlushThresholdByte = 512 * 1024;
@@ -67,6 +68,7 @@ WriteTupleToLocalShard(TupleTableSlot *slot, CitusCopyDestReceiver *copyDest, in
 					   shardId,
 					   CopyOutState localCopyOutState)
 {
+elog(INFO, "TTT src/backend/distributed/commands/local_multi_copy.c:WriteTupleToLocalShard");
 	/*
 	 * Since we are doing a local copy, the following statements should
 	 * use local execution to see the changes
@@ -109,6 +111,7 @@ WriteTupleToLocalFile(TupleTableSlot *slot, CitusCopyDestReceiver *copyDest,
 					  int64 shardId, CopyOutState localFileCopyOutState,
 					  FileCompat *fileCompat)
 {
+elog(INFO, "TTT src/backend/distributed/commands/local_multi_copy.c:WriteTupleToLocalFile");
 	AddSlotToBuffer(slot, copyDest, localFileCopyOutState);
 
 	if (ShouldSendCopyNow(localFileCopyOutState->fe_msgbuf))
@@ -126,6 +129,7 @@ void
 FinishLocalCopyToShard(CitusCopyDestReceiver *copyDest, int64 shardId,
 					   CopyOutState localCopyOutState)
 {
+elog(INFO, "TTT src/backend/distributed/commands/local_multi_copy.c:FinishLocalCopyToShard");
 	bool isBinaryCopy = localCopyOutState->binary;
 	if (isBinaryCopy)
 	{
@@ -143,6 +147,7 @@ FinishLocalCopyToShard(CitusCopyDestReceiver *copyDest, int64 shardId,
 void
 FinishLocalCopyToFile(CopyOutState localFileCopyOutState, FileCompat *fileCompat)
 {
+elog(INFO, "TTT src/backend/distributed/commands/local_multi_copy.c:FinishLocalCopyToFile");
 	StringInfo data = localFileCopyOutState->fe_msgbuf;
 
 	bool isBinaryCopy = localFileCopyOutState->binary;
@@ -165,6 +170,7 @@ static void
 AddSlotToBuffer(TupleTableSlot *slot, CitusCopyDestReceiver *copyDest, CopyOutState
 				localCopyOutState)
 {
+elog(INFO, "TTT src/backend/distributed/commands/local_multi_copy.c:AddSlotToBuffer");
 	Datum *columnValues = slot->tts_values;
 	bool *columnNulls = slot->tts_isnull;
 	FmgrInfo *columnOutputFunctions = copyDest->columnOutputFunctions;
@@ -183,6 +189,7 @@ AddSlotToBuffer(TupleTableSlot *slot, CitusCopyDestReceiver *copyDest, CopyOutSt
 static bool
 ShouldSendCopyNow(StringInfo buffer)
 {
+elog(INFO, "TTT src/backend/distributed/commands/local_multi_copy.c:ShouldSendCopyNow");
 	/* LocalCopyFlushThreshold is in bytes */
 	return buffer->len > LocalCopyFlushThresholdByte;
 }
@@ -199,6 +206,7 @@ static void
 DoLocalCopy(StringInfo buffer, Oid relationId, int64 shardId, CopyStmt *copyStatement,
 			bool isEndOfCopy)
 {
+elog(INFO, "TTT src/backend/distributed/commands/local_multi_copy.c:DoLocalCopy");
 	/*
 	 * Set the buffer as a global variable to allow ReadFromLocalBufferCallback
 	 * to read from it. We cannot pass additional arguments to
@@ -231,6 +239,7 @@ DoLocalCopy(StringInfo buffer, Oid relationId, int64 shardId, CopyStmt *copyStat
 static bool
 ShouldAddBinaryHeaders(StringInfo buffer, bool isBinary)
 {
+elog(INFO, "TTT src/backend/distributed/commands/local_multi_copy.c:ShouldAddBinaryHeaders");
 	if (!isBinary)
 	{
 		return false;

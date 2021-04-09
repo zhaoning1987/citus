@@ -85,6 +85,7 @@
 
 #include "catalog/pg_proc.h"
 #include "optimizer/planmain.h"
+#include "utils/elog.h"
 
 /* intermediate value for INSERT processing */
 typedef struct InsertValues
@@ -190,6 +191,7 @@ DistributedPlan *
 CreateRouterPlan(Query *originalQuery, Query *query,
 				 PlannerRestrictionContext *plannerRestrictionContext)
 {
+elog(INFO, "TTT src/backend/distributed/planner/multi_router_planner.c:CreateRouterPlan");
 	DistributedPlan *distributedPlan = CitusMakeNode(DistributedPlan);
 
 	distributedPlan->planningError = DeferErrorIfUnsupportedRouterPlannableSelectQuery(
@@ -217,6 +219,7 @@ DistributedPlan *
 CreateModifyPlan(Query *originalQuery, Query *query,
 				 PlannerRestrictionContext *plannerRestrictionContext)
 {
+elog(INFO, "TTT src/backend/distributed/planner/multi_router_planner.c:CreateModifyPlan");
 	Job *job = NULL;
 	DistributedPlan *distributedPlan = CitusMakeNode(DistributedPlan);
 	bool multiShardQuery = false;
@@ -311,6 +314,7 @@ CreateSingleTaskRouterSelectPlan(DistributedPlan *distributedPlan, Query *origin
 List *
 ShardIntervalOpExpressions(ShardInterval *shardInterval, Index rteIndex)
 {
+elog(INFO, "TTT src/backend/distributed/planner/multi_router_planner.c:ShardIntervalOpExpressions");
 	Oid relationId = shardInterval->relationId;
 	Var *partitionColumn = NULL;
 
@@ -354,6 +358,7 @@ ShardIntervalOpExpressions(ShardInterval *shardInterval, Index rteIndex)
 void
 AddPartitionKeyNotNullFilterToSelect(Query *subqery)
 {
+elog(INFO, "TTT src/backend/distributed/planner/multi_router_planner.c:AddPartitionKeyNotNullFilterToSelect");
 	List *targetList = subqery->targetList;
 	ListCell *targetEntryCell = NULL;
 	Var *targetPartitionColumnVar = NULL;
@@ -2151,6 +2156,7 @@ SelectsFromDistributedTable(List *rangeTableList, Query *query)
 			(resultRangeTableEntry == NULL || resultRangeTableEntry->relid !=
 			 rangeTableEntry->relid))
 		{
+elog(INFO, "TTT src/backend/distributed/planner/multi_router_planner.c:ContainsOnlyLocalTables");
 			return true;
 		}
 	}

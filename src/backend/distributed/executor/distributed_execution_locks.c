@@ -17,6 +17,7 @@
 #include "distributed/pg_dist_partition.h"
 #include "distributed/resource_lock.h"
 #include "distributed/transaction_management.h"
+#include "utils/elog.h"
 
 
 static bool RequiresConsistentSnapshot(Task *task);
@@ -41,6 +42,7 @@ static void AcquireExecutorShardLocksForRelationRowLockList(List *relationRowLoc
 void
 AcquireExecutorShardLocks(Task *task, RowModifyLevel modLevel)
 {
+elog(INFO, "TTT src/backend/distributed/executor/distributed_execution_locks.c:AcquireExecutorShardLocks");
 	AcquireExecutorShardLockForRowModify(task, modLevel);
 	AcquireExecutorShardLocksForRelationRowLockList(task->relationRowLockList);
 
@@ -89,6 +91,7 @@ AcquireExecutorShardLocks(Task *task, RowModifyLevel modLevel)
 void
 AcquireExecutorMultiShardLocks(List *taskList)
 {
+elog(INFO, "TTT src/backend/distributed/executor/distributed_execution_locks.c:AcquireExecutorMultiShardLocks");
 	Task *task = NULL;
 	foreach_ptr(task, taskList)
 	{
@@ -176,6 +179,7 @@ AcquireExecutorMultiShardLocks(List *taskList)
 static bool
 RequiresConsistentSnapshot(Task *task)
 {
+elog(INFO, "TTT src/backend/distributed/executor/distributed_execution_locks.c:RequiresConsistentSnapshot");
 	bool requiresIsolation = false;
 
 	if (!task->modifyWithSubquery)
@@ -231,6 +235,7 @@ RequiresConsistentSnapshot(Task *task)
 void
 AcquireMetadataLocks(List *taskList)
 {
+elog(INFO, "TTT src/backend/distributed/executor/distributed_execution_locks.c:AcquireMetadataLocks");
 	/*
 	 * Note: to avoid the overhead of additional sorting, we assume tasks
 	 * to be already sorted by shard ID such that deadlocks are avoided.
@@ -249,6 +254,7 @@ AcquireMetadataLocks(List *taskList)
 static void
 AcquireExecutorShardLockForRowModify(Task *task, RowModifyLevel modLevel)
 {
+elog(INFO, "TTT src/backend/distributed/executor/distributed_execution_locks.c:AcquireExecutorShardLockForRowModify");
 	LOCKMODE lockMode = NoLock;
 	int64 shardId = task->anchorShardId;
 
@@ -355,6 +361,7 @@ AcquireExecutorShardLockForRowModify(Task *task, RowModifyLevel modLevel)
 static void
 AcquireExecutorShardLocksForRelationRowLockList(List *relationRowLockList)
 {
+elog(INFO, "TTT src/backend/distributed/executor/distributed_execution_locks.c:AcquireExecutorShardLocksForRelationRowLockList");
 	LOCKMODE rowLockMode = NoLock;
 
 	if (relationRowLockList == NIL)
@@ -412,6 +419,7 @@ AcquireExecutorShardLocksForRelationRowLockList(List *relationRowLockList)
 void
 LockPartitionsInRelationList(List *relationIdList, LOCKMODE lockmode)
 {
+elog(INFO, "TTT src/backend/distributed/executor/distributed_execution_locks.c:LockPartitionsInRelationList");
 	Oid relationId = InvalidOid;
 	foreach_oid(relationId, relationIdList)
 	{

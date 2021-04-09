@@ -45,6 +45,7 @@
 #include "utils/syscache.h"
 #include "commands/schemacmds.h"
 #include "distributed/resource_lock.h"
+#include "utils/elog.h"
 
 
 /* Local functions forward declarations */
@@ -70,6 +71,7 @@ PG_FUNCTION_INFO_V1(worker_repartition_cleanup);
 Datum
 worker_create_schema(PG_FUNCTION_ARGS)
 {
+elog(INFO, "TTT src/backend/distributed/worker/worker_merge_protocol.c:worker_create_schema");
 	uint64 jobId = PG_GETARG_INT64(0);
 	text *ownerText = PG_GETARG_TEXT_P(1);
 	char *ownerString = TextDatumGetCString(ownerText);
@@ -99,6 +101,7 @@ worker_create_schema(PG_FUNCTION_ARGS)
 static void
 CreateJobSchema(StringInfo schemaName, char *schemaOwner)
 {
+elog(INFO, "TTT src/backend/distributed/worker/worker_merge_protocol.c:CreateJobSchema");
 	const char *queryString = NULL;
 
 	Oid savedUserId = InvalidOid;
@@ -146,6 +149,7 @@ CreateJobSchema(StringInfo schemaName, char *schemaOwner)
 Datum
 worker_repartition_cleanup(PG_FUNCTION_ARGS)
 {
+elog(INFO, "TTT src/backend/distributed/worker/worker_merge_protocol.c:worker_repartition_cleanup");
 	uint64 jobId = PG_GETARG_INT64(0);
 	StringInfo jobDirectoryName = JobDirectoryName(jobId);
 	StringInfo jobSchemaName = JobSchemaName(jobId);
@@ -175,6 +179,7 @@ worker_repartition_cleanup(PG_FUNCTION_ARGS)
 Datum
 worker_merge_files_into_table(PG_FUNCTION_ARGS)
 {
+elog(INFO, "TTT src/backend/distributed/worker/worker_merge_protocol.c:worker_merge_files_into_table");
 	uint64 jobId = PG_GETARG_INT64(0);
 	uint32 taskId = PG_GETARG_UINT32(1);
 	ArrayType *columnNameObject = PG_GETARG_ARRAYTYPE_P(2);
@@ -249,6 +254,7 @@ worker_merge_files_into_table(PG_FUNCTION_ARGS)
 Datum
 worker_merge_files_and_run_query(PG_FUNCTION_ARGS)
 {
+elog(INFO, "TTT src/backend/distributed/worker/worker_merge_protocol.c:worker_merge_files_and_run_query");
 	ereport(ERROR, (errmsg("This UDF is deprecated.")));
 
 	PG_RETURN_VOID();
@@ -266,6 +272,7 @@ worker_merge_files_and_run_query(PG_FUNCTION_ARGS)
 Datum
 worker_cleanup_job_schema_cache(PG_FUNCTION_ARGS)
 {
+elog(INFO, "TTT src/backend/distributed/worker/worker_merge_protocol.c:worker_cleanup_job_schema_cache");
 	Relation pgNamespace = NULL;
 #if PG_VERSION_NUM >= PG_VERSION_12
 	TableScanDesc scanDescriptor = NULL;
@@ -419,6 +426,7 @@ static void
 CreateTaskTable(StringInfo schemaName, StringInfo relationName,
 				List *columnNameList, List *columnTypeList)
 {
+elog(INFO, "TTT src/backend/distributed/worker/worker_merge_protocol.c:CreateTaskTable");
 	Oid relationId PG_USED_FOR_ASSERTS_ONLY = InvalidOid;
 
 	Assert(schemaName != NULL);
@@ -453,6 +461,7 @@ CreateTaskTable(StringInfo schemaName, StringInfo relationName,
 List *
 ColumnDefinitionList(List *columnNameList, List *columnTypeList)
 {
+elog(INFO, "TTT src/backend/distributed/worker/worker_merge_protocol.c:ColumnDefinitionList");
 	List *columnDefinitionList = NIL;
 	ListCell *columnNameCell = NULL;
 	ListCell *columnTypeCell = NULL;
@@ -497,6 +506,7 @@ ColumnDefinitionList(List *columnNameList, List *columnTypeList)
 CreateStmt *
 CreateStatement(RangeVar *relation, List *columnDefinitionList)
 {
+elog(INFO, "TTT src/backend/distributed/worker/worker_merge_protocol.c:CreateStatement");
 	CreateStmt *createStatement = makeNode(CreateStmt);
 	createStatement->relation = relation;
 	createStatement->tableElts = columnDefinitionList;

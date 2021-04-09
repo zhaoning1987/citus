@@ -41,6 +41,7 @@
 #include "utils/fmgroids.h"
 #include "utils/hsearch.h"
 #include "utils/lsyscache.h"
+#include "utils/elog.h"
 
 /*
  * ObjectAddressCollector keeps track of collected ObjectAddresses. This can be used
@@ -193,6 +194,7 @@ GetUniqueDependenciesList(List *objectAddressesList)
 List *
 GetDependenciesForObject(const ObjectAddress *target)
 {
+elog(INFO, "TTT src/backend/distributed/metadata/dependency.c:GetDependenciesForObject");
 	ObjectAddressCollector collector = { 0 };
 	InitObjectAddressCollector(&collector);
 

@@ -61,6 +61,7 @@
 #include "utils/lsyscache.h"
 #include "utils/syscache.h"
 #include "utils/regproc.h"
+#include "utils/elog.h"
 
 #define DISABLE_LOCAL_CHECK_FUNCTION_BODIES "SET LOCAL check_function_bodies TO off;"
 #define RESET_CHECK_FUNCTION_BODIES "RESET check_function_bodies;"
@@ -114,6 +115,7 @@ PG_FUNCTION_INFO_V1(create_distributed_function);
 Datum
 create_distributed_function(PG_FUNCTION_ARGS)
 {
+elog(INFO, "TTT src/backend/distributed/commands/function.c:create_distributed_function");
 	RegProcedure funcOid = PG_GETARG_OID(0);
 
 	text *distributionArgumentNameText = NULL; /* optional */
@@ -227,6 +229,7 @@ DistributeFunctionWithDistributionArgument(RegProcedure funcOid,
 										   char *colocateWithTableName,
 										   const ObjectAddress *functionAddress)
 {
+elog(INFO, "TTT src/backend/distributed/commands/function.c:DistributeFunctionWithDistributionArgument");
 	/* get the argument index, or error out if we cannot find a valid index */
 	int distributionArgumentIndex =
 		GetDistributionArgIndex(funcOid, distributionArgumentName,
@@ -259,6 +262,7 @@ DistributeFunctionColocatedWithDistributedTable(RegProcedure funcOid,
 												char *colocateWithTableName,
 												const ObjectAddress *functionAddress)
 {
+elog(INFO, "TTT src/backend/distributed/commands/function.c:DistributeFunctionColocatedWithDistributedTable");
 	/*
 	 * cannot provide colocate_with without distribution_arg_name when the function
 	 * is not collocated with a reference table
@@ -288,6 +292,7 @@ DistributeFunctionColocatedWithDistributedTable(RegProcedure funcOid,
 static void
 DistributeFunctionColocatedWithReferenceTable(const ObjectAddress *functionAddress)
 {
+elog(INFO, "TTT src/backend/distributed/commands/function.c:DistributeFunctionColocatedWithReferenceTable");
 	/* get the reference table colocation id */
 	int colocationId = CreateReferenceTableColocationId();
 
@@ -312,6 +317,7 @@ DistributeFunctionColocatedWithReferenceTable(const ObjectAddress *functionAddre
 List *
 CreateFunctionDDLCommandsIdempotent(const ObjectAddress *functionAddress)
 {
+elog(INFO, "TTT src/backend/distributed/commands/function.c:CreateFunctionDDLCommandsIdempotent");
 	Assert(functionAddress->classId == ProcedureRelationId);
 
 	char *ddlCommand = GetFunctionDDLCommand(functionAddress->objectId, true);
@@ -333,6 +339,7 @@ static int
 GetDistributionArgIndex(Oid functionOid, char *distributionArgumentName,
 						Oid *distributionArgumentOid)
 {
+elog(INFO, "TTT src/backend/distributed/commands/function.c:GetDistributionArgIndex");
 	int distributionArgumentIndex = -1;
 
 	Oid *argTypes = NULL;
@@ -436,6 +443,7 @@ static int
 GetFunctionColocationId(Oid functionOid, char *colocateWithTableName,
 						Oid distributionArgumentOid)
 {
+elog(INFO, "TTT src/backend/distributed/commands/function.c:GetFunctionColocationId");
 	int colocationId = INVALID_COLOCATION_ID;
 	Relation pgDistColocation = table_open(DistColocationRelationId(), ShareLock);
 
@@ -499,6 +507,7 @@ static void
 EnsureFunctionCanBeColocatedWithTable(Oid functionOid, Oid distributionColumnType,
 									  Oid sourceRelationId)
 {
+elog(INFO, "TTT src/backend/distributed/commands/function.c:EnsureFunctionCanBeColocatedWithTable");
 	CitusTableCacheEntry *sourceTableEntry = GetCitusTableCacheEntry(sourceRelationId);
 	char sourceReplicationModel = sourceTableEntry->replicationModel;
 
@@ -660,6 +669,7 @@ UpdateFunctionDistributionInfo(const ObjectAddress *distAddress,
 char *
 GetFunctionDDLCommand(const RegProcedure funcOid, bool useCreateOrReplace)
 {
+elog(INFO, "TTT src/backend/distributed/commands/function.c:GetFunctionDDLCommand");
 	char *createFunctionSQL = NULL;
 
 	if (get_func_prokind(funcOid) == PROKIND_AGGREGATE)
@@ -735,6 +745,7 @@ GetFunctionAlterOwnerCommand(const RegProcedure funcOid)
 static char *
 GetAggregateDDLCommand(const RegProcedure funcOid, bool useCreateOrReplace)
 {
+elog(INFO, "TTT src/backend/distributed/commands/function.c:GetAggregateDDLCommand");
 	StringInfoData buf = { 0 };
 	HeapTuple aggtup = NULL;
 	Form_pg_aggregate agg = NULL;

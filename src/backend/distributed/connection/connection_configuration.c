@@ -18,6 +18,7 @@
 #include "postmaster/postmaster.h"
 #include "mb/pg_wchar.h"
 #include "utils/builtins.h"
+#include "utils/elog.h"
 
 /* stores the string representation of our node connection GUC */
 char *NodeConninfo = "";
@@ -53,6 +54,7 @@ static int uri_prefix_length(const char *connstr);
 void
 InitConnParams()
 {
+elog(INFO, "TTT src/backend/distributed/connection/connection_configuration.c:InitConnParams");
 	Size maxSize = CalculateMaxSize();
 	ConnParamsInfo connParams = {
 		.keywords = malloc(maxSize * sizeof(char *)),
@@ -77,6 +79,7 @@ InitConnParams()
 void
 ResetConnParams()
 {
+elog(INFO, "TTT src/backend/distributed/connection/connection_configuration.c:ResetConnParams");
 	for (Size paramIdx = 0; paramIdx < ConnParams.size; paramIdx++)
 	{
 		free((void *) ConnParams.keywords[paramIdx]);
@@ -100,6 +103,7 @@ ResetConnParams()
 void
 AddConnParam(const char *keyword, const char *value)
 {
+elog(INFO, "TTT src/backend/distributed/connection/connection_configuration.c:AddConnParam");
 	if (ConnParams.size + 1 >= ConnParams.maxSize)
 	{
 		/* hopefully this error is only seen by developers */
@@ -135,6 +139,7 @@ bool
 CheckConninfo(const char *conninfo, const char **allowedConninfoKeywords,
 			  Size allowedConninfoKeywordsLength, char **errorMsg)
 {
+elog(INFO, "TTT src/backend/distributed/connection/connection_configuration.c:CheckConninfo");
 	PQconninfoOption *option = NULL;
 	char *errorMsgString = NULL;
 
@@ -226,6 +231,7 @@ void
 GetConnParams(ConnectionHashKey *key, char ***keywords, char ***values,
 			  Index *runtimeParamStart, MemoryContext context)
 {
+elog(INFO, "TTT src/backend/distributed/connection/connection_configuration.c:GetConnParams");
 	/*
 	 * make space for the port as a string: sign, 10 digits, NUL. We keep it on the stack
 	 * till we can later copy it to the right context. By having the declaration here
@@ -328,6 +334,7 @@ GetConnParams(ConnectionHashKey *key, char ***keywords, char ***values,
 const char *
 GetConnParam(const char *keyword)
 {
+elog(INFO, "TTT src/backend/distributed/connection/connection_configuration.c:GetConnParam");
 	for (Size i = 0; i < ConnParams.size; i++)
 	{
 		if (strcmp(keyword, ConnParams.keywords[i]) == 0)
@@ -348,6 +355,7 @@ GetConnParam(const char *keyword)
 static Size
 CalculateMaxSize()
 {
+elog(INFO, "TTT src/backend/distributed/connection/connection_configuration.c:CalculateMaxSize");
 	PQconninfoOption *defaults = PQconndefaults();
 	Size maxSize = 0;
 

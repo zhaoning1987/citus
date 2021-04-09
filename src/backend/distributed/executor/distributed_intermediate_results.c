@@ -36,6 +36,7 @@
 #include "tcop/tcopprot.h"
 #include "utils/builtins.h"
 #include "utils/lsyscache.h"
+#include "utils/elog.h"
 
 
 /*
@@ -272,6 +273,7 @@ WrapTasksForPartitioning(const char *resultIdPrefix, List *selectTaskList,
 static PartitioningTupleDest *
 CreatePartitioningTupleDest(CitusTableCacheEntry *targetRelation)
 {
+elog(INFO, "TTT src/backend/distributed/executor/distributed_intermediate_results.c:CreatePartitioningTupleDest");
 	TupleDesc tupleDescriptor = NULL;
 	int resultColumnCount = 3;
 
@@ -338,6 +340,7 @@ PartitioningTupleDestPutTuple(TupleDestination *self, Task *task,
 static TupleDesc
 PartitioningTupleDestTupleDescForQuery(TupleDestination *self, int queryNumber)
 {
+elog(INFO, "TTT src/backend/distributed/executor/distributed_intermediate_results.c:PartitioningTupleDestTupleDescForQuery");
 	Assert(queryNumber == 0);
 
 	PartitioningTupleDest *tupleDest = (PartitioningTupleDest *) self;
@@ -513,6 +516,7 @@ ExecuteSelectTasksIntoTupleDest(List *taskList, TupleDestination *tupleDestinati
 static List **
 ColocateFragmentsWithRelation(List *fragmentList, CitusTableCacheEntry *targetRelation)
 {
+elog(INFO, "TTT src/backend/distributed/executor/distributed_intermediate_results.c:ColocateFragmentsWithRelation");
 	List *fragmentListTransfers = ColocationTransfers(fragmentList, targetRelation);
 	List *fragmentTransferTaskList = FragmentTransferTaskList(fragmentListTransfers);
 

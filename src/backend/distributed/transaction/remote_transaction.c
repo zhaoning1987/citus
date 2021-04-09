@@ -29,6 +29,7 @@
 #include "distributed/worker_manager.h"
 #include "utils/builtins.h"
 #include "utils/hsearch.h"
+#include "utils/elog.h"
 
 
 #define PREPARED_TRANSACTION_NAME_FORMAT "citus_%u_%u_"UINT64_FORMAT "_%u"
@@ -59,6 +60,7 @@ static void Assign2PCIdentifier(MultiConnection *connection);
 void
 StartRemoteTransactionBegin(struct MultiConnection *connection)
 {
+elog(INFO, "TTT src/backend/distributed/transaction/remote_transaction.c:StartRemoteTransactionBegin");
 	RemoteTransaction *transaction = &connection->remoteTransaction;
 
 	Assert(transaction->transactionState == REMOTE_TRANS_NOT_STARTED);
@@ -116,6 +118,7 @@ StartRemoteTransactionBegin(struct MultiConnection *connection)
 StringInfo
 BeginAndSetDistributedTransactionIdCommand(void)
 {
+elog(INFO, "TTT src/backend/distributed/transaction/remote_transaction.c:BeginAndSetDistributedTransactionIdCommand");
 	StringInfo beginAndSetDistributedTransactionId = makeStringInfo();
 
 	/*
@@ -152,6 +155,7 @@ BeginAndSetDistributedTransactionIdCommand(void)
 void
 FinishRemoteTransactionBegin(struct MultiConnection *connection)
 {
+elog(INFO, "TTT src/backend/distributed/transaction/remote_transaction.c:FinishRemoteTransactionBegin");
 	RemoteTransaction *transaction = &connection->remoteTransaction;
 	bool raiseErrors = true;
 
@@ -177,6 +181,7 @@ FinishRemoteTransactionBegin(struct MultiConnection *connection)
 void
 RemoteTransactionBegin(struct MultiConnection *connection)
 {
+elog(INFO, "TTT src/backend/distributed/transaction/remote_transaction.c:RemoteTransactionBegin");
 	StartRemoteTransactionBegin(connection);
 	FinishRemoteTransactionBegin(connection);
 }
@@ -189,6 +194,7 @@ RemoteTransactionBegin(struct MultiConnection *connection)
 void
 RemoteTransactionListBegin(List *connectionList)
 {
+elog(INFO, "TTT src/backend/distributed/transaction/remote_transaction.c:RemoteTransactionListBegin");
 	MultiConnection *connection = NULL;
 
 	/* send BEGIN to all nodes */
@@ -213,6 +219,7 @@ RemoteTransactionListBegin(List *connectionList)
 void
 StartRemoteTransactionCommit(MultiConnection *connection)
 {
+elog(INFO, "TTT src/backend/distributed/transaction/remote_transaction.c:StartRemoteTransactionCommit");
 	RemoteTransaction *transaction = &connection->remoteTransaction;
 	const bool raiseErrors = false;
 
@@ -281,6 +288,7 @@ StartRemoteTransactionCommit(MultiConnection *connection)
 void
 FinishRemoteTransactionCommit(MultiConnection *connection)
 {
+elog(INFO, "TTT src/backend/distributed/transaction/remote_transaction.c:FinishRemoteTransactionCommit");
 	RemoteTransaction *transaction = &connection->remoteTransaction;
 	const bool raiseErrors = false;
 
@@ -339,6 +347,7 @@ FinishRemoteTransactionCommit(MultiConnection *connection)
 void
 RemoteTransactionCommit(MultiConnection *connection)
 {
+elog(INFO, "TTT src/backend/distributed/transaction/remote_transaction.c:RemoteTransactionCommit");
 	StartRemoteTransactionCommit(connection);
 	FinishRemoteTransactionCommit(connection);
 }
@@ -351,6 +360,7 @@ RemoteTransactionCommit(MultiConnection *connection)
 void
 StartRemoteTransactionAbort(MultiConnection *connection)
 {
+elog(INFO, "TTT src/backend/distributed/transaction/remote_transaction.c:StartRemoteTransactionAbort");
 	RemoteTransaction *transaction = &connection->remoteTransaction;
 	const bool raiseErrors = false;
 
@@ -422,6 +432,7 @@ StartRemoteTransactionAbort(MultiConnection *connection)
 void
 FinishRemoteTransactionAbort(MultiConnection *connection)
 {
+elog(INFO, "TTT src/backend/distributed/transaction/remote_transaction.c:FinishRemoteTransactionAbort");
 	RemoteTransaction *transaction = &connection->remoteTransaction;
 	const bool raiseErrors = false;
 

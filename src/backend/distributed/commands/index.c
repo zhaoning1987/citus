@@ -48,6 +48,7 @@
 #include "utils/inval.h"
 #include "utils/lsyscache.h"
 #include "utils/syscache.h"
+#include "utils/elog.h"
 
 
 /* Local functions forward declarations for helper functions */
@@ -110,6 +111,7 @@ struct ReindexIndexCallbackState
 bool
 IsIndexRenameStmt(RenameStmt *renameStmt)
 {
+elog(INFO, "TTT src/backend/distributed/commands/index.c:IsIndexRenameStmt");
 	bool isIndexRenameStmt = false;
 
 	if (renameStmt->renameType == OBJECT_INDEX)
@@ -133,6 +135,7 @@ List *
 PreprocessIndexStmt(Node *node, const char *createIndexCommand,
 					ProcessUtilityContext processUtilityContext)
 {
+elog(INFO, "TTT src/backend/distributed/commands/index.c:PreprocessIndexStmt");
 	IndexStmt *createIndexStatement = castNode(IndexStmt, node);
 
 	RangeVar *relationRangeVar = createIndexStatement->relation;
@@ -235,6 +238,7 @@ PreprocessIndexStmt(Node *node, const char *createIndexCommand,
 static void
 ErrorIfCreateIndexHasTooManyColumns(IndexStmt *createIndexStatement)
 {
+elog(INFO, "TTT src/backend/distributed/commands/index.c:ErrorIfCreateIndexHasTooManyColumns");
 	int numberOfIndexParameters = GetNumberOfIndexParameters(createIndexStatement);
 	if (numberOfIndexParameters <= INDEX_MAX_KEYS)
 	{
@@ -254,6 +258,7 @@ ErrorIfCreateIndexHasTooManyColumns(IndexStmt *createIndexStatement)
 static int
 GetNumberOfIndexParameters(IndexStmt *createIndexStatement)
 {
+elog(INFO, "TTT src/backend/distributed/commands/index.c:GetNumberOfIndexParameters");
 	List *indexParams = createIndexStatement->indexParams;
 	List *indexIncludingParams = createIndexStatement->indexIncludingParams;
 	return list_length(indexParams) + list_length(indexIncludingParams);
@@ -267,6 +272,7 @@ GetNumberOfIndexParameters(IndexStmt *createIndexStatement)
 static bool
 IndexAlreadyExists(IndexStmt *createIndexStatement)
 {
+elog(INFO, "TTT src/backend/distributed/commands/index.c:IndexAlreadyExists");
 	Oid indexRelationId = CreateIndexStmtGetIndexId(createIndexStatement);
 	return OidIsValid(indexRelationId);
 }
@@ -280,6 +286,7 @@ IndexAlreadyExists(IndexStmt *createIndexStatement)
 static Oid
 CreateIndexStmtGetIndexId(IndexStmt *createIndexStatement)
 {
+elog(INFO, "TTT src/backend/distributed/commands/index.c:CreateIndexStmtGetIndexId");
 	char *indexName = createIndexStatement->idxname;
 	Oid namespaceId = CreateIndexStmtGetSchemaId(createIndexStatement);
 	Oid indexRelationId = get_relname_relid(indexName, namespaceId);
@@ -294,6 +301,7 @@ CreateIndexStmtGetIndexId(IndexStmt *createIndexStatement)
 static Oid
 CreateIndexStmtGetSchemaId(IndexStmt *createIndexStatement)
 {
+elog(INFO, "TTT src/backend/distributed/commands/index.c:CreateIndexStmtGetSchemaId");
 	RangeVar *relationRangeVar = createIndexStatement->relation;
 	char *schemaName = relationRangeVar->schemaname;
 	bool missingOk = false;
@@ -310,6 +318,7 @@ CreateIndexStmtGetSchemaId(IndexStmt *createIndexStatement)
 List *
 ExecuteFunctionOnEachTableIndex(Oid relationId, PGIndexProcessor pgIndexProcessor)
 {
+elog(INFO, "TTT src/backend/distributed/commands/index.c:ExecuteFunctionOnEachTableIndex");
 	List *result = NIL;
 	ScanKeyData scanKey[1];
 	int scanKeyCount = 1;

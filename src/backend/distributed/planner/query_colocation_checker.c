@@ -44,6 +44,7 @@
 #include "optimizer/planner.h"
 #include "optimizer/prep.h"
 #include "utils/rel.h"
+#include "utils/elog.h"
 
 
 static RangeTblEntry * AnchorRte(Query *subquery);
@@ -66,6 +67,7 @@ static TargetEntry * CreateUnusedTargetEntry(int resno);
 ColocatedJoinChecker
 CreateColocatedJoinChecker(Query *subquery, PlannerRestrictionContext *restrictionContext)
 {
+elog(INFO, "TTT src/backend/distributed/planner/query_colocation_checker.c:CreateColocatedJoinChecker");
 	ColocatedJoinChecker colocatedJoinChecker = { 0 };
 
 	Query *anchorSubquery = NULL;
@@ -129,6 +131,7 @@ CreateColocatedJoinChecker(Query *subquery, PlannerRestrictionContext *restricti
 static RangeTblEntry *
 AnchorRte(Query *subquery)
 {
+elog(INFO, "TTT src/backend/distributed/planner/query_colocation_checker.c:AnchorRte");
 	FromExpr *joinTree = subquery->jointree;
 	Relids joinRelIds = get_relids_in_jointree((Node *) joinTree, false);
 	int currentRTEIndex = -1;
@@ -198,6 +201,7 @@ AnchorRte(Query *subquery)
 bool
 SubqueryColocated(Query *subquery, ColocatedJoinChecker *checker)
 {
+elog(INFO, "TTT src/backend/distributed/planner/query_colocation_checker.c:SubqueryColocated");
 	List *anchorRelationRestrictionList = checker->anchorRelationRestrictionList;
 	List *anchorAttributeEquivalences = checker->anchorAttributeEquivalences;
 
@@ -273,6 +277,7 @@ SubqueryColocated(Query *subquery, ColocatedJoinChecker *checker)
 Query *
 WrapRteRelationIntoSubquery(RangeTblEntry *rteRelation, List *requiredAttributes)
 {
+elog(INFO, "TTT src/backend/distributed/planner/query_colocation_checker.c:WrapRteRelationIntoSubquery");
 	Query *subquery = makeNode(Query);
 	RangeTblRef *newRangeTableRef = makeNode(RangeTblRef);
 
@@ -313,6 +318,7 @@ WrapRteRelationIntoSubquery(RangeTblEntry *rteRelation, List *requiredAttributes
 List *
 CreateAllTargetListForRelation(Oid relationId, List *requiredAttributes)
 {
+elog(INFO, "TTT src/backend/distributed/planner/query_colocation_checker.c:CreateAllTargetListForRelation");
 	Relation relation = relation_open(relationId, AccessShareLock);
 	int numberOfAttributes = RelationGetNumberOfAttributes(relation);
 
@@ -367,6 +373,7 @@ CreateAllTargetListForRelation(Oid relationId, List *requiredAttributes)
 static List *
 CreateFilteredTargetListForRelation(Oid relationId, List *requiredAttributes)
 {
+elog(INFO, "TTT src/backend/distributed/planner/query_colocation_checker.c:CreateFilteredTargetListForRelation");
 	Relation relation = relation_open(relationId, AccessShareLock);
 	int numberOfAttributes = RelationGetNumberOfAttributes(relation);
 
@@ -400,6 +407,7 @@ CreateFilteredTargetListForRelation(Oid relationId, List *requiredAttributes)
 static List *
 CreateDummyTargetList(Oid relationId, List *requiredAttributes)
 {
+elog(INFO, "TTT src/backend/distributed/planner/query_colocation_checker.c:CreateDummyTargetList");
 	int resno = 1;
 	TargetEntry *dummyTargetEntry = CreateUnusedTargetEntry(resno);
 	return list_make1(dummyTargetEntry);
@@ -414,6 +422,7 @@ static TargetEntry *
 CreateTargetEntryForColumn(Form_pg_attribute attributeTuple, Index rteIndex,
 						   int attributeNumber, int resno)
 {
+elog(INFO, "TTT src/backend/distributed/planner/query_colocation_checker.c:CreateTargetEntryForColumn");
 	Var *targetColumn =
 		makeVar(rteIndex, attributeNumber, attributeTuple->atttypid,
 				attributeTuple->atttypmod, attributeTuple->attcollation, 0);
@@ -447,6 +456,7 @@ CreateTargetEntryForNullCol(Form_pg_attribute attributeTuple, int resno)
 static TargetEntry *
 CreateUnusedTargetEntry(int resno)
 {
+elog(INFO, "TTT src/backend/distributed/planner/query_colocation_checker.c:CreateUnusedTargetEntry");
 	StringInfo colname = makeStringInfo();
 	appendStringInfo(colname, "dummy-%d", resno);
 	Expr *nullExpr = (Expr *) makeNullConst(INT4OID,

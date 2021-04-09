@@ -66,6 +66,7 @@
 #include "utils/lsyscache.h"
 #include "utils/memutils.h"
 #include "utils/syscache.h"
+#include "utils/elog.h"
 
 
 static List *plannerRestrictionContextList = NIL;
@@ -138,6 +139,7 @@ distributed_planner(Query *parse,
 					int cursorOptions,
 					ParamListInfo boundParams)
 {
+elog(INFO, "TTT src/backend/distributed/planner/distributed_planner.c:distributed_planner");
 	bool needsDistributedPlanning = false;
 	bool fastPathRouterQuery = false;
 	Node *distributionKeyValue = NULL;
@@ -282,6 +284,7 @@ distributed_planner(Query *parse,
 List *
 ExtractRangeTableEntryList(Query *query)
 {
+elog(INFO, "TTT src/backend/distributed/planner/distributed_planner.c:ExtractRangeTableEntryList");
 	List *rteList = NIL;
 
 	ExtractRangeTableEntryWalker((Node *) query, &rteList);
@@ -301,6 +304,7 @@ ExtractRangeTableEntryList(Query *query)
 bool
 NeedsDistributedPlanning(Query *query)
 {
+elog(INFO, "TTT src/backend/distributed/planner/distributed_planner.c:NeedsDistributedPlanning");
 	if (!CitusHasBeenLoaded())
 	{
 		return false;
@@ -328,6 +332,7 @@ NeedsDistributedPlanning(Query *query)
 static bool
 ListContainsDistributedTableRTE(List *rangeTableList)
 {
+elog(INFO, "TTT src/backend/distributed/planner/distributed_planner.c:ListContainsDistributedTableRTE");
 	ListCell *rangeTableCell = NULL;
 
 	foreach(rangeTableCell, rangeTableList)
@@ -363,6 +368,7 @@ ListContainsDistributedTableRTE(List *rangeTableList)
 static int
 AssignRTEIdentities(List *rangeTableList, int rteIdCounter)
 {
+elog(INFO, "TTT src/backend/distributed/planner/distributed_planner.c:AssignRTEIdentities");
 	ListCell *rangeTableCell = NULL;
 
 	foreach(rangeTableCell, rangeTableList)
@@ -404,6 +410,7 @@ static void
 AdjustPartitioningForDistributedPlanning(List *rangeTableList,
 										 bool setPartitionedTablesInherited)
 {
+elog(INFO, "TTT src/backend/distributed/planner/distributed_planner.c:AdjustPartitioningForDistributedPlanning");
 	ListCell *rangeTableCell = NULL;
 
 	foreach(rangeTableCell, rangeTableList)
@@ -448,6 +455,7 @@ AdjustPartitioningForDistributedPlanning(List *rangeTableList,
 static void
 AssignRTEIdentity(RangeTblEntry *rangeTableEntry, int rteIdentifier)
 {
+elog(INFO, "TTT src/backend/distributed/planner/distributed_planner.c:AssignRTEIdentity");
 	Assert(rangeTableEntry->rtekind == RTE_RELATION);
 
 	rangeTableEntry->values_lists = list_make1_int(rteIdentifier);
@@ -474,6 +482,7 @@ GetRTEIdentity(RangeTblEntry *rte)
 LOCKMODE
 GetQueryLockMode(Query *query)
 {
+elog(INFO, "TTT src/backend/distributed/planner/distributed_planner.c:GetQueryLockMode");
 	if (IsModifyCommand(query))
 	{
 		return RowExclusiveLock;
@@ -496,6 +505,7 @@ GetQueryLockMode(Query *query)
 bool
 IsModifyCommand(Query *query)
 {
+elog(INFO, "TTT src/backend/distributed/planner/distributed_planner.c:IsModifyCommand");
 	CmdType commandType = query->commandType;
 
 	if (commandType == CMD_INSERT || commandType == CMD_UPDATE ||
@@ -544,6 +554,7 @@ static PlannedStmt *
 PlanFastPathDistributedStmt(DistributedPlanningContext *planContext,
 							Node *distributionKeyValue)
 {
+elog(INFO, "TTT src/backend/distributed/planner/distributed_planner.c:PlanFastPathDistributedStmt");
 	FastPathRestrictionContext *fastPathContext =
 		planContext->plannerRestrictionContext->fastPathRestrictionContext;
 
@@ -578,6 +589,7 @@ static PlannedStmt *
 PlanDistributedStmt(DistributedPlanningContext *planContext,
 					int rteIdCounter)
 {
+elog(INFO, "TTT src/backend/distributed/planner/distributed_planner.c:PlanDistributedStmt");
 	/* may've inlined new relation rtes */
 	List *rangeTableList = ExtractRangeTableEntryList(planContext->query);
 	rteIdCounter = AssignRTEIdentities(rangeTableList, rteIdCounter);
@@ -1088,6 +1100,7 @@ CreateDistributedPlan(uint64 planId, Query *originalQuery, Query *query, ParamLi
 void
 EnsurePartitionTableNotReplicated(Oid relationId)
 {
+elog(INFO, "TTT src/backend/distributed/planner/distributed_planner.c:EnsurePartitionTableNotReplicated");
 	DeferredErrorMessage *deferredError =
 		DeferErrorIfPartitionTableNotSingleReplicated(relationId);
 	if (deferredError != NULL)
@@ -2260,6 +2273,7 @@ CurrentPlannerRestrictionContext(void)
 static void
 PopPlannerRestrictionContext(void)
 {
+elog(INFO, "TTT src/backend/distributed/planner/distributed_planner.c:PopPlannerRestrictionContext");
 	plannerRestrictionContextList = list_delete_first(plannerRestrictionContextList);
 }
 

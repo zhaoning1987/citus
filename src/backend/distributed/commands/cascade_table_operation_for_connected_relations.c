@@ -33,6 +33,7 @@
 #include "utils/builtins.h"
 #include "utils/lsyscache.h"
 #include "utils/syscache.h"
+#include "utils/elog.h"
 
 
 static void EnsureSequentialModeForCitusTableCascadeFunction(List *relationIdList);
@@ -61,6 +62,7 @@ CascadeOperationForConnectedRelations(Oid relationId, LOCKMODE lockMode,
 									  CascadeOperationType
 									  cascadeOperationType)
 {
+elog(INFO, "TTT src/backend/distributed/commands/cascade_table_operation_for_connected_relations.c:CascadeOperationForConnectedRelations");
 	/*
 	 * As we will operate on foreign key connected relations, here we
 	 * invalidate foreign key graph to be on the safe side.
@@ -127,6 +129,7 @@ CascadeOperationForConnectedRelations(Oid relationId, LOCKMODE lockMode,
 static void
 LockRelationsWithLockMode(List *relationIdList, LOCKMODE lockMode)
 {
+elog(INFO, "TTT src/backend/distributed/commands/cascade_table_operation_for_connected_relations.c:LockRelationsWithLockMode");
 	Oid relationId;
 	relationIdList = SortList(relationIdList, CompareOids);
 	foreach_oid(relationId, relationIdList)
@@ -145,6 +148,7 @@ LockRelationsWithLockMode(List *relationIdList, LOCKMODE lockMode)
 void
 ErrorIfAnyPartitionRelationInvolvedInNonInheritedFKey(List *relationIdList)
 {
+elog(INFO, "TTT src/backend/distributed/commands/cascade_table_operation_for_connected_relations.c:ErrorIfAnyPartitionRelationInvolvedInNonInheritedFKey");
 	Oid relationId = InvalidOid;
 	foreach_oid(relationId, relationIdList)
 	{
@@ -177,6 +181,7 @@ ErrorIfAnyPartitionRelationInvolvedInNonInheritedFKey(List *relationIdList)
 static List *
 RemovePartitionRelationIds(List *relationIdList)
 {
+elog(INFO, "TTT src/backend/distributed/commands/cascade_table_operation_for_connected_relations.c:RemovePartitionRelationIds");
 	List *nonPartitionRelationIdList = NIL;
 
 	Oid relationId = InvalidOid;
@@ -201,6 +206,7 @@ RemovePartitionRelationIds(List *relationIdList)
 static void
 EnsureSequentialModeForCitusTableCascadeFunction(List *relationIdList)
 {
+elog(INFO, "TTT src/backend/distributed/commands/cascade_table_operation_for_connected_relations.c:EnsureSequentialModeForCitusTableCascadeFunction");
 	if (!RelationIdListHasReferenceTable(relationIdList))
 	{
 		/*
@@ -233,6 +239,7 @@ EnsureSequentialModeForCitusTableCascadeFunction(List *relationIdList)
 bool
 RelationIdListHasReferenceTable(List *relationIdList)
 {
+elog(INFO, "TTT src/backend/distributed/commands/cascade_table_operation_for_connected_relations.c:RelationIdListHasReferenceTable");
 	Oid relationId = InvalidOid;
 	foreach_oid(relationId, relationIdList)
 	{
@@ -253,6 +260,7 @@ RelationIdListHasReferenceTable(List *relationIdList)
 static List *
 GetFKeyCreationCommandsForRelationIdList(List *relationIdList)
 {
+elog(INFO, "TTT src/backend/distributed/commands/cascade_table_operation_for_connected_relations.c:GetFKeyCreationCommandsForRelationIdList");
 	List *fKeyCreationCommands = NIL;
 
 	Oid relationId = InvalidOid;
@@ -275,6 +283,7 @@ GetFKeyCreationCommandsForRelationIdList(List *relationIdList)
 static void
 DropRelationIdListForeignKeys(List *relationIdList, int fKeyFlags)
 {
+elog(INFO, "TTT src/backend/distributed/commands/cascade_table_operation_for_connected_relations.c:DropRelationIdListForeignKeys");
 	Oid relationId = InvalidOid;
 	foreach_oid(relationId, relationIdList)
 	{
@@ -290,6 +299,7 @@ DropRelationIdListForeignKeys(List *relationIdList, int fKeyFlags)
 void
 DropRelationForeignKeys(Oid relationId, int fKeyFlags)
 {
+elog(INFO, "TTT src/backend/distributed/commands/cascade_table_operation_for_connected_relations.c:DropRelationForeignKeys");
 	/*
 	 * We undistribute citus local tables that are not chained with any reference
 	 * tables via foreign keys at the end of the utility hook.
@@ -442,6 +452,7 @@ ExecuteCascadeOperationForRelationIdList(List *relationIdList,
 void
 ExecuteAndLogUtilityCommandList(List *utilityCommandList)
 {
+elog(INFO, "TTT src/backend/distributed/commands/cascade_table_operation_for_connected_relations.c:ExecuteAndLogUtilityCommandList");
 	char *utilityCommand = NULL;
 	foreach_ptr(utilityCommand, utilityCommandList)
 	{

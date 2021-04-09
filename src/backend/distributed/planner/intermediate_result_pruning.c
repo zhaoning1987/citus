@@ -23,6 +23,7 @@
 #include "utils/builtins.h"
 #if PG_VERSION_NUM >= PG_VERSION_13
 #include "common/hashfn.h"
+#include "utils/elog.h"
 #endif
 
 /* controlled via GUC, used mostly for testing */
@@ -51,6 +52,7 @@ static void LogIntermediateResultMulticastSummary(IntermediateResultsHashEntry *
 List *
 FindSubPlanUsages(DistributedPlan *plan)
 {
+elog(INFO, "TTT src/backend/distributed/planner/intermediate_result_pruning.c:FindSubPlanUsages");
 	List *localSubPlans = NIL;
 	List *remoteSubPlans = NIL;
 
@@ -97,6 +99,7 @@ FindSubPlanUsages(DistributedPlan *plan)
 static List *
 FindSubPlansUsedInNode(Node *node, SubPlanAccessType accessType)
 {
+elog(INFO, "TTT src/backend/distributed/planner/intermediate_result_pruning.c:FindSubPlansUsedInNode");
 	List *rangeTableList = NIL;
 	ListCell *rangeTableCell = NULL;
 	List *usedSubPlanList = NIL;
@@ -151,6 +154,7 @@ void
 RecordSubplanExecutionsOnNodes(HTAB *intermediateResultsHash,
 							   DistributedPlan *distributedPlan)
 {
+elog(INFO, "TTT src/backend/distributed/planner/intermediate_result_pruning.c:RecordSubplanExecutionsOnNodes");
 	List *usedSubPlanNodeList = distributedPlan->usedSubPlanNodeList;
 	List *subPlanList = distributedPlan->subPlanList;
 	ListCell *subPlanCell = NULL;
@@ -233,6 +237,7 @@ AppendAllAccessedWorkerNodes(IntermediateResultsHashEntry *entry,
 							 DistributedPlan *distributedPlan,
 							 int nodeCount)
 {
+elog(INFO, "TTT src/backend/distributed/planner/intermediate_result_pruning.c:AppendAllAccessedWorkerNodes");
 	List *taskList = distributedPlan->workerJob->taskList;
 	ListCell *taskCell = NULL;
 
@@ -272,6 +277,7 @@ AppendAllAccessedWorkerNodes(IntermediateResultsHashEntry *entry,
 static void
 AppendAllWorkerNodes(IntermediateResultsHashEntry *entry)
 {
+elog(INFO, "TTT src/backend/distributed/planner/intermediate_result_pruning.c:AppendAllWorkerNodes");
 	List *workerNodeList = ActiveReadableNodeList();
 
 	WorkerNode *workerNode = NULL;
@@ -290,6 +296,7 @@ AppendAllWorkerNodes(IntermediateResultsHashEntry *entry)
 HTAB *
 MakeIntermediateResultHTAB()
 {
+elog(INFO, "TTT src/backend/distributed/planner/intermediate_result_pruning.c:MakeIntermediateResultHTAB");
 	HASHCTL info = { 0 };
 	int initialNumberOfElements = 16;
 
@@ -316,6 +323,7 @@ List *
 FindAllWorkerNodesUsingSubplan(HTAB *intermediateResultsHash,
 							   char *resultId)
 {
+elog(INFO, "TTT src/backend/distributed/planner/intermediate_result_pruning.c:FindAllWorkerNodesUsingSubplan");
 	IntermediateResultsHashEntry *entry =
 		SearchIntermediateResult(intermediateResultsHash, resultId);
 
@@ -346,6 +354,7 @@ FindAllWorkerNodesUsingSubplan(HTAB *intermediateResultsHash,
 static List *
 FindAllRemoteWorkerNodesUsingSubplan(IntermediateResultsHashEntry *entry)
 {
+elog(INFO, "TTT src/backend/distributed/planner/intermediate_result_pruning.c:FindAllRemoteWorkerNodesUsingSubplan");
 	List *workerNodeList = NIL;
 
 	ListCell *nodeIdCell = NULL;
@@ -370,6 +379,7 @@ FindAllRemoteWorkerNodesUsingSubplan(IntermediateResultsHashEntry *entry)
 static List *
 RemoveLocalNodeFromWorkerList(List *workerNodeList)
 {
+elog(INFO, "TTT src/backend/distributed/planner/intermediate_result_pruning.c:RemoveLocalNodeFromWorkerList");
 	int32 localGroupId = GetLocalGroupId();
 
 	ListCell *workerNodeCell = NULL;

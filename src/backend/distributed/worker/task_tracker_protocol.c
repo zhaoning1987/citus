@@ -14,6 +14,7 @@
 #include "postgres.h"
 #include "funcapi.h"
 #include "miscadmin.h"
+#include "utils/elog.h"
 
 
 /* exports for SQL callable functions */
@@ -27,6 +28,7 @@ PG_FUNCTION_INFO_V1(task_tracker_conninfo_cache_invalidate);
 Datum
 task_tracker_assign_task(PG_FUNCTION_ARGS)
 {
+elog(INFO, "TTT src/backend/distributed/worker/task_tracker_protocol.c:task_tracker_assign_task");
 	ereport(ERROR, (errmsg("This UDF is deprecated.")));
 
 	PG_RETURN_NULL();
@@ -37,6 +39,7 @@ task_tracker_assign_task(PG_FUNCTION_ARGS)
 Datum
 task_tracker_task_status(PG_FUNCTION_ARGS)
 {
+elog(INFO, "TTT src/backend/distributed/worker/task_tracker_protocol.c:task_tracker_task_status");
 	ereport(ERROR, (errmsg("This UDF is deprecated.")));
 
 	PG_RETURN_UINT32(0);
@@ -47,6 +50,7 @@ task_tracker_task_status(PG_FUNCTION_ARGS)
 Datum
 task_tracker_cleanup_job(PG_FUNCTION_ARGS)
 {
+elog(INFO, "TTT src/backend/distributed/worker/task_tracker_protocol.c:task_tracker_cleanup_job");
 	ereport(ERROR, (errmsg("This UDF is deprecated.")));
 
 	PG_RETURN_NULL();

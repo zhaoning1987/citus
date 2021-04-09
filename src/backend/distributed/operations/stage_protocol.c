@@ -60,6 +60,7 @@
 #include "utils/lsyscache.h"
 #include "utils/syscache.h"
 #include "utils/rel.h"
+#include "utils/elog.h"
 
 
 /* Local functions forward declarations */
@@ -94,6 +95,7 @@ PG_FUNCTION_INFO_V1(citus_update_table_statistics);
 Datum
 master_create_empty_shard(PG_FUNCTION_ARGS)
 {
+elog(INFO, "TTT src/backend/distributed/operations/stage_protocol.c:master_create_empty_shard");
 	text *relationNameText = PG_GETARG_TEXT_P(0);
 	char *relationName = text_to_cstring(relationNameText);
 	uint32 attemptableNodeCount = 0;
@@ -243,6 +245,7 @@ master_create_empty_shard(PG_FUNCTION_ARGS)
 Datum
 master_append_table_to_shard(PG_FUNCTION_ARGS)
 {
+elog(INFO, "TTT src/backend/distributed/operations/stage_protocol.c:master_append_table_to_shard");
 	uint64 shardId = PG_GETARG_INT64(0);
 	text *sourceTableNameText = PG_GETARG_TEXT_P(1);
 	text *sourceNodeNameText = PG_GETARG_TEXT_P(2);
@@ -363,6 +366,7 @@ master_append_table_to_shard(PG_FUNCTION_ARGS)
 Datum
 citus_update_shard_statistics(PG_FUNCTION_ARGS)
 {
+elog(INFO, "TTT src/backend/distributed/operations/stage_protocol.c:citus_update_shard_statistics");
 	int64 shardId = PG_GETARG_INT64(0);
 
 	CheckCitusVersion(ERROR);
@@ -380,6 +384,7 @@ citus_update_shard_statistics(PG_FUNCTION_ARGS)
 Datum
 citus_update_table_statistics(PG_FUNCTION_ARGS)
 {
+elog(INFO, "TTT src/backend/distributed/operations/stage_protocol.c:citus_update_table_statistics");
 	Oid distributedTableId = PG_GETARG_OID(0);
 
 	CheckCitusVersion(ERROR);
@@ -396,6 +401,7 @@ citus_update_table_statistics(PG_FUNCTION_ARGS)
 Datum
 master_update_shard_statistics(PG_FUNCTION_ARGS)
 {
+elog(INFO, "TTT src/backend/distributed/operations/stage_protocol.c:master_update_shard_statistics");
 	return citus_update_shard_statistics(fcinfo);
 }
 
@@ -407,6 +413,7 @@ master_update_shard_statistics(PG_FUNCTION_ARGS)
 void
 CheckDistributedTable(Oid relationId)
 {
+elog(INFO, "TTT src/backend/distributed/operations/stage_protocol.c:CheckDistributedTable");
 	char *relationName = get_rel_name(relationId);
 
 	/* check that the relationId belongs to a table */
@@ -429,6 +436,7 @@ void
 CreateAppendDistributedShardPlacements(Oid relationId, int64 shardId,
 									   List *workerNodeList, int replicationFactor)
 {
+elog(INFO, "TTT src/backend/distributed/operations/stage_protocol.c:CreateAppendDistributedShardPlacements");
 	int attemptCount = replicationFactor;
 	int workerNodeCount = list_length(workerNodeList);
 	int placementsCreated = 0;
@@ -509,6 +517,7 @@ List *
 InsertShardPlacementRows(Oid relationId, int64 shardId, List *workerNodeList,
 						 int workerStartIndex, int replicationFactor)
 {
+elog(INFO, "TTT src/backend/distributed/operations/stage_protocol.c:InsertShardPlacementRows");
 	int workerNodeCount = list_length(workerNodeList);
 	int placementsInserted = 0;
 	List *insertedShardPlacements = NIL;
@@ -547,6 +556,7 @@ void
 CreateShardsOnWorkers(Oid distributedRelationId, List *shardPlacements,
 					  bool useExclusiveConnection, bool colocatedShard)
 {
+elog(INFO, "TTT src/backend/distributed/operations/stage_protocol.c:CreateShardsOnWorkers");
 	bool includeSequenceDefaults = false;
 	List *ddlCommandList = GetFullTableCreationCommands(distributedRelationId,
 														includeSequenceDefaults);
@@ -891,6 +901,7 @@ UpdateTableStatistics(Oid relationId)
 static void
 ReceiveAndUpdateShardsSizeAndMinMax(List *connectionList)
 {
+elog(INFO, "TTT src/backend/distributed/operations/stage_protocol.c:ReceiveAndUpdateShardsSizeAndMinMax");
 	/*
 	 * From the connection list, we will not get all the shards, but
 	 * all the placements. We use a hash table to remember already visited shard ids

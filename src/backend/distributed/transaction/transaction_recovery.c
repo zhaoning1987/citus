@@ -47,6 +47,7 @@
 #include "utils/fmgroids.h"
 #include "utils/memutils.h"
 #include "utils/rel.h"
+#include "utils/elog.h"
 
 
 /* exports for SQL callable functions */
@@ -69,6 +70,7 @@ static bool RecoverPreparedTransactionOnWorker(MultiConnection *connection,
 Datum
 recover_prepared_transactions(PG_FUNCTION_ARGS)
 {
+elog(INFO, "TTT src/backend/distributed/transaction/transaction_recovery.c:recover_prepared_transactions");
 	CheckCitusVersion(ERROR);
 
 	int recoveredTransactionCount = RecoverTwoPhaseCommits();
@@ -85,6 +87,7 @@ recover_prepared_transactions(PG_FUNCTION_ARGS)
 void
 LogTransactionRecord(int32 groupId, char *transactionName)
 {
+elog(INFO, "TTT src/backend/distributed/transaction/transaction_recovery.c:LogTransactionRecord");
 	Datum values[Natts_pg_dist_transaction];
 	bool isNulls[Natts_pg_dist_transaction];
 
@@ -118,6 +121,7 @@ LogTransactionRecord(int32 groupId, char *transactionName)
 int
 RecoverTwoPhaseCommits(void)
 {
+elog(INFO, "TTT src/backend/distributed/transaction/transaction_recovery.c:RecoverTwoPhaseCommits");
 	int recoveredTransactionCount = 0;
 
 	/* take advisory lock first to avoid running concurrently */
@@ -141,6 +145,7 @@ RecoverTwoPhaseCommits(void)
 static int
 RecoverWorkerTransactions(WorkerNode *workerNode)
 {
+elog(INFO, "TTT src/backend/distributed/transaction/transaction_recovery.c:RecoverWorkerTransactions");
 	int recoveredTransactionCount = 0;
 
 	int32 groupId = workerNode->groupId;
@@ -400,6 +405,7 @@ RecoverWorkerTransactions(WorkerNode *workerNode)
 static List *
 PendingWorkerTransactionList(MultiConnection *connection)
 {
+elog(INFO, "TTT src/backend/distributed/transaction/transaction_recovery.c:PendingWorkerTransactionList");
 	StringInfo command = makeStringInfo();
 	bool raiseInterrupts = true;
 	List *transactionNames = NIL;
@@ -447,6 +453,7 @@ PendingWorkerTransactionList(MultiConnection *connection)
 static bool
 IsTransactionInProgress(HTAB *activeTransactionNumberSet, char *preparedTransactionName)
 {
+elog(INFO, "TTT src/backend/distributed/transaction/transaction_recovery.c:IsTransactionInProgress");
 	int32 groupId = 0;
 	int procId = 0;
 	uint32 connectionNumber = 0;
@@ -475,6 +482,7 @@ static bool
 RecoverPreparedTransactionOnWorker(MultiConnection *connection, char *transactionName,
 								   bool shouldCommit)
 {
+elog(INFO, "TTT src/backend/distributed/transaction/transaction_recovery.c:RecoverPreparedTransactionOnWorker");
 	StringInfo command = makeStringInfo();
 	PGresult *result = NULL;
 	bool raiseInterrupts = false;

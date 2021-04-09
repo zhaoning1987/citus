@@ -43,6 +43,7 @@
 #include "common/hashfn.h"
 #endif
 #include "storage/ipc.h"
+#include "utils/elog.h"
 
 
 #define REMOTE_CONNECTION_STATS_COLUMNS 4
@@ -136,6 +137,7 @@ PG_FUNCTION_INFO_V1(citus_remote_connection_stats);
 Datum
 citus_remote_connection_stats(PG_FUNCTION_ARGS)
 {
+elog(INFO, "TTT src/backend/distributed/connection/shared_connection_stats.c:citus_remote_connection_stats");
 	TupleDesc tupleDescriptor = NULL;
 
 	CheckCitusVersion(ERROR);
@@ -160,6 +162,7 @@ citus_remote_connection_stats(PG_FUNCTION_ARGS)
 static void
 StoreAllRemoteConnectionStats(Tuplestorestate *tupleStore, TupleDesc tupleDescriptor)
 {
+elog(INFO, "TTT src/backend/distributed/connection/shared_connection_stats.c:StoreAllRemoteConnectionStats");
 	Datum values[REMOTE_CONNECTION_STATS_COLUMNS];
 	bool isNulls[REMOTE_CONNECTION_STATS_COLUMNS];
 
@@ -205,6 +208,7 @@ StoreAllRemoteConnectionStats(Tuplestorestate *tupleStore, TupleDesc tupleDescri
 int
 GetMaxSharedPoolSize(void)
 {
+elog(INFO, "TTT src/backend/distributed/connection/shared_connection_stats.c:GetMaxSharedPoolSize");
 	if (MaxSharedPoolSize == ADJUST_POOLSIZE_AUTOMATICALLY)
 	{
 		return MaxConnections;
@@ -224,6 +228,7 @@ GetMaxSharedPoolSize(void)
 int
 GetLocalSharedPoolSize(void)
 {
+elog(INFO, "TTT src/backend/distributed/connection/shared_connection_stats.c:GetLocalSharedPoolSize");
 	if (LocalSharedPoolSize == ADJUST_POOLSIZE_AUTOMATICALLY)
 	{
 		return MaxConnections * 0.5;
@@ -243,6 +248,7 @@ GetLocalSharedPoolSize(void)
 void
 WaitLoopForSharedConnection(const char *hostname, int port)
 {
+elog(INFO, "TTT src/backend/distributed/connection/shared_connection_stats.c:WaitLoopForSharedConnection");
 	while (!TryToIncrementSharedConnectionCounter(hostname, port))
 	{
 		CHECK_FOR_INTERRUPTS();
@@ -266,6 +272,7 @@ WaitLoopForSharedConnection(const char *hostname, int port)
 bool
 TryToIncrementSharedConnectionCounter(const char *hostname, int port)
 {
+elog(INFO, "TTT src/backend/distributed/connection/shared_connection_stats.c:TryToIncrementSharedConnectionCounter");
 	if (GetMaxSharedPoolSize() == DISABLE_CONNECTION_THROTTLING)
 	{
 		/* connection throttling disabled */
@@ -539,6 +546,7 @@ DecrementSharedConnectionCounter(const char *hostname, int port)
 static void
 LockConnectionSharedMemory(LWLockMode lockMode)
 {
+elog(INFO, "TTT src/backend/distributed/connection/shared_connection_stats.c:UnLockConnectionSharedMemory");
 	LWLockAcquire(&ConnectionStatsSharedState->sharedConnectionHashLock, lockMode);
 }
 
@@ -586,6 +594,7 @@ WakeupWaiterBackendsForSharedConnection(void)
 void
 WaitForSharedConnection(void)
 {
+elog(INFO, "TTT src/backend/distributed/connection/shared_connection_stats.c:InitializeSharedConnectionStats");
 	ConditionVariableSleep(&ConnectionStatsSharedState->waitersConditionVariable,
 						   PG_WAIT_EXTENSION);
 }

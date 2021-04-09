@@ -15,12 +15,14 @@
 #include "nodes/nodes.h"
 #include "nodes/parsenodes.h"
 #include "utils/builtins.h"
+#include "utils/elog.h"
 
 static void AppendAlterTableSchemaStmt(StringInfo buf, AlterObjectSchemaStmt *stmt);
 
 char *
 DeparseAlterTableSchemaStmt(Node *node)
 {
+elog(INFO, "TTT src/backend/distributed/deparser/deparse_table_stmts.c:DeparseAlterTableSchemaStmt");
 	AlterObjectSchemaStmt *stmt = castNode(AlterObjectSchemaStmt, node);
 	StringInfoData str = { 0 };
 	initStringInfo(&str);

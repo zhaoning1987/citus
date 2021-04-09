@@ -31,6 +31,7 @@
 #include "utils/lsyscache.h"
 #include "utils/syscache.h"
 #include "miscadmin.h"
+#include "utils/elog.h"
 
 
 static char * CreateCollationDDLInternal(Oid collationId, Oid *collowner,
@@ -50,6 +51,7 @@ static void EnsureSequentialModeForCollationDDL(void);
 static char *
 CreateCollationDDLInternal(Oid collationId, Oid *collowner, char **quotedCollationName)
 {
+elog(INFO, "TTT src/backend/distributed/commands/collation.c:CreateCollationDDLInternal");
 	char *schemaName = NULL;
 	StringInfoData collationNameDef;
 	const char *providerString = NULL;
@@ -136,6 +138,7 @@ CreateCollationDDLInternal(Oid collationId, Oid *collowner, char **quotedCollati
 char *
 CreateCollationDDL(Oid collationId)
 {
+elog(INFO, "TTT src/backend/distributed/commands/collation.c:CreateCollationDDL");
 	char *quotedCollationName = NULL;
 	return CreateCollationDDLInternal(collationId, NULL, &quotedCollationName);
 }
@@ -148,6 +151,7 @@ CreateCollationDDL(Oid collationId)
 List *
 CreateCollationDDLsIdempotent(Oid collationId)
 {
+elog(INFO, "TTT src/backend/distributed/commands/collation.c:CreateCollationDDLsIdempotent");
 	StringInfoData collationAlterOwnerCommand;
 	Oid collowner = InvalidOid;
 	char *quotedCollationName = NULL;
@@ -168,6 +172,7 @@ CreateCollationDDLsIdempotent(Oid collationId)
 ObjectAddress
 AlterCollationOwnerObjectAddress(Node *node, bool missing_ok)
 {
+elog(INFO, "TTT src/backend/distributed/commands/collation.c:AlterCollationOwnerObjectAddress");
 	AlterOwnerStmt *stmt = castNode(AlterOwnerStmt, node);
 	Relation relation;
 
@@ -191,6 +196,7 @@ static List *
 FilterNameListForDistributedCollations(List *objects, bool missing_ok,
 									   List **objectAddresses)
 {
+elog(INFO, "TTT src/backend/distributed/commands/collation.c:FilterNameListForDistributedCollations");
 	List *result = NIL;
 
 	*objectAddresses = NIL;
@@ -294,6 +300,7 @@ List *
 PreprocessAlterCollationOwnerStmt(Node *node, const char *queryString,
 								  ProcessUtilityContext processUtilityContext)
 {
+elog(INFO, "TTT src/backend/distributed/commands/collation.c:PreprocessAlterCollationOwnerStmt");
 	AlterOwnerStmt *stmt = castNode(AlterOwnerStmt, node);
 	Assert(stmt->objectType == OBJECT_COLLATION);
 
@@ -329,6 +336,7 @@ List *
 PreprocessRenameCollationStmt(Node *node, const char *queryString,
 							  ProcessUtilityContext processUtilityContext)
 {
+elog(INFO, "TTT src/backend/distributed/commands/collation.c:PreprocessRenameCollationStmt");
 	RenameStmt *stmt = castNode(RenameStmt, node);
 	ObjectAddress collationAddress = GetObjectAddressFromParseTree((Node *) stmt, false);
 	if (!ShouldPropagateObject(&collationAddress))
@@ -363,6 +371,7 @@ List *
 PreprocessAlterCollationSchemaStmt(Node *node, const char *queryString,
 								   ProcessUtilityContext processUtilityContext)
 {
+elog(INFO, "TTT src/backend/distributed/commands/collation.c:PreprocessAlterCollationSchemaStmt");
 	AlterObjectSchemaStmt *stmt = castNode(AlterObjectSchemaStmt, node);
 	Assert(stmt->objectType == OBJECT_COLLATION);
 
@@ -395,6 +404,7 @@ PreprocessAlterCollationSchemaStmt(Node *node, const char *queryString,
 List *
 PostprocessAlterCollationSchemaStmt(Node *node, const char *queryString)
 {
+elog(INFO, "TTT src/backend/distributed/commands/collation.c:PostprocessAlterCollationSchemaStmt");
 	AlterObjectSchemaStmt *stmt = castNode(AlterObjectSchemaStmt, node);
 	Assert(stmt->objectType == OBJECT_COLLATION);
 
@@ -441,6 +451,7 @@ RenameCollationStmtObjectAddress(Node *node, bool missing_ok)
 ObjectAddress
 AlterCollationSchemaStmtObjectAddress(Node *node, bool missing_ok)
 {
+elog(INFO, "TTT src/backend/distributed/commands/collation.c:AlterCollationSchemaStmtObjectAddress");
 	AlterObjectSchemaStmt *stmt = castNode(AlterObjectSchemaStmt, node);
 	Assert(stmt->objectType == OBJECT_COLLATION);
 

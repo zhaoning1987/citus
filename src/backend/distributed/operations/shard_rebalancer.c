@@ -58,6 +58,7 @@
 
 #if PG_VERSION_NUM >= PG_VERSION_13
 #include "common/hashfn.h"
+#include "utils/elog.h"
 #endif
 
 
@@ -241,6 +242,7 @@ CheckRebalanceStateInvariants(const RebalanceState *state)
 static bool
 BigIntArrayDatumContains(Datum *array, int arrayLength, uint64 toFind)
 {
+elog(INFO, "TTT src/backend/distributed/operations/shard_rebalancer.c:BigIntArrayDatumContains");
 	for (int i = 0; i < arrayLength; i++)
 	{
 		if (DatumGetInt64(array[i]) == toFind)
@@ -259,6 +261,7 @@ BigIntArrayDatumContains(Datum *array, int arrayLength, uint64 toFind)
 static List *
 FullShardPlacementList(Oid relationId, ArrayType *excludedShardArray)
 {
+elog(INFO, "TTT src/backend/distributed/operations/shard_rebalancer.c:FullShardPlacementList");
 	List *shardPlacementList = NIL;
 	CitusTableCacheEntry *citusTableCacheEntry = GetCitusTableCacheEntry(relationId);
 	int shardIntervalArrayLength = citusTableCacheEntry->shardIntervalArrayLength;
@@ -399,6 +402,7 @@ ShardAllowedOnNode(uint64 shardId, WorkerNode *workerNode, void *voidContext)
 static float4
 NodeCapacity(WorkerNode *workerNode, void *voidContext)
 {
+elog(INFO, "TTT src/backend/distributed/operations/shard_rebalancer.c:NodeCapacity");
 	if (!workerNode->shouldHaveShards)
 	{
 		return 0;
@@ -1472,6 +1476,7 @@ CompareNodeFillStateAsc(const void *void1, const void *void2)
 static int
 CompareNodeFillStateDesc(const void *a, const void *b)
 {
+elog(INFO, "TTT src/backend/distributed/operations/shard_rebalancer.c:CompareShardCostAsc");
 	return -CompareNodeFillStateAsc(a, b);
 }
 
@@ -1510,6 +1515,7 @@ CompareShardCostAsc(const void *void1, const void *void2)
 static int
 CompareShardCostDesc(const void *a, const void *b)
 {
+elog(INFO, "TTT src/backend/distributed/operations/shard_rebalancer.c:MoveShardsAwayFromDisallowedNodes");
 	return -CompareShardCostAsc(a, b);
 }
 
@@ -1558,6 +1564,7 @@ MoveShardsAwayFromDisallowedNodes(RebalanceState *state)
 static int
 CompareDisallowedPlacementAsc(const void *void1, const void *void2)
 {
+elog(INFO, "TTT src/backend/distributed/operations/shard_rebalancer.c:CompareDisallowedPlacementDesc");
 	const DisallowedPlacement *a = *((const DisallowedPlacement **) void1);
 	const DisallowedPlacement *b = *((const DisallowedPlacement **) void2);
 	return CompareShardCostAsc(&(a->shardCost), &(b->shardCost));
@@ -1571,6 +1578,7 @@ CompareDisallowedPlacementAsc(const void *void1, const void *void2)
 static int
 CompareDisallowedPlacementDesc(const void *a, const void *b)
 {
+elog(INFO, "TTT src/backend/distributed/operations/shard_rebalancer.c:FindAllowedTargetFillState");
 	return -CompareDisallowedPlacementAsc(a, b);
 }
 
@@ -1940,6 +1948,7 @@ ShardActivePlacementCount(HTAB *activePlacementsHash, uint64 shardId,
 												  workerNode);
 		if (placementExists)
 		{
+elog(INFO, "TTT src/backend/distributed/operations/shard_rebalancer.c:ActivePlacementsHash");
 			shardActivePlacementCount++;
 		}
 	}
@@ -2077,6 +2086,7 @@ PlacementsHashCompare(const void *lhsKey, const void *rhsKey, Size keySize)
 								  WORKER_LENGTH);
 	if (nodeNameCompare != 0)
 	{
+elog(INFO, "TTT src/backend/distributed/operations/shard_rebalancer.c:PlacementsHashHashCode");
 		return nodeNameCompare;
 	}
 
@@ -2122,6 +2132,7 @@ WorkerNodeListContains(List *workerNodeList, const char *workerName, uint32 work
 		if ((strncmp(workerNode->workerName, workerName, WORKER_LENGTH) == 0) &&
 			(workerNode->workerPort == workerPort))
 		{
+elog(INFO, "TTT src/backend/distributed/operations/shard_rebalancer.c:UpdateColocatedShardPlacementProgress");
 			workerNodeListContains = true;
 			break;
 		}
@@ -2169,6 +2180,7 @@ UpdateColocatedShardPlacementProgress(uint64 shardId, char *sourceName, int sour
 				strcmp(step->sourceName, sourceName) == 0 &&
 				step->sourcePort == sourcePort)
 			{
+elog(INFO, "TTT src/backend/distributed/operations/shard_rebalancer.c:pg_dist_rebalance_strategy_enterprise_check");
 				step->progress = progress;
 			}
 		}
@@ -2203,6 +2215,7 @@ pg_dist_rebalance_strategy_enterprise_check(PG_FUNCTION_ARGS)
 Datum
 citus_validate_rebalance_strategy_functions(PG_FUNCTION_ARGS)
 {
+elog(INFO, "TTT src/backend/distributed/operations/shard_rebalancer.c:EnsureShardCostUDF");
 	EnsureShardCostUDF(PG_GETARG_OID(0));
 	EnsureNodeCapacityUDF(PG_GETARG_OID(1));
 	EnsureShardAllowedOnNodeUDF(PG_GETARG_OID(2));

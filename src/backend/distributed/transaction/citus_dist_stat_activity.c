@@ -40,6 +40,7 @@
 #include "utils/fmgrprotos.h"
 #include "utils/inet.h"
 #include "utils/timestamp.h"
+#include "utils/elog.h"
 
 
 /*
@@ -269,6 +270,7 @@ PG_FUNCTION_INFO_V1(citus_worker_stat_activity);
 Datum
 citus_dist_stat_activity(PG_FUNCTION_ARGS)
 {
+elog(INFO, "TTT src/backend/distributed/transaction/citus_dist_stat_activity.c:citus_dist_stat_activity");
 	CheckCitusVersion(ERROR);
 
 	List *citusDistStatStatements = CitusStatActivity(CITUS_DIST_STAT_ACTIVITY_QUERY);
@@ -287,6 +289,7 @@ citus_dist_stat_activity(PG_FUNCTION_ARGS)
 Datum
 citus_worker_stat_activity(PG_FUNCTION_ARGS)
 {
+elog(INFO, "TTT src/backend/distributed/transaction/citus_dist_stat_activity.c:citus_worker_stat_activity");
 	CheckCitusVersion(ERROR);
 
 	List *citusWorkerStatStatements = CitusStatActivity(CITUS_WORKER_STAT_ACTIVITY_QUERY);
@@ -311,6 +314,7 @@ citus_worker_stat_activity(PG_FUNCTION_ARGS)
 static List *
 CitusStatActivity(const char *statQuery)
 {
+elog(INFO, "TTT src/backend/distributed/transaction/citus_dist_stat_activity.c:CitusStatActivity");
 	List *workerNodeList = ActivePrimaryNonCoordinatorNodeList(NoLock);
 	List *connectionList = NIL;
 
@@ -420,6 +424,7 @@ CitusStatActivity(const char *statQuery)
 static List *
 GetLocalNodeCitusDistStat(const char *statQuery)
 {
+elog(INFO, "TTT src/backend/distributed/transaction/citus_dist_stat_activity.c:GetLocalNodeCitusDistStat");
 	List *citusStatsList = NIL;
 
 	if (IsCoordinator())
@@ -468,6 +473,7 @@ GetLocalNodeCitusDistStat(const char *statQuery)
 static CitusDistStat *
 ParseCitusDistStat(PGresult *result, int64 rowIndex)
 {
+elog(INFO, "TTT src/backend/distributed/transaction/citus_dist_stat_activity.c:ParseCitusDistStat");
 	CitusDistStat *citusDistStat = (CitusDistStat *) palloc0(sizeof(CitusDistStat));
 
 
@@ -575,6 +581,7 @@ ReplaceInitiatorNodeIdentifier(int initiator_node_identifier,
 static List *
 LocalNodeCitusDistStat(const char *statQuery, const char *hostname, int port)
 {
+elog(INFO, "TTT src/backend/distributed/transaction/citus_dist_stat_activity.c:LocalNodeCitusDistStat");
 	List *localNodeCitusDistStatList = NIL;
 	bool readOnly = true;
 
@@ -649,6 +656,7 @@ LocalNodeCitusDistStat(const char *statQuery, const char *hostname, int port)
 static CitusDistStat *
 HeapTupleToCitusDistStat(HeapTuple result, TupleDesc rowDescriptor)
 {
+elog(INFO, "TTT src/backend/distributed/transaction/citus_dist_stat_activity.c:HeapTupleToCitusDistStat");
 	CitusDistStat *citusDistStat = (CitusDistStat *) palloc0(sizeof(CitusDistStat));
 
 	int initiator_node_identifier = ParseIntFieldFromHeapTuple(result, rowDescriptor, 1);
@@ -700,6 +708,7 @@ HeapTupleToCitusDistStat(HeapTuple result, TupleDesc rowDescriptor)
 static int64
 ParseIntFieldFromHeapTuple(HeapTuple tuple, TupleDesc tupdesc, int colIndex)
 {
+elog(INFO, "TTT src/backend/distributed/transaction/citus_dist_stat_activity.c:ParseIntFieldFromHeapTuple");
 	bool isNull = false;
 
 	Datum resultDatum = SPI_getbinval(tuple, tupdesc, colIndex, &isNull);

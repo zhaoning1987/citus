@@ -20,6 +20,7 @@
 #include "utils/syscache.h"
 
 #include "distributed/deparser.h"
+#include "utils/elog.h"
 
 
 /*
@@ -28,6 +29,7 @@
 char *
 FormatCollateBEQualified(Oid collate_oid)
 {
+elog(INFO, "TTT src/backend/distributed/deparser/format_collate.c:FormatCollateBEQualified");
 	return FormatCollateExtended(collate_oid, FORMAT_COLLATE_FORCE_QUALIFY);
 }
 

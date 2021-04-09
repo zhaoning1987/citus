@@ -19,6 +19,7 @@
 #include "nodes/nodeFuncs.h"
 #include "utils/lsyscache.h"
 #include "utils/syscache.h"
+#include "utils/elog.h"
 
 
 /* Config variable managed via guc.c */
@@ -38,6 +39,7 @@ PG_FUNCTION_INFO_V1(relation_is_a_known_shard);
 Datum
 relation_is_a_known_shard(PG_FUNCTION_ARGS)
 {
+elog(INFO, "TTT src/backend/distributed/worker/worker_shard_visibility.c:relation_is_a_known_shard");
 	Oid relationId = PG_GETARG_OID(0);
 	bool onlySearchPath = true;
 
@@ -55,6 +57,7 @@ relation_is_a_known_shard(PG_FUNCTION_ARGS)
 Datum
 citus_table_is_visible(PG_FUNCTION_ARGS)
 {
+elog(INFO, "TTT src/backend/distributed/worker/worker_shard_visibility.c:citus_table_is_visible");
 	Oid relationId = PG_GETARG_OID(0);
 	char relKind = '\0';
 	bool onlySearchPath = true;
@@ -104,6 +107,7 @@ citus_table_is_visible(PG_FUNCTION_ARGS)
 void
 ErrorIfRelationIsAKnownShard(Oid relationId)
 {
+elog(INFO, "TTT src/backend/distributed/worker/worker_shard_visibility.c:ErrorIfRelationIsAKnownShard");
 	/* search the relation in all schemas */
 	bool onlySearchPath = false;
 	if (!RelationIsAKnownShard(relationId, onlySearchPath))
@@ -127,6 +131,7 @@ ErrorIfRelationIsAKnownShard(Oid relationId)
 bool
 RelationIsAKnownShard(Oid shardRelationId, bool onlySearchPath)
 {
+elog(INFO, "TTT src/backend/distributed/worker/worker_shard_visibility.c:RelationIsAKnownShard");
 	bool missingOk = true;
 	char relKind = '\0';
 
@@ -228,6 +233,7 @@ RelationIsAKnownShard(Oid shardRelationId, bool onlySearchPath)
 void
 ReplaceTableVisibleFunction(Node *inputNode)
 {
+elog(INFO, "TTT src/backend/distributed/worker/worker_shard_visibility.c:ReplaceTableVisibleFunction");
 	if (!OverrideTableVisibility ||
 		!CitusHasBeenLoaded() || !CheckCitusVersion(DEBUG2))
 	{

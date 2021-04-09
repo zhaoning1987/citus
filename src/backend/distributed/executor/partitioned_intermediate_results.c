@@ -33,6 +33,7 @@
 #include "tcop/pquery.h"
 #include "tcop/tcopprot.h"
 #include "utils/typcache.h"
+#include "utils/elog.h"
 
 
 /*
@@ -107,6 +108,7 @@ PG_FUNCTION_INFO_V1(worker_partition_query_result);
 Datum
 worker_partition_query_result(PG_FUNCTION_ARGS)
 {
+elog(INFO, "TTT src/backend/distributed/executor/partitioned_intermediate_results.c:worker_partition_query_result");
 	ReturnSetInfo *resultInfo = (ReturnSetInfo *) fcinfo->resultinfo;
 
 	text *resultIdPrefixText = PG_GETARG_TEXT_P(0);
@@ -256,6 +258,7 @@ worker_partition_query_result(PG_FUNCTION_ARGS)
 static Portal
 StartPortalForQueryExecution(const char *queryString)
 {
+elog(INFO, "TTT src/backend/distributed/executor/partitioned_intermediate_results.c:StartPortalForQueryExecution");
 	Query *query = ParseQueryString(queryString, NULL, 0);
 
 	int cursorOptions = CURSOR_OPT_PARALLEL_OK;
@@ -284,6 +287,7 @@ static CitusTableCacheEntry *
 QueryTupleShardSearchInfo(ArrayType *minValuesArray, ArrayType *maxValuesArray,
 						  char partitionMethod, Var *partitionColumn)
 {
+elog(INFO, "TTT src/backend/distributed/executor/partitioned_intermediate_results.c:QueryTupleShardSearchInfo");
 	Datum *minValues = 0;
 	Datum *maxValues = 0;
 	bool *minValueNulls = 0;
@@ -370,6 +374,7 @@ CreatePartitionedResultDestReceiver(char *resultIdPrefix, int partitionColumnInd
 									CitusTableCacheEntry *shardSearchInfo,
 									MemoryContext perTupleContext)
 {
+elog(INFO, "TTT src/backend/distributed/executor/partitioned_intermediate_results.c:CreatePartitionedResultDestReceiver");
 	PartitionedResultDestReceiver *resultDest =
 		palloc0(sizeof(PartitionedResultDestReceiver));
 
@@ -403,6 +408,7 @@ static void
 PartitionedResultDestReceiverStartup(DestReceiver *copyDest, int operation,
 									 TupleDesc inputTupleDescriptor)
 {
+elog(INFO, "TTT src/backend/distributed/executor/partitioned_intermediate_results.c:PartitionedResultDestReceiverStartup");
 	/*
 	 * We don't expect this to be called multiple times, but if it happens,
 	 * we will just overwrite previous files.
@@ -429,6 +435,7 @@ PartitionedResultDestReceiverStartup(DestReceiver *copyDest, int operation,
 static bool
 PartitionedResultDestReceiverReceive(TupleTableSlot *slot, DestReceiver *copyDest)
 {
+elog(INFO, "TTT src/backend/distributed/executor/partitioned_intermediate_results.c:PartitionedResultDestReceiverReceive");
 	PartitionedResultDestReceiver *partitionedDest =
 		(PartitionedResultDestReceiver *) copyDest;
 
@@ -481,6 +488,7 @@ PartitionedResultDestReceiverReceive(TupleTableSlot *slot, DestReceiver *copyDes
 static void
 PartitionedResultDestReceiverShutdown(DestReceiver *copyDest)
 {
+elog(INFO, "TTT src/backend/distributed/executor/partitioned_intermediate_results.c:PartitionedResultDestReceiverShutdown");
 	PartitionedResultDestReceiver *partitionedDest =
 		(PartitionedResultDestReceiver *) copyDest;
 	int partitionCount = partitionedDest->partitionCount;

@@ -52,6 +52,7 @@
 #include "utils/lsyscache.h"
 #include "utils/palloc.h"
 #include "utils/relcache.h"
+#include "utils/elog.h"
 
 /* Local functions forward declarations */
 static bool UpdateWholeRowColumnReferencesWalker(Node *node, uint64 *shardId);
@@ -69,6 +70,7 @@ PG_FUNCTION_INFO_V1(shard_name);
 void
 RelayEventExtendNames(Node *parseTree, char *schemaName, uint64 shardId)
 {
+elog(INFO, "TTT src/backend/distributed/relay/relay_event_utility.c:RelayEventExtendNames");
 	/* we don't extend names in extension or schema commands */
 	NodeTag nodeType = nodeTag(parseTree);
 	if (nodeType == T_CreateExtensionStmt || nodeType == T_CreateSchemaStmt ||
@@ -650,6 +652,7 @@ RelayEventExtendNamesForInterShardCommands(Node *parseTree, uint64 leftShardId,
 										   char *leftShardSchemaName, uint64 rightShardId,
 										   char *rightShardSchemaName)
 {
+elog(INFO, "TTT src/backend/distributed/relay/relay_event_utility.c:RelayEventExtendNamesForInterShardCommands");
 	NodeTag nodeType = nodeTag(parseTree);
 
 	switch (nodeType)
@@ -745,6 +748,7 @@ RelayEventExtendNamesForInterShardCommands(Node *parseTree, uint64 leftShardId,
 static bool
 UpdateWholeRowColumnReferencesWalker(Node *node, uint64 *shardId)
 {
+elog(INFO, "TTT src/backend/distributed/relay/relay_event_utility.c:UpdateWholeRowColumnReferencesWalker");
 	bool walkIsComplete = false;
 
 	if (node == NULL)
@@ -799,6 +803,7 @@ UpdateWholeRowColumnReferencesWalker(Node *node, uint64 *shardId)
 void
 SetSchemaNameIfNotExist(char **schemaName, const char *newSchemaName)
 {
+elog(INFO, "TTT src/backend/distributed/relay/relay_event_utility.c:SetSchemaNameIfNotExist");
 	if ((*schemaName) == NULL)
 	{
 		*schemaName = pstrdup(newSchemaName);
@@ -814,6 +819,7 @@ SetSchemaNameIfNotExist(char **schemaName, const char *newSchemaName)
 void
 AppendShardIdToName(char **name, uint64 shardId)
 {
+elog(INFO, "TTT src/backend/distributed/relay/relay_event_utility.c:AppendShardIdToName");
 	char extendedName[NAMEDATALEN];
 	int nameLength = strlen(*name);
 	char shardIdAndSeparator[NAMEDATALEN];

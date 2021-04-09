@@ -57,6 +57,7 @@
 #include "utils/lsyscache.h"
 #include "utils/rel.h"
 #include "utils/relcache.h"
+#include "utils/elog.h"
 
 #define INVALID_GROUP_ID -1
 
@@ -142,6 +143,7 @@ PG_FUNCTION_INFO_V1(get_shard_id_for_distribution_column);
 static NodeMetadata
 DefaultNodeMetadata()
 {
+elog(INFO, "TTT src/backend/distributed/metadata/node_metadata.c:DefaultNodeMetadata");
 	NodeMetadata nodeMetadata;
 
 	/* ensure uninitialized padding doesn't escape the function */
@@ -161,6 +163,7 @@ DefaultNodeMetadata()
 Datum
 citus_set_coordinator_host(PG_FUNCTION_ARGS)
 {
+elog(INFO, "TTT src/backend/distributed/metadata/node_metadata.c:citus_set_coordinator_host");
 	text *nodeName = PG_GETARG_TEXT_P(0);
 	int32 nodePort = PG_GETARG_INT32(1);
 	char *nodeNameString = text_to_cstring(nodeName);
@@ -219,6 +222,7 @@ citus_set_coordinator_host(PG_FUNCTION_ARGS)
 Datum
 citus_add_node(PG_FUNCTION_ARGS)
 {
+elog(INFO, "TTT src/backend/distributed/metadata/node_metadata.c:citus_add_node");
 	text *nodeName = PG_GETARG_TEXT_P(0);
 	int32 nodePort = PG_GETARG_INT32(1);
 	char *nodeNameString = text_to_cstring(nodeName);
@@ -276,6 +280,7 @@ citus_add_node(PG_FUNCTION_ARGS)
 Datum
 master_add_node(PG_FUNCTION_ARGS)
 {
+elog(INFO, "TTT src/backend/distributed/metadata/node_metadata.c:master_add_node");
 	return citus_add_node(fcinfo);
 }
 
@@ -288,6 +293,7 @@ master_add_node(PG_FUNCTION_ARGS)
 Datum
 citus_add_inactive_node(PG_FUNCTION_ARGS)
 {
+elog(INFO, "TTT src/backend/distributed/metadata/node_metadata.c:citus_add_inactive_node");
 	text *nodeName = PG_GETARG_TEXT_P(0);
 	int32 nodePort = PG_GETARG_INT32(1);
 	char *nodeNameString = text_to_cstring(nodeName);
@@ -320,6 +326,7 @@ citus_add_inactive_node(PG_FUNCTION_ARGS)
 Datum
 master_add_inactive_node(PG_FUNCTION_ARGS)
 {
+elog(INFO, "TTT src/backend/distributed/metadata/node_metadata.c:master_add_inactive_node");
 	return citus_add_inactive_node(fcinfo);
 }
 
@@ -331,6 +338,7 @@ master_add_inactive_node(PG_FUNCTION_ARGS)
 Datum
 citus_add_secondary_node(PG_FUNCTION_ARGS)
 {
+elog(INFO, "TTT src/backend/distributed/metadata/node_metadata.c:citus_add_secondary_node");
 	text *nodeName = PG_GETARG_TEXT_P(0);
 	int32 nodePort = PG_GETARG_INT32(1);
 	char *nodeNameString = text_to_cstring(nodeName);
@@ -380,6 +388,7 @@ master_add_secondary_node(PG_FUNCTION_ARGS)
 Datum
 citus_remove_node(PG_FUNCTION_ARGS)
 {
+elog(INFO, "TTT src/backend/distributed/metadata/node_metadata.c:citus_remove_node");
 	text *nodeNameText = PG_GETARG_TEXT_P(0);
 	int32 nodePort = PG_GETARG_INT32(1);
 
@@ -417,6 +426,7 @@ master_remove_node(PG_FUNCTION_ARGS)
 Datum
 citus_disable_node(PG_FUNCTION_ARGS)
 {
+elog(INFO, "TTT src/backend/distributed/metadata/node_metadata.c:citus_disable_node");
 	text *nodeNameText = PG_GETARG_TEXT_P(0);
 	int32 nodePort = PG_GETARG_INT32(1);
 	char *nodeName = text_to_cstring(nodeNameText);
@@ -488,6 +498,7 @@ citus_disable_node(PG_FUNCTION_ARGS)
 Datum
 master_disable_node(PG_FUNCTION_ARGS)
 {
+elog(INFO, "TTT src/backend/distributed/metadata/node_metadata.c:citus_set_node_property");
 	return citus_disable_node(fcinfo);
 }
 
@@ -673,6 +684,7 @@ citus_activate_node(PG_FUNCTION_ARGS)
 Datum
 master_activate_node(PG_FUNCTION_ARGS)
 {
+elog(INFO, "TTT src/backend/distributed/metadata/node_metadata.c:GroupForNode");
 	return citus_activate_node(fcinfo);
 }
 
@@ -703,6 +715,7 @@ GroupForNode(char *nodeName, int nodePort)
 bool
 NodeIsPrimaryAndRemote(WorkerNode *worker)
 {
+elog(INFO, "TTT src/backend/distributed/metadata/node_metadata.c:NodeIsPrimary");
 	return NodeIsPrimary(worker) && !NodeIsLocal(worker);
 }
 
@@ -718,6 +731,7 @@ NodeIsPrimary(WorkerNode *worker)
 	/* if nodeRole does not yet exist, all nodes are primary nodes */
 	if (primaryRole == InvalidOid)
 	{
+elog(INFO, "TTT src/backend/distributed/metadata/node_metadata.c:NodeIsLocal");
 		return true;
 	}
 
@@ -731,6 +745,7 @@ NodeIsPrimary(WorkerNode *worker)
 static bool
 NodeIsLocal(WorkerNode *worker)
 {
+elog(INFO, "TTT src/backend/distributed/metadata/node_metadata.c:NodeIsSecondary");
 	return worker->groupId == GetLocalGroupId();
 }
 
@@ -746,6 +761,7 @@ NodeIsSecondary(WorkerNode *worker)
 	/* if nodeRole does not yet exist, all nodes are primary nodes */
 	if (secondaryRole == InvalidOid)
 	{
+elog(INFO, "TTT src/backend/distributed/metadata/node_metadata.c:NodeIsReadable");
 		return false;
 	}
 
@@ -769,6 +785,7 @@ NodeIsReadable(WorkerNode *workerNode)
 	if (ReadFromSecondaries == USE_SECONDARY_NODES_ALWAYS &&
 		NodeIsSecondary(workerNode))
 	{
+elog(INFO, "TTT src/backend/distributed/metadata/node_metadata.c:PrimaryNodeForGroup");
 		return true;
 	}
 
@@ -806,6 +823,7 @@ PrimaryNodeForGroup(int32 groupId, bool *groupContainsNodes)
 
 		if (NodeIsPrimary(workerNode))
 		{
+elog(INFO, "TTT src/backend/distributed/metadata/node_metadata.c:ActivateNode");
 			hash_seq_term(&status);
 			return workerNode;
 		}
@@ -983,6 +1001,7 @@ citus_update_node(PG_FUNCTION_ARGS)
 
 	if (handle != NULL)
 	{
+elog(INFO, "TTT src/backend/distributed/metadata/node_metadata.c:master_update_node");
 		/*
 		 * this will be called on memory context cleanup as well, if the worker has been
 		 * terminated already this will be a noop
@@ -1002,6 +1021,7 @@ citus_update_node(PG_FUNCTION_ARGS)
 Datum
 master_update_node(PG_FUNCTION_ARGS)
 {
+elog(INFO, "TTT src/backend/distributed/metadata/node_metadata.c:UpdateNodeLocation");
 	return citus_update_node(fcinfo);
 }
 
@@ -1188,6 +1208,7 @@ FindWorkerNode(const char *nodeName, int32 nodePort)
 WorkerNode *
 FindWorkerNodeOrError(const char *nodeName, int32 nodePort)
 {
+elog(INFO, "TTT src/backend/distributed/metadata/node_metadata.c:FindWorkerNodeAnyCluster");
 	WorkerNode *node = FindWorkerNode(nodeName, nodePort);
 	if (node == NULL)
 	{
@@ -1355,6 +1376,7 @@ CountPrimariesWithMetadata(void)
 
 	while ((workerNode = hash_seq_search(&status)) != NULL)
 	{
+elog(INFO, "TTT src/backend/distributed/metadata/node_metadata.c:AddNodeMetadata");
 		if (workerNode->hasMetadata && NodeIsPrimary(workerNode))
 		{
 			primariesWithMetadata++;
@@ -1622,6 +1644,7 @@ SetWorkerColumn(WorkerNode *workerNode, int columnIndex, Datum value)
 static void
 ErrorIfCoordinatorMetadataSetFalse(WorkerNode *workerNode, Datum value, char *field)
 {
+elog(INFO, "TTT src/backend/distributed/metadata/node_metadata.c:SetShouldHaveShards");
 	bool valueBool = DatumGetBool(value);
 	if (!valueBool && workerNode->groupId == COORDINATOR_GROUP_ID)
 	{
@@ -1652,6 +1675,7 @@ SetShouldHaveShards(WorkerNode *workerNode, bool shouldHaveShards)
 static WorkerNode *
 SetNodeState(char *nodeName, int nodePort, bool isActive)
 {
+elog(INFO, "TTT src/backend/distributed/metadata/node_metadata.c:GetNodeTuple");
 	WorkerNode *workerNode = FindWorkerNodeAnyCluster(nodeName, nodePort);
 	return SetWorkerColumn(workerNode, Anum_pg_dist_node_isactive,
 						   BoolGetDatum(isActive));
@@ -1765,6 +1789,7 @@ GetNextNodeId()
 void
 EnsureCoordinator(void)
 {
+elog(INFO, "TTT src/backend/distributed/metadata/node_metadata.c:InsertCoordinatorIfClusterEmpty");
 	int32 localGroupId = GetLocalGroupId();
 
 	if (localGroupId != 0)
@@ -1809,6 +1834,7 @@ InsertCoordinatorIfClusterEmpty(void)
 static void
 InsertPlaceholderCoordinatorRecord(void)
 {
+elog(INFO, "TTT src/backend/distributed/metadata/node_metadata.c:InsertNodeRow");
 	NodeMetadata nodeMetadata = DefaultNodeMetadata();
 	nodeMetadata.groupId = 0;
 	nodeMetadata.shouldHaveShards = true;
@@ -1905,6 +1931,7 @@ DeleteNodeRow(char *nodeName, int32 nodePort)
 
 	if (!HeapTupleIsValid(heapTuple))
 	{
+elog(INFO, "TTT src/backend/distributed/metadata/node_metadata.c:TupleToWorkerNode");
 		ereport(ERROR, (errmsg("could not find valid entry for node \"%s:%d\"",
 							   nodeName, nodePort)));
 	}

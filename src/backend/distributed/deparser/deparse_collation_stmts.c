@@ -19,6 +19,7 @@
 
 #include "distributed/deparser.h"
 #include "distributed/citus_ruleutils.h"
+#include "utils/elog.h"
 
 static void AppendDropCollationStmt(StringInfo buf, DropStmt *stmt);
 static void AppendRenameCollationStmt(StringInfo buf, RenameStmt *stmt);
@@ -33,6 +34,7 @@ static void AppendNameList(StringInfo buf, List *objects);
 char *
 DeparseDropCollationStmt(Node *node)
 {
+elog(INFO, "TTT src/backend/distributed/deparser/deparse_collation_stmts.c:DeparseDropCollationStmt");
 	DropStmt *stmt = castNode(DropStmt, node);
 	StringInfoData str = { 0 };
 	initStringInfo(&str);
@@ -51,6 +53,7 @@ DeparseDropCollationStmt(Node *node)
 static void
 AppendDropCollationStmt(StringInfo buf, DropStmt *stmt)
 {
+elog(INFO, "TTT src/backend/distributed/deparser/deparse_collation_stmts.c:AppendDropCollationStmt");
 	appendStringInfoString(buf, "DROP COLLATION ");
 	if (stmt->missing_ok)
 	{
@@ -70,6 +73,7 @@ AppendDropCollationStmt(StringInfo buf, DropStmt *stmt)
 char *
 DeparseRenameCollationStmt(Node *node)
 {
+elog(INFO, "TTT src/backend/distributed/deparser/deparse_collation_stmts.c:DeparseRenameCollationStmt");
 	RenameStmt *stmt = castNode(RenameStmt, node);
 	StringInfoData str = { 0 };
 	initStringInfo(&str);
@@ -88,6 +92,7 @@ DeparseRenameCollationStmt(Node *node)
 static void
 AppendRenameCollationStmt(StringInfo buf, RenameStmt *stmt)
 {
+elog(INFO, "TTT src/backend/distributed/deparser/deparse_collation_stmts.c:AppendRenameCollationStmt");
 	List *names = (List *) stmt->object;
 
 	appendStringInfo(buf, "ALTER COLLATION %s RENAME TO %s;",
@@ -102,6 +107,7 @@ AppendRenameCollationStmt(StringInfo buf, RenameStmt *stmt)
 char *
 DeparseAlterCollationSchemaStmt(Node *node)
 {
+elog(INFO, "TTT src/backend/distributed/deparser/deparse_collation_stmts.c:DeparseAlterCollationSchemaStmt");
 	AlterObjectSchemaStmt *stmt = castNode(AlterObjectSchemaStmt, node);
 	StringInfoData str = { 0 };
 	initStringInfo(&str);
@@ -120,6 +126,7 @@ DeparseAlterCollationSchemaStmt(Node *node)
 static void
 AppendAlterCollationSchemaStmt(StringInfo buf, AlterObjectSchemaStmt *stmt)
 {
+elog(INFO, "TTT src/backend/distributed/deparser/deparse_collation_stmts.c:AppendAlterCollationSchemaStmt");
 	Assert(stmt->objectType == OBJECT_COLLATION);
 
 	List *names = (List *) stmt->object;
@@ -135,6 +142,7 @@ AppendAlterCollationSchemaStmt(StringInfo buf, AlterObjectSchemaStmt *stmt)
 char *
 DeparseAlterCollationOwnerStmt(Node *node)
 {
+elog(INFO, "TTT src/backend/distributed/deparser/deparse_collation_stmts.c:DeparseAlterCollationOwnerStmt");
 	AlterOwnerStmt *stmt = castNode(AlterOwnerStmt, node);
 	StringInfoData str = { 0 };
 	initStringInfo(&str);
@@ -153,6 +161,7 @@ DeparseAlterCollationOwnerStmt(Node *node)
 static void
 AppendAlterCollationOwnerStmt(StringInfo buf, AlterOwnerStmt *stmt)
 {
+elog(INFO, "TTT src/backend/distributed/deparser/deparse_collation_stmts.c:AppendAlterCollationOwnerStmt");
 	Assert(stmt->objectType == OBJECT_COLLATION);
 
 	List *names = (List *) stmt->object;

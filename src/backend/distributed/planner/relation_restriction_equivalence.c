@@ -40,6 +40,7 @@
 #include "optimizer/paths.h"
 #include "parser/parsetree.h"
 #include "optimizer/pathnode.h"
+#include "utils/elog.h"
 
 
 static uint32 attributeEquivalenceId = 1;
@@ -177,6 +178,7 @@ bool
 AllDistributionKeysInQueryAreEqual(Query *originalQuery,
 								   PlannerRestrictionContext *plannerRestrictionContext)
 {
+elog(INFO, "TTT src/backend/distributed/planner/relation_restriction_equivalence.c:AllDistributionKeysInQueryAreEqual");
 	/* we don't support distribution key equality checks for CTEs yet */
 	if (originalQuery->cteList != NIL)
 	{
@@ -214,6 +216,7 @@ AllDistributionKeysInQueryAreEqual(Query *originalQuery,
 static bool
 ContextContainsLocalRelation(RelationRestrictionContext *restrictionContext)
 {
+elog(INFO, "TTT src/backend/distributed/planner/relation_restriction_equivalence.c:ContextContainsLocalRelation");
 	ListCell *relationRestrictionCell = NULL;
 
 	foreach(relationRestrictionCell, restrictionContext->relationRestrictionList)
@@ -252,6 +255,7 @@ ContextContainsLocalRelation(RelationRestrictionContext *restrictionContext)
 bool
 SafeToPushdownUnionSubquery(PlannerRestrictionContext *plannerRestrictionContext)
 {
+elog(INFO, "TTT src/backend/distributed/planner/relation_restriction_equivalence.c:SafeToPushdownUnionSubquery");
 	RelationRestrictionContext *restrictionContext =
 		plannerRestrictionContext->relationRestrictionContext;
 	JoinRestrictionContext *joinRestrictionContext =
@@ -388,6 +392,7 @@ SafeToPushdownUnionSubquery(PlannerRestrictionContext *plannerRestrictionContext
 static int
 RangeTableOffsetCompat(PlannerInfo *root, AppendRelInfo *appendRelInfo)
 {
+elog(INFO, "TTT src/backend/distributed/planner/relation_restriction_equivalence.c:RangeTableOffsetCompat");
 	#if PG_VERSION_NUM >= PG_VERSION_13
 	int parentCount = ParentCountPriorToAppendRel(root->append_rel_list, appendRelInfo);
 	int skipParentCount = parentCount - 1;
@@ -434,6 +439,7 @@ static Var *
 FindUnionAllVar(PlannerInfo *root, List *translatedVars, Oid relationOid,
 				Index relationRteIndex, Index *partitionKeyIndex)
 {
+elog(INFO, "TTT src/backend/distributed/planner/relation_restriction_equivalence.c:FindUnionAllVar");
 	if (!IsCitusTableType(relationOid, STRICTLY_PARTITIONED_DISTRIBUTED_TABLE))
 	{
 		/* we only care about hash and range partitioned tables */
@@ -504,6 +510,7 @@ FindUnionAllVar(PlannerInfo *root, List *translatedVars, Oid relationOid,
 bool
 RestrictionEquivalenceForPartitionKeys(PlannerRestrictionContext *restrictionContext)
 {
+elog(INFO, "TTT src/backend/distributed/planner/relation_restriction_equivalence.c:RestrictionEquivalenceForPartitionKeys");
 	if (ContextContainsLocalRelation(restrictionContext->relationRestrictionContext))
 	{
 		return false;
@@ -590,6 +597,7 @@ ContainsMultipleDistributedRelations(PlannerRestrictionContext *
 List *
 GenerateAllAttributeEquivalences(PlannerRestrictionContext *plannerRestrictionContext)
 {
+elog(INFO, "TTT src/backend/distributed/planner/relation_restriction_equivalence.c:GenerateAllAttributeEquivalences");
 	RelationRestrictionContext *relationRestrictionContext =
 		plannerRestrictionContext->relationRestrictionContext;
 	JoinRestrictionContext *joinRestrictionContext =

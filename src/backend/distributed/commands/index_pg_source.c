@@ -21,6 +21,7 @@
 #include "distributed/commands.h"
 #include "distributed/listutils.h"
 #include "mb/pg_wchar.h"
+#include "utils/elog.h"
 
 
 /* *INDENT-OFF* */
@@ -38,6 +39,7 @@ ChooseIndexName(const char *tabname, Oid namespaceId,
 				List *colnames, List *exclusionOpNames,
 				bool primary, bool isconstraint)
 {
+elog(INFO, "TTT src/backend/distributed/commands/index_pg_source.c:ChooseIndexName");
 	char *indexname;
 
 	if (primary)
@@ -95,6 +97,7 @@ ChooseIndexName(const char *tabname, Oid namespaceId,
 char *
 ChooseIndexNameAddition(List *colnames)
 {
+elog(INFO, "TTT src/backend/distributed/commands/index_pg_source.c:ChooseIndexNameAddition");
 	char buf[NAMEDATALEN * 2];
 	int buflen = 0;
 	ListCell *lc;

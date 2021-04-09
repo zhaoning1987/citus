@@ -20,6 +20,7 @@
 #include "nodes/parsenodes.h"
 #include "nodes/pg_list.h"
 #include "utils/builtins.h"
+#include "utils/elog.h"
 
 /* Local functions forward declarations for helper functions */
 static void AppendCreateExtensionStmt(StringInfo buf, CreateExtensionStmt *stmt);
@@ -38,6 +39,7 @@ static void AppendAlterExtensionStmt(StringInfo buf,
 DefElem *
 GetExtensionOption(List *extensionOptions, const char *defname)
 {
+elog(INFO, "TTT src/backend/distributed/deparser/deparse_extension_stmts.c:GetExtensionOption");
 	DefElem *defElement = NULL;
 	foreach_ptr(defElement, extensionOptions)
 	{
@@ -59,6 +61,7 @@ GetExtensionOption(List *extensionOptions, const char *defname)
 char *
 DeparseCreateExtensionStmt(Node *node)
 {
+elog(INFO, "TTT src/backend/distributed/deparser/deparse_extension_stmts.c:DeparseCreateExtensionStmt");
 	CreateExtensionStmt *stmt = castNode(CreateExtensionStmt, node);
 	StringInfoData sql = { 0 };
 	initStringInfo(&sql);
@@ -75,6 +78,7 @@ DeparseCreateExtensionStmt(Node *node)
 static void
 AppendCreateExtensionStmt(StringInfo buf, CreateExtensionStmt *createExtensionStmt)
 {
+elog(INFO, "TTT src/backend/distributed/deparser/deparse_extension_stmts.c:AppendCreateExtensionStmt");
 	appendStringInfoString(buf, "CREATE EXTENSION ");
 
 	if (createExtensionStmt->if_not_exists)
@@ -103,6 +107,7 @@ AppendCreateExtensionStmt(StringInfo buf, CreateExtensionStmt *createExtensionSt
 static void
 AppendCreateExtensionStmtOptions(StringInfo buf, List *options)
 {
+elog(INFO, "TTT src/backend/distributed/deparser/deparse_extension_stmts.c:AppendCreateExtensionStmtOptions");
 	if (list_length(options) > 0)
 	{
 		/* only append WITH if we actual will add options to the statement */
@@ -151,6 +156,7 @@ AppendCreateExtensionStmtOptions(StringInfo buf, List *options)
 char *
 DeparseAlterExtensionStmt(Node *node)
 {
+elog(INFO, "TTT src/backend/distributed/deparser/deparse_extension_stmts.c:DeparseAlterExtensionStmt");
 	AlterExtensionStmt *stmt = castNode(AlterExtensionStmt, node);
 	StringInfoData sql = { 0 };
 	initStringInfo(&sql);
@@ -167,6 +173,7 @@ DeparseAlterExtensionStmt(Node *node)
 static void
 AppendAlterExtensionStmt(StringInfo buf, AlterExtensionStmt *alterExtensionStmt)
 {
+elog(INFO, "TTT src/backend/distributed/deparser/deparse_extension_stmts.c:AppendAlterExtensionStmt");
 	List *optionsList = alterExtensionStmt->options;
 
 	const char *extensionName = alterExtensionStmt->extname;
@@ -203,6 +210,7 @@ AppendAlterExtensionStmt(StringInfo buf, AlterExtensionStmt *alterExtensionStmt)
 char *
 DeparseDropExtensionStmt(Node *node)
 {
+elog(INFO, "TTT src/backend/distributed/deparser/deparse_extension_stmts.c:DeparseDropExtensionStmt");
 	DropStmt *stmt = castNode(DropStmt, node);
 	StringInfoData str = { 0 };
 	initStringInfo(&str);
@@ -220,6 +228,7 @@ DeparseDropExtensionStmt(Node *node)
 static void
 AppendDropExtensionStmt(StringInfo str, DropStmt *dropStmt)
 {
+elog(INFO, "TTT src/backend/distributed/deparser/deparse_extension_stmts.c:AppendDropExtensionStmt");
 	/* we append "IF NOT EXISTS" clause regardless of the content of the statement. */
 	appendStringInfoString(str, "DROP EXTENSION IF EXISTS ");
 
@@ -248,6 +257,7 @@ AppendDropExtensionStmt(StringInfo str, DropStmt *dropStmt)
 static void
 AppendExtensionNameList(StringInfo str, List *objects)
 {
+elog(INFO, "TTT src/backend/distributed/deparser/deparse_extension_stmts.c:AppendExtensionNameList");
 	ListCell *objectCell = NULL;
 
 	foreach(objectCell, objects)
@@ -272,6 +282,7 @@ AppendExtensionNameList(StringInfo str, List *objects)
 char *
 DeparseAlterExtensionSchemaStmt(Node *node)
 {
+elog(INFO, "TTT src/backend/distributed/deparser/deparse_extension_stmts.c:DeparseAlterExtensionSchemaStmt");
 	AlterObjectSchemaStmt *stmt = castNode(AlterObjectSchemaStmt, node);
 	StringInfoData str = { 0 };
 	initStringInfo(&str);

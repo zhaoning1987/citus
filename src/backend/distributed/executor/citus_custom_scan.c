@@ -44,6 +44,7 @@
 #include "optimizer/clauses.h"
 #include "utils/memutils.h"
 #include "utils/rel.h"
+#include "utils/elog.h"
 
 
 /* functions for creating custom scan nodes */
@@ -110,6 +111,7 @@ static CustomExecMethods NonPushableInsertSelectCustomExecMethods = {
 bool
 IsCitusCustomState(PlanState *planState)
 {
+elog(INFO, "TTT src/backend/distributed/executor/citus_custom_scan.c:IsCitusCustomState");
 	if (!IsA(planState, CustomScanState))
 	{
 		return false;
@@ -132,6 +134,7 @@ IsCitusCustomState(PlanState *planState)
 void
 RegisterCitusCustomScanMethods(void)
 {
+elog(INFO, "TTT src/backend/distributed/executor/citus_custom_scan.c:RegisterCitusCustomScanMethods");
 	RegisterCustomScanMethods(&AdaptiveExecutorCustomScanMethods);
 	RegisterCustomScanMethods(&NonPushableInsertSelectCustomScanMethods);
 	RegisterCustomScanMethods(&DelayedErrorCustomScanMethods);
@@ -147,6 +150,7 @@ RegisterCitusCustomScanMethods(void)
 static void
 CitusBeginScan(CustomScanState *node, EState *estate, int eflags)
 {
+elog(INFO, "TTT src/backend/distributed/executor/citus_custom_scan.c:CitusBeginScan");
 	MarkCitusInitiatedCoordinatorBackend();
 
 	CitusScanState *scanState = (CitusScanState *) node;
@@ -204,6 +208,7 @@ CitusBeginScan(CustomScanState *node, EState *estate, int eflags)
 static void
 CitusPreExecScan(CitusScanState *scanState)
 {
+elog(INFO, "TTT src/backend/distributed/executor/citus_custom_scan.c:CitusPreExecScan");
 	AdaptiveExecutorPreExecutorRun(scanState);
 }
 
@@ -217,6 +222,7 @@ CitusPreExecScan(CitusScanState *scanState)
 TupleTableSlot *
 CitusExecScan(CustomScanState *node)
 {
+elog(INFO, "TTT src/backend/distributed/executor/citus_custom_scan.c:CitusExecScan");
 	CitusScanState *scanState = (CitusScanState *) node;
 
 	if (!scanState->finishedRemoteScan)
@@ -236,6 +242,7 @@ CitusExecScan(CustomScanState *node)
 static void
 CitusBeginReadOnlyScan(CustomScanState *node, EState *estate, int eflags)
 {
+elog(INFO, "TTT src/backend/distributed/executor/citus_custom_scan.c:CitusBeginReadOnlyScan");
 	CitusScanState *scanState = (CitusScanState *) node;
 	DistributedPlan *originalDistributedPlan = scanState->distributedPlan;
 
@@ -317,6 +324,7 @@ CitusBeginReadOnlyScan(CustomScanState *node, EState *estate, int eflags)
 static void
 CitusBeginModifyScan(CustomScanState *node, EState *estate, int eflags)
 {
+elog(INFO, "TTT src/backend/distributed/executor/citus_custom_scan.c:CitusBeginModifyScan");
 	CitusScanState *scanState = (CitusScanState *) node;
 	PlanState *planState = &(scanState->customScanState.ss.ps);
 	DistributedPlan *originalDistributedPlan = scanState->distributedPlan;
@@ -421,6 +429,7 @@ CitusBeginModifyScan(CustomScanState *node, EState *estate, int eflags)
 static bool
 ModifyJobNeedsEvaluation(Job *workerJob)
 {
+elog(INFO, "TTT src/backend/distributed/executor/citus_custom_scan.c:ModifyJobNeedsEvaluation");
 	if (workerJob->requiresCoordinatorEvaluation)
 	{
 		/* query contains functions that need to be evaluated on the coordinator */
@@ -452,6 +461,7 @@ ModifyJobNeedsEvaluation(Job *workerJob)
 static DistributedPlan *
 CopyDistributedPlanWithoutCache(DistributedPlan *originalDistributedPlan)
 {
+elog(INFO, "TTT src/backend/distributed/executor/citus_custom_scan.c:CopyDistributedPlanWithoutCache");
 	List *localPlannedStatements =
 		originalDistributedPlan->workerJob->localPlannedStatements;
 	originalDistributedPlan->workerJob->localPlannedStatements = NIL;
@@ -613,6 +623,7 @@ NonPushableInsertSelectCreateScan(CustomScan *scan)
 static Node *
 DelayedErrorCreateScan(CustomScan *scan)
 {
+elog(INFO, "TTT src/backend/distributed/executor/citus_custom_scan.c:DelayedErrorCreateScan");
 	DistributedPlan *distributedPlan = GetDistributedPlan(scan);
 
 	/* raise the deferred error */
@@ -698,6 +709,7 @@ CitusReScan(CustomScanState *node)
 TupleDesc
 ScanStateGetTupleDescriptor(CitusScanState *scanState)
 {
+elog(INFO, "TTT src/backend/distributed/executor/citus_custom_scan.c:ScanStateGetExecutorState");
 	return scanState->customScanState.ss.ss_ScanTupleSlot->tts_tupleDescriptor;
 }
 
@@ -709,6 +721,7 @@ ScanStateGetTupleDescriptor(CitusScanState *scanState)
 EState *
 ScanStateGetExecutorState(CitusScanState *scanState)
 {
+elog(INFO, "TTT src/backend/distributed/executor/citus_custom_scan.c:FetchCitusCustomScanIfExists");
 	return scanState->customScanState.ss.ps.state;
 }
 

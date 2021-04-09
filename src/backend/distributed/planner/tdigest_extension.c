@@ -18,6 +18,7 @@
 #include "parser/parse_func.h"
 #include "utils/fmgroids.h"
 #include "utils/lsyscache.h"
+#include "utils/elog.h"
 
 
 static Oid LookupTDigestFunction(const char *functionName, int argcount, Oid *argtypes);
@@ -29,6 +30,7 @@ static Oid LookupTDigestFunction(const char *functionName, int argcount, Oid *ar
 Oid
 TDigestExtensionSchema()
 {
+elog(INFO, "TTT src/backend/distributed/planner/tdigest_extension.c:TDigestExtensionSchema");
 	ScanKeyData entry[1];
 	Form_pg_extension extensionForm = NULL;
 	Oid tdigestExtensionSchema = InvalidOid;
@@ -72,6 +74,7 @@ TDigestExtensionSchema()
 Oid
 TDigestExtensionTypeOid()
 {
+elog(INFO, "TTT src/backend/distributed/planner/tdigest_extension.c:TDigestExtensionTypeOid");
 	Oid tdigestSchemaOid = TDigestExtensionSchema();
 	if (!OidIsValid(tdigestSchemaOid))
 	{
@@ -90,6 +93,7 @@ TDigestExtensionTypeOid()
 static Oid
 LookupTDigestFunction(const char *functionName, int argcount, Oid *argtypes)
 {
+elog(INFO, "TTT src/backend/distributed/planner/tdigest_extension.c:LookupTDigestFunction");
 	Oid tdigestSchemaOid = TDigestExtensionSchema();
 	if (!OidIsValid(tdigestSchemaOid))
 	{
@@ -112,6 +116,7 @@ LookupTDigestFunction(const char *functionName, int argcount, Oid *argtypes)
 Oid
 TDigestExtensionAggTDigest1()
 {
+elog(INFO, "TTT src/backend/distributed/planner/tdigest_extension.c:TDigestExtensionAggTDigest1");
 	return LookupTDigestFunction("tdigest", 1, (Oid[]) { TDigestExtensionTypeOid() });
 }
 
@@ -125,6 +130,7 @@ TDigestExtensionAggTDigest1()
 Oid
 TDigestExtensionAggTDigest2()
 {
+elog(INFO, "TTT src/backend/distributed/planner/tdigest_extension.c:TDigestExtensionAggTDigest2");
 	return LookupTDigestFunction("tdigest", 2, (Oid[]) { FLOAT8OID, INT4OID });
 }
 
@@ -139,6 +145,7 @@ TDigestExtensionAggTDigest2()
 Oid
 TDigestExtensionAggTDigestPercentile2()
 {
+elog(INFO, "TTT src/backend/distributed/planner/tdigest_extension.c:TDigestExtensionAggTDigestPercentile2");
 	return LookupTDigestFunction("tdigest_percentile", 2,
 								 (Oid[]) { TDigestExtensionTypeOid(), FLOAT8OID });
 }

@@ -99,6 +99,7 @@
 #include "utils/builtins.h"
 #include "utils/guc.h"
 #include "utils/lsyscache.h"
+#include "utils/elog.h"
 
 /*
  * RecursivePlanningContext is used to recursively plan subqueries
@@ -207,6 +208,7 @@ List *
 GenerateSubplansForSubqueriesAndCTEs(uint64 planId, Query *originalQuery,
 									 PlannerRestrictionContext *plannerRestrictionContext)
 {
+elog(INFO, "TTT src/backend/distributed/planner/recursive_planning.c:GenerateSubplansForSubqueriesAndCTEs");
 	RecursivePlanningContext context;
 
 	recursivePlanningDepth++;
@@ -276,6 +278,7 @@ GenerateSubplansForSubqueriesAndCTEs(uint64 planId, Query *originalQuery,
 static DeferredErrorMessage *
 RecursivelyPlanSubqueriesAndCTEs(Query *query, RecursivePlanningContext *context)
 {
+elog(INFO, "TTT src/backend/distributed/planner/recursive_planning.c:RecursivelyPlanSubqueriesAndCTEs");
 	DeferredErrorMessage *error = RecursivelyPlanCTEs(query, context);
 	if (error != NULL)
 	{
@@ -379,6 +382,7 @@ RecursivelyPlanSubqueriesAndCTEs(Query *query, RecursivePlanningContext *context
 PlannerRestrictionContext *
 GetPlannerRestrictionContext(RecursivePlanningContext *recursivePlanningContext)
 {
+elog(INFO, "TTT src/backend/distributed/planner/recursive_planning.c:GetPlannerRestrictionContext");
 	return recursivePlanningContext->plannerRestrictionContext;
 }
 
@@ -469,6 +473,7 @@ ContainsSubquery(Query *query)
 static void
 RecursivelyPlanNonColocatedSubqueries(Query *subquery, RecursivePlanningContext *context)
 {
+elog(INFO, "TTT src/backend/distributed/planner/recursive_planning.c:RecursivelyPlanNonColocatedSubqueries");
 	FromExpr *joinTree = subquery->jointree;
 
 	/* create the context for the non colocated subquery planning */

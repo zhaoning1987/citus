@@ -18,6 +18,7 @@
 #include "lib/stringinfo.h"
 #include "nodes/parsenodes.h"
 #include "utils/builtins.h"
+#include "utils/elog.h"
 
 static void AppendAlterRoleStmt(StringInfo buf, AlterRoleStmt *stmt);
 static void AppendAlterRoleSetStmt(StringInfo buf, AlterRoleSetStmt *stmt);
@@ -31,6 +32,7 @@ static void AppendRoleOption(StringInfo buf, ListCell *optionCell);
 char *
 DeparseAlterRoleStmt(Node *node)
 {
+elog(INFO, "TTT src/backend/distributed/deparser/deparse_role_stmts.c:DeparseAlterRoleStmt");
 	AlterRoleStmt *stmt = castNode(AlterRoleStmt, node);
 	StringInfoData buf = { 0 };
 	initStringInfo(&buf);
@@ -48,6 +50,7 @@ DeparseAlterRoleStmt(Node *node)
 char *
 DeparseAlterRoleSetStmt(Node *node)
 {
+elog(INFO, "TTT src/backend/distributed/deparser/deparse_role_stmts.c:DeparseAlterRoleSetStmt");
 	AlterRoleSetStmt *stmt = castNode(AlterRoleSetStmt, node);
 	StringInfoData buf = { 0 };
 	initStringInfo(&buf);
@@ -65,6 +68,7 @@ DeparseAlterRoleSetStmt(Node *node)
 static void
 AppendAlterRoleStmt(StringInfo buf, AlterRoleStmt *stmt)
 {
+elog(INFO, "TTT src/backend/distributed/deparser/deparse_role_stmts.c:AppendAlterRoleStmt");
 	ListCell *optionCell = NULL;
 	RoleSpec *role = stmt->role;
 
@@ -92,6 +96,7 @@ AppendAlterRoleStmt(StringInfo buf, AlterRoleStmt *stmt)
 static void
 AppendRoleOption(StringInfo buf, ListCell *optionCell)
 {
+elog(INFO, "TTT src/backend/distributed/deparser/deparse_role_stmts.c:AppendRoleOption");
 	DefElem *option = (DefElem *) lfirst(optionCell);
 
 	if (strcmp(option->defname, "superuser") == 0 && intVal(option->arg))

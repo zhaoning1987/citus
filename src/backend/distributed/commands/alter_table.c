@@ -59,6 +59,7 @@
 #include "utils/builtins.h"
 #include "utils/lsyscache.h"
 #include "utils/syscache.h"
+#include "utils/elog.h"
 
 
 /* Table Conversion Types */
@@ -217,6 +218,7 @@ PG_FUNCTION_INFO_V1(worker_change_sequence_dependency);
 Datum
 undistribute_table(PG_FUNCTION_ARGS)
 {
+elog(INFO, "TTT src/backend/distributed/commands/alter_table.c:undistribute_table");
 	Oid relationId = PG_GETARG_OID(0);
 	bool cascadeViaForeignKeys = PG_GETARG_BOOL(1);
 
@@ -241,6 +243,7 @@ undistribute_table(PG_FUNCTION_ARGS)
 Datum
 alter_distributed_table(PG_FUNCTION_ARGS)
 {
+elog(INFO, "TTT src/backend/distributed/commands/alter_table.c:alter_distributed_table");
 	Oid relationId = PG_GETARG_OID(0);
 
 	char *distributionColumn = NULL;
@@ -303,6 +306,7 @@ alter_distributed_table(PG_FUNCTION_ARGS)
 Datum
 alter_table_set_access_method(PG_FUNCTION_ARGS)
 {
+elog(INFO, "TTT src/backend/distributed/commands/alter_table.c:alter_table_set_access_method");
 	Oid relationId = PG_GETARG_OID(0);
 
 	text *accessMethodText = PG_GETARG_TEXT_P(1);
@@ -328,6 +332,7 @@ alter_table_set_access_method(PG_FUNCTION_ARGS)
 Datum
 worker_change_sequence_dependency(PG_FUNCTION_ARGS)
 {
+elog(INFO, "TTT src/backend/distributed/commands/alter_table.c:worker_change_sequence_dependency");
 	Oid sequenceOid = PG_GETARG_OID(0);
 	Oid sourceRelationOid = PG_GETARG_OID(1);
 	Oid targetRelationOid = PG_GETARG_OID(2);
@@ -348,6 +353,7 @@ worker_change_sequence_dependency(PG_FUNCTION_ARGS)
 TableConversionReturn *
 UndistributeTable(TableConversionParameters *params)
 {
+elog(INFO, "TTT src/backend/distributed/commands/alter_table.c:UndistributeTable");
 	EnsureCoordinator();
 	EnsureRelationExists(params->relationId);
 	EnsureTableOwner(params->relationId);
@@ -397,6 +403,7 @@ UndistributeTable(TableConversionParameters *params)
 TableConversionReturn *
 AlterDistributedTable(TableConversionParameters *params)
 {
+elog(INFO, "TTT src/backend/distributed/commands/alter_table.c:AlterDistributedTable");
 	EnsureCoordinator();
 	EnsureRelationExists(params->relationId);
 	EnsureTableOwner(params->relationId);
@@ -435,6 +442,7 @@ AlterDistributedTable(TableConversionParameters *params)
 TableConversionReturn *
 AlterTableSetAccessMethod(TableConversionParameters *params)
 {
+elog(INFO, "TTT src/backend/distributed/commands/alter_table.c:AlterTableSetAccessMethod");
 #if PG_VERSION_NUM < PG_VERSION_12
 	ereport(ERROR, (errmsg("table access methods are not supported "
 						   "for Postgres versions earlier than 12")));
@@ -507,6 +515,7 @@ AlterTableSetAccessMethod(TableConversionParameters *params)
 TableConversionReturn *
 ConvertTable(TableConversionState *con)
 {
+elog(INFO, "TTT src/backend/distributed/commands/alter_table.c:ConvertTable");
 	/*
 	 * We undistribute citus local tables that are not chained with any reference
 	 * tables via foreign keys at the end of the utility hook.
@@ -865,6 +874,7 @@ EnsureTableNotReferencing(Oid relationId, char conversionType)
 void
 EnsureTableNotReferenced(Oid relationId, char conversionType)
 {
+elog(INFO, "TTT src/backend/distributed/commands/alter_table.c:EnsureTableNotReferenced");
 	if (TableReferenced(relationId))
 	{
 		if (conversionType == UNDISTRIBUTE_TABLE)

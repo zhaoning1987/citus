@@ -24,6 +24,7 @@
 #include "optimizer/restrictinfo.h"
 #include "nodes/nodeFuncs.h"
 #include "nodes/pg_list.h"
+#include "utils/elog.h"
 
 
 static bool GroupedByPartitionColumn(MultiNode *node, MultiExtendedOp *opNode);
@@ -51,6 +52,7 @@ ExtendedOpNodeProperties
 BuildExtendedOpNodeProperties(MultiExtendedOp *extendedOpNode,
 							  bool hasNonDistributableAggregates)
 {
+elog(INFO, "TTT src/backend/distributed/planner/extended_op_node_utils.c:BuildExtendedOpNodeProperties");
 	ExtendedOpNodeProperties extendedOpNodeProperties;
 
 	List *tableNodeList = FindNodesOfType((MultiNode *) extendedOpNode, T_MultiTable);
@@ -111,6 +113,7 @@ BuildExtendedOpNodeProperties(MultiExtendedOp *extendedOpNode,
 static bool
 GroupedByPartitionColumn(MultiNode *node, MultiExtendedOp *opNode)
 {
+elog(INFO, "TTT src/backend/distributed/planner/extended_op_node_utils.c:GroupedByPartitionColumn");
 	if (node == NULL)
 	{
 		return false;
@@ -188,6 +191,7 @@ GroupedByPartitionColumn(MultiNode *node, MultiExtendedOp *opNode)
 static bool
 ExtendedOpNodeContainsRepartitionSubquery(MultiExtendedOp *originalOpNode)
 {
+elog(INFO, "TTT src/backend/distributed/planner/extended_op_node_utils.c:ExtendedOpNodeContainsRepartitionSubquery");
 	MultiNode *parentNode = ParentNode((MultiNode *) originalOpNode);
 	MultiNode *childNode = ChildNode((MultiUnaryNode *) originalOpNode);
 
@@ -213,6 +217,7 @@ static bool
 HasNonPartitionColumnDistinctAgg(List *targetEntryList, Node *havingQual,
 								 List *tableNodeList)
 {
+elog(INFO, "TTT src/backend/distributed/planner/extended_op_node_utils.c:HasNonPartitionColumnDistinctAgg");
 	List *targetVarList = pull_var_clause((Node *) targetEntryList,
 										  PVC_INCLUDE_AGGREGATES |
 										  PVC_RECURSE_WINDOWFUNCS);
@@ -285,6 +290,7 @@ HasNonPartitionColumnDistinctAgg(List *targetEntryList, Node *havingQual,
 static bool
 PartitionColumnInTableList(Var *column, List *tableNodeList)
 {
+elog(INFO, "TTT src/backend/distributed/planner/extended_op_node_utils.c:PartitionColumnInTableList");
 	ListCell *tableNodeCell = NULL;
 	foreach(tableNodeCell, tableNodeList)
 	{
@@ -323,6 +329,7 @@ ShouldPullDistinctColumn(bool repartitionSubquery,
 						 bool hasNonPartitionColumnDistinctAgg,
 						 bool onlyPushableWindowFunctions)
 {
+elog(INFO, "TTT src/backend/distributed/planner/extended_op_node_utils.c:ShouldPullDistinctColumn");
 	if (repartitionSubquery)
 	{
 		return true;

@@ -50,6 +50,7 @@
 #include "tcop/dest.h"
 #include "utils/lsyscache.h"
 #include "utils/syscache.h"
+#include "utils/elog.h"
 
 struct ParamWalkerContext
 {
@@ -74,6 +75,7 @@ static bool contain_param_walker(Node *node, void *context);
 static bool
 contain_param_walker(Node *node, void *context)
 {
+elog(INFO, "TTT src/backend/distributed/planner/function_call_delegation.c:contain_param_walker");
 	if (IsA(node, Param))
 	{
 		Param *paramNode = (Param *) node;
@@ -102,6 +104,7 @@ contain_param_walker(Node *node, void *context)
 PlannedStmt *
 TryToDelegateFunctionCall(DistributedPlanningContext *planContext)
 {
+elog(INFO, "TTT src/backend/distributed/planner/function_call_delegation.c:TryToDelegateFunctionCall");
 	List *targetList = NIL;
 	TargetEntry *targetEntry = NULL;
 	FuncExpr *funcExpr = NULL;
@@ -369,6 +372,7 @@ ShardPlacementForFunctionColocatedWithDistTable(DistObjectCacheEntry *procedure,
 												CitusTableCacheEntry *cacheEntry,
 												PlannedStmt *plan)
 {
+elog(INFO, "TTT src/backend/distributed/planner/function_call_delegation.c:ShardPlacementForFunctionColocatedWithDistTable");
 	if (procedure->distributionArgIndex < 0 ||
 		procedure->distributionArgIndex >= list_length(funcExpr->args))
 	{

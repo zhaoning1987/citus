@@ -66,6 +66,7 @@
 #include "utils/lsyscache.h"
 #include "utils/rel.h"
 #include "utils/syscache.h"
+#include "utils/elog.h"
 
 
 /* Local functions forward declarations */
@@ -110,6 +111,7 @@ PG_FUNCTION_INFO_V1(citus_shard_sizes);
 Datum
 citus_shard_sizes(PG_FUNCTION_ARGS)
 {
+elog(INFO, "TTT src/backend/distributed/metadata/metadata_utility.c:citus_shard_sizes");
 	CheckCitusVersion(ERROR);
 
 	List *allCitusTableIds = AllCitusTableIds();
@@ -142,6 +144,7 @@ citus_shard_sizes(PG_FUNCTION_ARGS)
 Datum
 citus_total_relation_size(PG_FUNCTION_ARGS)
 {
+elog(INFO, "TTT src/backend/distributed/metadata/metadata_utility.c:citus_total_relation_size");
 	Oid relationId = PG_GETARG_OID(0);
 	bool failOnError = PG_GETARG_BOOL(1);
 
@@ -173,6 +176,7 @@ citus_total_relation_size(PG_FUNCTION_ARGS)
 Datum
 citus_table_size(PG_FUNCTION_ARGS)
 {
+elog(INFO, "TTT src/backend/distributed/metadata/metadata_utility.c:citus_table_size");
 	Oid relationId = PG_GETARG_OID(0);
 	bool failOnError = true;
 	char *tableSizeFunction = PG_TABLE_SIZE_FUNCTION;
@@ -203,6 +207,7 @@ citus_table_size(PG_FUNCTION_ARGS)
 Datum
 citus_relation_size(PG_FUNCTION_ARGS)
 {
+elog(INFO, "TTT src/backend/distributed/metadata/metadata_utility.c:citus_relation_size");
 	Oid relationId = PG_GETARG_OID(0);
 	bool failOnError = true;
 	char *tableSizeFunction = PG_RELATION_SIZE_FUNCTION;
@@ -236,6 +241,7 @@ SendShardStatisticsQueriesInParallel(List *citusTableIds, bool useDistributedTra
 									 bool
 									 useShardMinMaxQuery)
 {
+elog(INFO, "TTT src/backend/distributed/metadata/metadata_utility.c:SendShardStatisticsQueriesInParallel");
 	List *workerNodeList = ActivePrimaryNodeList(NoLock);
 
 	List *shardSizesQueryList = GenerateShardStatisticsQueryList(workerNodeList,
@@ -286,6 +292,7 @@ SendShardStatisticsQueriesInParallel(List *citusTableIds, bool useDistributedTra
 static List *
 OpenConnectionToNodes(List *workerNodeList)
 {
+elog(INFO, "TTT src/backend/distributed/metadata/metadata_utility.c:OpenConnectionToNodes");
 	List *connectionList = NIL;
 	WorkerNode *workerNode = NULL;
 	foreach_ptr(workerNode, workerNodeList)
@@ -312,6 +319,7 @@ static List *
 GenerateShardStatisticsQueryList(List *workerNodeList, List *citusTableIds, bool
 								 useShardMinMaxQuery)
 {
+elog(INFO, "TTT src/backend/distributed/metadata/metadata_utility.c:GenerateShardStatisticsQueryList");
 	List *shardStatisticsQueryList = NIL;
 	WorkerNode *workerNode = NULL;
 	foreach_ptr(workerNode, workerNodeList)
@@ -334,6 +342,7 @@ static void
 ReceiveShardNameAndSizeResults(List *connectionList, Tuplestorestate *tupleStore,
 							   TupleDesc tupleDescriptor)
 {
+elog(INFO, "TTT src/backend/distributed/metadata/metadata_utility.c:ReceiveShardNameAndSizeResults");
 	MultiConnection *connection = NULL;
 	foreach_ptr(connection, connectionList)
 	{
@@ -393,6 +402,7 @@ ReceiveShardNameAndSizeResults(List *connectionList, Tuplestorestate *tupleStore
 static bool
 DistributedTableSize(Oid relationId, char *sizeQuery, bool failOnError, uint64 *tableSize)
 {
+elog(INFO, "TTT src/backend/distributed/metadata/metadata_utility.c:DistributedTableSize");
 	int logLevel = WARNING;
 
 	if (failOnError)
@@ -525,6 +535,7 @@ DistributedTableSizeOnWorker(WorkerNode *workerNode, Oid relationId, char *sizeQ
 List *
 GroupShardPlacementsForTableOnGroup(Oid relationId, int32 groupId)
 {
+elog(INFO, "TTT src/backend/distributed/metadata/metadata_utility.c:GroupShardPlacementsForTableOnGroup");
 	CitusTableCacheEntry *distTableCacheEntry = GetCitusTableCacheEntry(relationId);
 	List *resultList = NIL;
 

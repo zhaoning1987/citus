@@ -23,6 +23,7 @@
 
 /* necessary to get S_IRUSR, S_IWUSR definitions on illumos */
 #include <sys/stat.h>
+#include "utils/elog.h"
 
 #define COPY_BUFFER_SIZE (4 * 1024 * 1024)
 
@@ -75,6 +76,7 @@ PG_FUNCTION_INFO_V1(worker_execute_sql_task);
 Datum
 worker_execute_sql_task(PG_FUNCTION_ARGS)
 {
+elog(INFO, "TTT src/backend/distributed/worker/worker_sql_task_protocol.c:worker_execute_sql_task");
 	ereport(ERROR, (errmsg("This UDF is deprecated.")));
 
 	PG_RETURN_INT64(0);
@@ -88,6 +90,7 @@ worker_execute_sql_task(PG_FUNCTION_ARGS)
 DestReceiver *
 CreateFileDestReceiver(char *filePath, MemoryContext tupleContext, bool binaryCopyFormat)
 {
+elog(INFO, "TTT src/backend/distributed/worker/worker_sql_task_protocol.c:CreateFileDestReceiver");
 	TaskFileDestReceiver *taskFileDest = (TaskFileDestReceiver *) palloc0(
 		sizeof(TaskFileDestReceiver));
 
@@ -117,6 +120,7 @@ static void
 TaskFileDestReceiverStartup(DestReceiver *dest, int operation,
 							TupleDesc inputTupleDescriptor)
 {
+elog(INFO, "TTT src/backend/distributed/worker/worker_sql_task_protocol.c:TaskFileDestReceiverStartup");
 	TaskFileDestReceiver *taskFileDest = (TaskFileDestReceiver *) dest;
 
 	const char *delimiterCharacter = "\t";
@@ -166,6 +170,7 @@ TaskFileDestReceiverStartup(DestReceiver *dest, int operation,
 static bool
 TaskFileDestReceiverReceive(TupleTableSlot *slot, DestReceiver *dest)
 {
+elog(INFO, "TTT src/backend/distributed/worker/worker_sql_task_protocol.c:TaskFileDestReceiverReceive");
 	TaskFileDestReceiver *taskFileDest = (TaskFileDestReceiver *) dest;
 
 	TupleDesc tupleDescriptor = taskFileDest->tupleDescriptor;
@@ -209,6 +214,7 @@ TaskFileDestReceiverReceive(TupleTableSlot *slot, DestReceiver *dest)
 static void
 WriteToLocalFile(StringInfo copyData, TaskFileDestReceiver *taskFileDest)
 {
+elog(INFO, "TTT src/backend/distributed/worker/worker_sql_task_protocol.c:WriteToLocalFile");
 	int bytesWritten = FileWriteCompat(&taskFileDest->fileCompat, copyData->data,
 									   copyData->len, PG_WAIT_IO);
 	if (bytesWritten < 0)
@@ -229,6 +235,7 @@ WriteToLocalFile(StringInfo copyData, TaskFileDestReceiver *taskFileDest)
 static void
 TaskFileDestReceiverShutdown(DestReceiver *destReceiver)
 {
+elog(INFO, "TTT src/backend/distributed/worker/worker_sql_task_protocol.c:TaskFileDestReceiverShutdown");
 	TaskFileDestReceiver *taskFileDest = (TaskFileDestReceiver *) destReceiver;
 	CopyOutState copyOutState = taskFileDest->copyOutState;
 
@@ -257,6 +264,7 @@ TaskFileDestReceiverShutdown(DestReceiver *destReceiver)
 static void
 TaskFileDestReceiverDestroy(DestReceiver *destReceiver)
 {
+elog(INFO, "TTT src/backend/distributed/worker/worker_sql_task_protocol.c:TaskFileDestReceiverDestroy");
 	TaskFileDestReceiver *taskFileDest = (TaskFileDestReceiver *) destReceiver;
 
 	if (taskFileDest->copyOutState)

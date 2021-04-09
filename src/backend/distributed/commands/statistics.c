@@ -44,6 +44,7 @@
 #include "utils/relcache.h"
 #include "utils/ruleutils.h"
 #include "utils/syscache.h"
+#include "utils/elog.h"
 
 #define DEFAULT_STATISTICS_TARGET -1
 #define ALTER_INDEX_COLUMN_SET_STATS_COMMAND \
@@ -66,6 +67,7 @@ List *
 PreprocessCreateStatisticsStmt(Node *node, const char *queryString,
 							   ProcessUtilityContext processUtilityContext)
 {
+elog(INFO, "TTT src/backend/distributed/commands/statistics.c:PreprocessCreateStatisticsStmt");
 	CreateStatsStmt *stmt = castNode(CreateStatsStmt, node);
 
 	RangeVar *relation = (RangeVar *) linitial(stmt->relations);
@@ -110,6 +112,7 @@ PreprocessCreateStatisticsStmt(Node *node, const char *queryString,
 List *
 PostprocessCreateStatisticsStmt(Node *node, const char *queryString)
 {
+elog(INFO, "TTT src/backend/distributed/commands/statistics.c:PostprocessCreateStatisticsStmt");
 	CreateStatsStmt *stmt = castNode(CreateStatsStmt, node);
 	Assert(stmt->type == T_CreateStatsStmt);
 
@@ -141,6 +144,7 @@ PostprocessCreateStatisticsStmt(Node *node, const char *queryString)
 ObjectAddress
 CreateStatisticsStmtObjectAddress(Node *node, bool missingOk)
 {
+elog(INFO, "TTT src/backend/distributed/commands/statistics.c:CreateStatisticsStmtObjectAddress");
 	CreateStatsStmt *stmt = castNode(CreateStatsStmt, node);
 
 	ObjectAddress address = { 0 };
@@ -159,6 +163,7 @@ List *
 PreprocessDropStatisticsStmt(Node *node, const char *queryString,
 							 ProcessUtilityContext processUtilityContext)
 {
+elog(INFO, "TTT src/backend/distributed/commands/statistics.c:PreprocessDropStatisticsStmt");
 	DropStmt *dropStatisticsStmt = castNode(DropStmt, node);
 	Assert(dropStatisticsStmt->removeType == OBJECT_STATISTIC_EXT);
 
@@ -218,6 +223,7 @@ List *
 PreprocessAlterStatisticsRenameStmt(Node *node, const char *queryString,
 									ProcessUtilityContext processUtilityContext)
 {
+elog(INFO, "TTT src/backend/distributed/commands/statistics.c:PreprocessAlterStatisticsRenameStmt");
 	RenameStmt *renameStmt = castNode(RenameStmt, node);
 	Assert(renameStmt->renameType == OBJECT_STATISTIC_EXT);
 
@@ -257,6 +263,7 @@ List *
 PreprocessAlterStatisticsSchemaStmt(Node *node, const char *queryString,
 									ProcessUtilityContext processUtilityContext)
 {
+elog(INFO, "TTT src/backend/distributed/commands/statistics.c:PreprocessAlterStatisticsSchemaStmt");
 	AlterObjectSchemaStmt *stmt = castNode(AlterObjectSchemaStmt, node);
 	Assert(stmt->objectType == OBJECT_STATISTIC_EXT);
 
@@ -295,6 +302,7 @@ PreprocessAlterStatisticsSchemaStmt(Node *node, const char *queryString,
 List *
 PostprocessAlterStatisticsSchemaStmt(Node *node, const char *queryString)
 {
+elog(INFO, "TTT src/backend/distributed/commands/statistics.c:PostprocessAlterStatisticsSchemaStmt");
 	AlterObjectSchemaStmt *stmt = castNode(AlterObjectSchemaStmt, node);
 	Assert(stmt->objectType == OBJECT_STATISTIC_EXT);
 
@@ -328,6 +336,7 @@ PostprocessAlterStatisticsSchemaStmt(Node *node, const char *queryString)
 ObjectAddress
 AlterStatisticsSchemaStmtObjectAddress(Node *node, bool missingOk)
 {
+elog(INFO, "TTT src/backend/distributed/commands/statistics.c:AlterStatisticsSchemaStmtObjectAddress");
 	AlterObjectSchemaStmt *stmt = castNode(AlterObjectSchemaStmt, node);
 
 	ObjectAddress address = { 0 };
@@ -350,6 +359,7 @@ List *
 PreprocessAlterStatisticsStmt(Node *node, const char *queryString,
 							  ProcessUtilityContext processUtilityContext)
 {
+elog(INFO, "TTT src/backend/distributed/commands/statistics.c:PreprocessAlterStatisticsStmt");
 	AlterStatsStmt *stmt = castNode(AlterStatsStmt, node);
 
 	Oid statsOid = get_statistics_object_oid(stmt->defnames, false);
@@ -430,6 +440,7 @@ PreprocessAlterStatisticsOwnerStmt(Node *node, const char *queryString,
 List *
 GetExplicitStatisticsCommandList(Oid relationId)
 {
+elog(INFO, "TTT src/backend/distributed/commands/statistics.c:GetExplicitStatisticsCommandList");
 	List *explicitStatisticsCommandList = NIL;
 
 	PushOverrideEmptySearchPath(CurrentMemoryContext);

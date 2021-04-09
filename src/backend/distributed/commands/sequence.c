@@ -19,6 +19,7 @@
 #include "distributed/listutils.h"
 #include "distributed/metadata_cache.h"
 #include "nodes/parsenodes.h"
+#include "utils/elog.h"
 
 /* Local functions forward declarations for helper functions */
 static bool OptionsSpecifyOwnedBy(List *optionList, Oid *ownedByTableId);
@@ -31,6 +32,7 @@ static bool OptionsSpecifyOwnedBy(List *optionList, Oid *ownedByTableId);
 void
 ErrorIfUnsupportedSeqStmt(CreateSeqStmt *createSeqStmt)
 {
+elog(INFO, "TTT src/backend/distributed/commands/sequence.c:ErrorIfUnsupportedSeqStmt");
 	Oid ownedByTableId = InvalidOid;
 
 	/* create is easy: just prohibit any distributed OWNED BY */
@@ -56,6 +58,7 @@ ErrorIfUnsupportedSeqStmt(CreateSeqStmt *createSeqStmt)
 void
 ErrorIfDistributedAlterSeqOwnedBy(AlterSeqStmt *alterSeqStmt)
 {
+elog(INFO, "TTT src/backend/distributed/commands/sequence.c:ErrorIfDistributedAlterSeqOwnedBy");
 	Oid sequenceId = RangeVarGetRelid(alterSeqStmt->sequence, AccessShareLock,
 									  alterSeqStmt->missing_ok);
 	Oid ownedByTableId = InvalidOid;
@@ -115,6 +118,7 @@ ErrorIfDistributedAlterSeqOwnedBy(AlterSeqStmt *alterSeqStmt)
 static bool
 OptionsSpecifyOwnedBy(List *optionList, Oid *ownedByTableId)
 {
+elog(INFO, "TTT src/backend/distributed/commands/sequence.c:OptionsSpecifyOwnedBy");
 	DefElem *defElem = NULL;
 	foreach_ptr(defElem, optionList)
 	{

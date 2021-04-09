@@ -28,6 +28,7 @@
 #include "utils/builtins.h"
 
 #include "distributed/multi_client_executor.h"
+#include "utils/elog.h"
 
 
 PG_FUNCTION_INFO_V1(master_run_on_worker);
@@ -71,6 +72,7 @@ static Tuplestorestate * CreateTupleStore(TupleDesc tupleDescriptor,
 Datum
 master_run_on_worker(PG_FUNCTION_ARGS)
 {
+elog(INFO, "TTT src/backend/distributed/operations/citus_tools.c:master_run_on_worker");
 	ReturnSetInfo *rsinfo = (ReturnSetInfo *) fcinfo->resultinfo;
 	bool parallelExecution = false;
 	StringInfo *nodeNameArray = NULL;
@@ -158,6 +160,7 @@ ParseCommandParameters(FunctionCallInfo fcinfo, StringInfo **nodeNameArray,
 					   int **nodePortsArray, StringInfo **commandStringArray,
 					   bool *parallel)
 {
+elog(INFO, "TTT src/backend/distributed/operations/citus_tools.c:ParseCommandParameters");
 	ArrayType *nodeNameArrayObject = PG_GETARG_ARRAYTYPE_P(0);
 	ArrayType *nodePortArrayObject = PG_GETARG_ARRAYTYPE_P(1);
 	ArrayType *commandStringArrayObject = PG_GETARG_ARRAYTYPE_P(2);
@@ -218,6 +221,7 @@ ExecuteCommandsInParallelAndStoreResults(StringInfo *nodeNameArray, int *nodePor
 										 bool *statusArray, StringInfo *resultStringArray,
 										 int commmandCount)
 {
+elog(INFO, "TTT src/backend/distributed/operations/citus_tools.c:ExecuteCommandsInParallelAndStoreResults");
 	MultiConnection **connectionArray =
 		palloc0(commmandCount * sizeof(MultiConnection *));
 	int finishedCount = 0;
@@ -332,6 +336,7 @@ static bool
 GetConnectionStatusAndResult(MultiConnection *connection, bool *resultStatus,
 							 StringInfo queryResultString)
 {
+elog(INFO, "TTT src/backend/distributed/operations/citus_tools.c:GetConnectionStatusAndResult");
 	bool finished = true;
 	ConnStatusType connectionStatus = PQstatus(connection->pgConn);
 
@@ -380,6 +385,7 @@ static bool
 EvaluateQueryResult(MultiConnection *connection, PGresult *queryResult,
 					StringInfo queryResultString)
 {
+elog(INFO, "TTT src/backend/distributed/operations/citus_tools.c:EvaluateQueryResult");
 	bool success = false;
 
 	ExecStatusType resultStatus = PQresultStatus(queryResult);
@@ -434,6 +440,7 @@ EvaluateQueryResult(MultiConnection *connection, PGresult *queryResult,
 static void
 StoreErrorMessage(MultiConnection *connection, StringInfo queryResultString)
 {
+elog(INFO, "TTT src/backend/distributed/operations/citus_tools.c:StoreErrorMessage");
 	char *errorMessage = PQerrorMessage(connection->pgConn);
 	if (errorMessage != NULL)
 	{
@@ -470,6 +477,7 @@ ExecuteCommandsAndStoreResults(StringInfo *nodeNameArray, int *nodePortArray,
 							   StringInfo *commandStringArray, bool *statusArray,
 							   StringInfo *resultStringArray, int commmandCount)
 {
+elog(INFO, "TTT src/backend/distributed/operations/citus_tools.c:ExecuteCommandsAndStoreResults");
 	for (int commandIndex = 0; commandIndex < commmandCount; commandIndex++)
 	{
 		char *nodeName = nodeNameArray[commandIndex]->data;
@@ -497,6 +505,7 @@ static bool
 ExecuteRemoteQueryOrCommand(char *nodeName, uint32 nodePort, char *queryString,
 							StringInfo queryResultString)
 {
+elog(INFO, "TTT src/backend/distributed/operations/citus_tools.c:ExecuteRemoteQueryOrCommand");
 	int connectionFlags = FORCE_NEW_CONNECTION;
 	MultiConnection *connection =
 		GetNodeConnection(connectionFlags, nodeName, nodePort);

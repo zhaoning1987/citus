@@ -23,10 +23,12 @@
 #include "utils/lsyscache.h"
 #include "utils/rel.h"
 #include "utils/relcache.h"
+#include "utils/elog.h"
 
 void
 QualifyCreateStatisticsStmt(Node *node)
 {
+elog(INFO, "TTT src/backend/distributed/deparser/qualify_statistics_stmt.c:QualifyCreateStatisticsStmt");
 	CreateStatsStmt *stmt = castNode(CreateStatsStmt, node);
 
 	RangeVar *relation = (RangeVar *) linitial(stmt->relations);
@@ -57,6 +59,7 @@ QualifyCreateStatisticsStmt(Node *node)
 void
 QualifyDropStatisticsStmt(Node *node)
 {
+elog(INFO, "TTT src/backend/distributed/deparser/qualify_statistics_stmt.c:QualifyDropStatisticsStmt");
 	DropStmt *dropStatisticsStmt = castNode(DropStmt, node);
 	Assert(dropStatisticsStmt->removeType == OBJECT_STATISTIC_EXT);
 
@@ -87,6 +90,7 @@ QualifyDropStatisticsStmt(Node *node)
 void
 QualifyAlterStatisticsRenameStmt(Node *node)
 {
+elog(INFO, "TTT src/backend/distributed/deparser/qualify_statistics_stmt.c:QualifyAlterStatisticsRenameStmt");
 	RenameStmt *renameStmt = castNode(RenameStmt, node);
 	Assert(renameStmt->renameType == OBJECT_STATISTIC_EXT);
 
@@ -108,6 +112,7 @@ QualifyAlterStatisticsRenameStmt(Node *node)
 void
 QualifyAlterStatisticsSchemaStmt(Node *node)
 {
+elog(INFO, "TTT src/backend/distributed/deparser/qualify_statistics_stmt.c:QualifyAlterStatisticsSchemaStmt");
 	AlterObjectSchemaStmt *stmt = castNode(AlterObjectSchemaStmt, node);
 	Assert(stmt->objectType == OBJECT_STATISTIC_EXT);
 
@@ -131,6 +136,7 @@ QualifyAlterStatisticsSchemaStmt(Node *node)
 void
 QualifyAlterStatisticsStmt(Node *node)
 {
+elog(INFO, "TTT src/backend/distributed/deparser/qualify_statistics_stmt.c:QualifyAlterStatisticsStmt");
 	AlterStatsStmt *stmt = castNode(AlterStatsStmt, node);
 
 	if (list_length(stmt->defnames) == 1)

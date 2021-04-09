@@ -31,6 +31,7 @@
 #include "distributed/metadata/distobject.h"
 #include "distributed/worker_create_or_replace.h"
 #include "distributed/worker_protocol.h"
+#include "utils/elog.h"
 
 static const char * CreateStmtByObjectAddress(const ObjectAddress *address);
 static RenameStmt * CreateRenameStatement(const ObjectAddress *address, char *newName);
@@ -46,6 +47,7 @@ PG_FUNCTION_INFO_V1(worker_create_or_replace_object);
 char *
 WrapCreateOrReplace(const char *sql)
 {
+elog(INFO, "TTT src/backend/distributed/worker/worker_create_or_replace.c:WrapCreateOrReplace");
 	StringInfoData buf = { 0 };
 	initStringInfo(&buf);
 	appendStringInfo(&buf, CREATE_OR_REPLACE_COMMAND, quote_literal_cstr(sql));
@@ -74,6 +76,7 @@ WrapCreateOrReplace(const char *sql)
 Datum
 worker_create_or_replace_object(PG_FUNCTION_ARGS)
 {
+elog(INFO, "TTT src/backend/distributed/worker/worker_create_or_replace.c:worker_create_or_replace_object");
 	text *sqlStatementText = PG_GETARG_TEXT_P(0);
 	const char *sqlStatement = text_to_cstring(sqlStatementText);
 	Node *parseTree = ParseTreeNode(sqlStatement);
@@ -135,6 +138,7 @@ worker_create_or_replace_object(PG_FUNCTION_ARGS)
 static const char *
 CreateStmtByObjectAddress(const ObjectAddress *address)
 {
+elog(INFO, "TTT src/backend/distributed/worker/worker_create_or_replace.c:CreateStmtByObjectAddress");
 	switch (getObjectClass(address))
 	{
 		case OCLASS_COLLATION:
@@ -169,6 +173,7 @@ CreateStmtByObjectAddress(const ObjectAddress *address)
 static char *
 GenerateBackupNameForCollision(const ObjectAddress *address)
 {
+elog(INFO, "TTT src/backend/distributed/worker/worker_create_or_replace.c:GenerateBackupNameForCollision");
 	switch (getObjectClass(address))
 	{
 		case OCLASS_COLLATION:
@@ -204,6 +209,7 @@ GenerateBackupNameForCollision(const ObjectAddress *address)
 static RenameStmt *
 CreateRenameCollationStmt(const ObjectAddress *address, char *newName)
 {
+elog(INFO, "TTT src/backend/distributed/worker/worker_create_or_replace.c:CreateRenameCollationStmt");
 	RenameStmt *stmt = makeNode(RenameStmt);
 	Oid collid = address->objectId;
 
@@ -236,6 +242,7 @@ CreateRenameCollationStmt(const ObjectAddress *address, char *newName)
 static RenameStmt *
 CreateRenameTypeStmt(const ObjectAddress *address, char *newName)
 {
+elog(INFO, "TTT src/backend/distributed/worker/worker_create_or_replace.c:CreateRenameTypeStmt");
 	RenameStmt *stmt = makeNode(RenameStmt);
 
 	stmt->renameType = OBJECT_TYPE;
@@ -255,6 +262,7 @@ CreateRenameTypeStmt(const ObjectAddress *address, char *newName)
 static RenameStmt *
 CreateRenameProcStmt(const ObjectAddress *address, char *newName)
 {
+elog(INFO, "TTT src/backend/distributed/worker/worker_create_or_replace.c:CreateRenameProcStmt");
 	RenameStmt *stmt = makeNode(RenameStmt);
 
 	stmt->renameType = OBJECT_ROUTINE;

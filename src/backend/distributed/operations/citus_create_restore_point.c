@@ -25,6 +25,7 @@
 #include "storage/lock.h"
 #include "utils/builtins.h"
 #include "utils/pg_lsn.h"
+#include "utils/elog.h"
 
 
 #define CREATE_RESTORE_POINT_COMMAND "SELECT pg_catalog.pg_create_restore_point($1::text)"
@@ -49,6 +50,7 @@ PG_FUNCTION_INFO_V1(citus_create_restore_point);
 Datum
 citus_create_restore_point(PG_FUNCTION_ARGS)
 {
+elog(INFO, "TTT src/backend/distributed/operations/citus_create_restore_point.c:citus_create_restore_point");
 	text *restoreNameText = PG_GETARG_TEXT_P(0);
 
 	CheckCitusVersion(ERROR);
@@ -114,6 +116,7 @@ citus_create_restore_point(PG_FUNCTION_ARGS)
 static List *
 OpenConnectionsToAllWorkerNodes(LOCKMODE lockMode)
 {
+elog(INFO, "TTT src/backend/distributed/operations/citus_create_restore_point.c:OpenConnectionsToAllWorkerNodes");
 	List *connectionList = NIL;
 	int connectionFlags = FORCE_NEW_CONNECTION;
 
@@ -144,6 +147,7 @@ OpenConnectionsToAllWorkerNodes(LOCKMODE lockMode)
 static void
 BlockDistributedTransactions(void)
 {
+elog(INFO, "TTT src/backend/distributed/operations/citus_create_restore_point.c:BlockDistributedTransactions");
 	LockRelationOid(DistNodeRelationId(), ExclusiveLock);
 	LockRelationOid(DistPartitionRelationId(), ExclusiveLock);
 	LockRelationOid(DistTransactionRelationId(), ExclusiveLock);

@@ -47,6 +47,7 @@
 #include "nodes/pg_list.h"
 #include "optimizer/clauses.h"
 #include "parser/parsetree.h"
+#include "utils/elog.h"
 
 
 /*
@@ -105,6 +106,7 @@ bool
 ShouldUseSubqueryPushDown(Query *originalQuery, Query *rewrittenQuery,
 						  PlannerRestrictionContext *plannerRestrictionContext)
 {
+elog(INFO, "TTT src/backend/distributed/planner/query_pushdown_planning.c:ShouldUseSubqueryPushDown");
 	/*
 	 * We check the existence of subqueries in FROM clause on the modified query
 	 * given that if postgres already flattened the subqueries, MultiNodeTree()
@@ -214,6 +216,7 @@ ShouldUseSubqueryPushDown(Query *originalQuery, Query *rewrittenQuery,
 bool
 JoinTreeContainsSubquery(Query *query)
 {
+elog(INFO, "TTT src/backend/distributed/planner/query_pushdown_planning.c:JoinTreeContainsSubquery");
 	FromExpr *joinTree = query->jointree;
 
 	if (!joinTree)
@@ -231,6 +234,7 @@ JoinTreeContainsSubquery(Query *query)
 bool
 HasEmptyJoinTree(Query *query)
 {
+elog(INFO, "TTT src/backend/distributed/planner/query_pushdown_planning.c:HasEmptyJoinTree");
 	if (query->rtable == NIL)
 	{
 		return true;
@@ -258,6 +262,7 @@ HasEmptyJoinTree(Query *query)
 static bool
 JoinTreeContainsSubqueryWalker(Node *joinTreeNode, void *context)
 {
+elog(INFO, "TTT src/backend/distributed/planner/query_pushdown_planning.c:JoinTreeContainsSubqueryWalker");
 	if (joinTreeNode == NULL)
 	{
 		return false;
@@ -289,6 +294,7 @@ JoinTreeContainsSubqueryWalker(Node *joinTreeNode, void *context)
 bool
 WhereOrHavingClauseContainsSubquery(Query *query)
 {
+elog(INFO, "TTT src/backend/distributed/planner/query_pushdown_planning.c:WhereOrHavingClauseContainsSubquery");
 	if (FindNodeMatchingCheckFunction(query->havingQual, IsNodeSubquery))
 	{
 		return true;
@@ -316,6 +322,7 @@ WhereOrHavingClauseContainsSubquery(Query *query)
 bool
 TargetListContainsSubquery(List *targetList)
 {
+elog(INFO, "TTT src/backend/distributed/planner/query_pushdown_planning.c:TargetListContainsSubquery");
 	return FindNodeMatchingCheckFunction((Node *) targetList, IsNodeSubquery);
 }
 
@@ -326,6 +333,7 @@ TargetListContainsSubquery(List *targetList)
 static bool
 IsFunctionRTE(Node *node)
 {
+elog(INFO, "TTT src/backend/distributed/planner/query_pushdown_planning.c:IsFunctionRTE");
 	if (IsA(node, RangeTblEntry))
 	{
 		RangeTblEntry *rangeTblEntry = (RangeTblEntry *) node;
@@ -354,6 +362,7 @@ IsFunctionRTE(Node *node)
 bool
 IsNodeSubquery(Node *node)
 {
+elog(INFO, "TTT src/backend/distributed/planner/query_pushdown_planning.c:IsNodeSubquery");
 	if (node == NULL)
 	{
 		return false;
@@ -458,6 +467,7 @@ SafeToPushdownWindowFunction(Query *query, StringInfo *errorDetail)
 static bool
 WindowPartitionOnDistributionColumn(Query *query)
 {
+elog(INFO, "TTT src/backend/distributed/planner/query_pushdown_planning.c:WindowPartitionOnDistributionColumn");
 	List *windowClauseList = query->windowClause;
 	ListCell *windowClauseCell = NULL;
 

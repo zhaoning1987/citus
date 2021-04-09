@@ -109,6 +109,7 @@
 #include "utils/rel.h"
 #include "utils/syscache.h"
 #include "utils/memutils.h"
+#include "utils/elog.h"
 
 
 /* constant used in binary protocol */
@@ -421,6 +422,7 @@ CitusCopyFrom(CopyStmt *copyStatement, QueryCompletionCompat *completionTag)
 static void
 CopyToExistingShards(CopyStmt *copyStatement, QueryCompletionCompat *completionTag)
 {
+elog(INFO, "TTT src/backend/distributed/commands/multi_copy.c:CopyToExistingShards");
 	Oid tableId = RangeVarGetRelid(copyStatement->relation, NoLock, false);
 
 	CitusCopyDestReceiver *copyDest = NULL;
@@ -1074,6 +1076,7 @@ BinaryInputFunctionDefined(Oid typeId)
 static void
 SendCopyBinaryHeaders(CopyOutState copyOutState, int64 shardId, List *connectionList)
 {
+elog(INFO, "TTT src/backend/distributed/commands/multi_copy.c:SendCopyBinaryFooters");
 	resetStringInfo(copyOutState->fe_msgbuf);
 	AppendCopyBinaryHeaders(copyOutState);
 	SendCopyDataToAll(copyOutState->fe_msgbuf, shardId, connectionList);
@@ -1862,6 +1865,7 @@ SendCopyEnd(CopyOutState cstate)
 	}
 	else
 	{
+elog(INFO, "TTT src/backend/distributed/commands/multi_copy.c:CopySendData");
 		CopySendData(cstate, "\\.", 2);
 		/* Need to flush out the trailer (this also appends a newline) */
 		CopySendEndOfRow(cstate, true);
@@ -1874,6 +1878,7 @@ SendCopyEnd(CopyOutState cstate)
 static void
 CopySendData(CopyOutState outputState, const void *databuf, int datasize)
 {
+elog(INFO, "TTT src/backend/distributed/commands/multi_copy.c:CopySendString");
 	appendBinaryStringInfo(outputState->fe_msgbuf, databuf, datasize);
 }
 
@@ -1882,6 +1887,7 @@ CopySendData(CopyOutState outputState, const void *databuf, int datasize)
 static void
 CopySendString(CopyOutState outputState, const char *str)
 {
+elog(INFO, "TTT src/backend/distributed/commands/multi_copy.c:CopySendChar");
 	appendBinaryStringInfo(outputState->fe_msgbuf, str, strlen(str));
 }
 
@@ -1898,6 +1904,7 @@ CopySendChar(CopyOutState outputState, char c)
 static void
 CopySendInt32(CopyOutState outputState, int32 val)
 {
+elog(INFO, "TTT src/backend/distributed/commands/multi_copy.c:CopySendInt16");
 	uint32 buf = htonl((uint32) val);
 	CopySendData(outputState, &buf, sizeof(buf));
 }
@@ -2039,6 +2046,7 @@ CopyAttributeOutText(CopyOutState cstate, char *string)
 		}
 		else
 		{
+elog(INFO, "TTT src/backend/distributed/commands/multi_copy.c:CopyFlushOutput");
 			pointer++;
 		}
 	}
@@ -2157,6 +2165,7 @@ ShardIntervalListHasLocalPlacements(List *shardIntervalList)
 	{
 		if (FindShardPlacementOnGroup(localGroupId, shardInterval->shardId) != NULL)
 		{
+elog(INFO, "TTT src/backend/distributed/commands/multi_copy.c:CitusCopyDestReceiverStartup");
 			return true;
 		}
 	}
@@ -2382,6 +2391,7 @@ CitusCopyDestReceiverStartup(DestReceiver *dest, int operation,
 		 */
 		if (ShardIntervalListHasLocalPlacements(shardIntervalList))
 		{
+elog(INFO, "TTT src/backend/distributed/commands/multi_copy.c:CitusCopyDestReceiverReceive");
 			bool reservedConnection = TryConnectionPossibilityForLocalPrimaryNode();
 			copyDest->shouldUseLocalCopy = !reservedConnection;
 		}
@@ -2593,6 +2603,7 @@ static void
 AddPlacementStateToCopyConnectionStateBuffer(CopyConnectionState *connectionState,
 											 CopyPlacementState *placementState)
 {
+elog(INFO, "TTT src/backend/distributed/commands/multi_copy.c:RemovePlacementStateFromCopyConnectionStateBuffer");
 	dlist_push_head(&connectionState->bufferedPlacementList,
 					&placementState->bufferedPlacementNode);
 	connectionState->bufferedPlacementCount++;
@@ -2608,6 +2619,7 @@ static void
 RemovePlacementStateFromCopyConnectionStateBuffer(CopyConnectionState *connectionState,
 												  CopyPlacementState *placementState)
 {
+elog(INFO, "TTT src/backend/distributed/commands/multi_copy.c:ContainsLocalPlacement");
 	dlist_delete(&placementState->bufferedPlacementNode);
 	connectionState->bufferedPlacementCount--;
 }
@@ -2843,6 +2855,7 @@ ShutdownCopyConnectionState(CopyConnectionState *connectionState,
 
 	dlist_foreach(iter, &connectionState->bufferedPlacementList)
 	{
+elog(INFO, "TTT src/backend/distributed/commands/multi_copy.c:CitusCopyDestReceiverDestroy");
 		CopyPlacementState *placementState =
 			dlist_container(CopyPlacementState, bufferedPlacementNode, iter.cur);
 		uint64 shardId = placementState->shardState->shardId;
@@ -2881,6 +2894,7 @@ CitusCopyDestReceiverDestroy(DestReceiver *destReceiver)
 
 	if (copyDest->shardStateHash)
 	{
+elog(INFO, "TTT src/backend/distributed/commands/multi_copy.c:IsCopyResultStmt");
 		hash_destroy(copyDest->shardStateHash);
 	}
 
@@ -2918,6 +2932,7 @@ CopyStatementHasFormat(CopyStmt *copyStatement, char *formatName)
 	/* extract WITH (...) options from the COPY statement */
 	foreach(optionCell, copyStatement->options)
 	{
+elog(INFO, "TTT src/backend/distributed/commands/multi_copy.c:ProcessCopyStmt");
 		DefElem *defel = (DefElem *) lfirst(optionCell);
 
 		if (strncmp(defel->defname, "format", NAMEDATALEN) == 0 &&
@@ -3019,6 +3034,7 @@ ProcessCopyStmt(CopyStmt *copyStatement, QueryCompletionCompat *completionTag, c
 			}
 			else
 			{
+elog(INFO, "TTT src/backend/distributed/commands/multi_copy.c:CitusCopySelect");
 				/*
 				 * COPY table TO PROGRAM / file is handled by wrapping the table
 				 * in a SELECT and going through the resulting COPY logic.
@@ -3168,6 +3184,7 @@ CitusCopyTo(CopyStmt *copyStatement, QueryCompletionCompat *completionTag)
 
 		if (shardIntervalCell == list_head(shardIntervalList))
 		{
+elog(INFO, "TTT src/backend/distributed/commands/multi_copy.c:ForwardCopyDataFromConnection");
 			/* remove header after the first shard */
 			RemoveOptionFromList(copyStatement->options, "header");
 		}
@@ -3388,6 +3405,7 @@ CopyGetAttnums(TupleDesc tupDesc, Relation rel, List *attnamelist)
 static HTAB *
 CreateConnectionStateHash(MemoryContext memoryContext)
 {
+elog(INFO, "TTT src/backend/distributed/commands/multi_copy.c:CreateShardStateHash");
 	HASHCTL info;
 
 	memset(&info, 0, sizeof(info));
@@ -3411,6 +3429,7 @@ CreateConnectionStateHash(MemoryContext memoryContext)
 static HTAB *
 CreateShardStateHash(MemoryContext memoryContext)
 {
+elog(INFO, "TTT src/backend/distributed/commands/multi_copy.c:GetConnectionState");
 	HASHCTL info;
 
 	memset(&info, 0, sizeof(info));
@@ -3461,6 +3480,7 @@ GetConnectionState(HTAB *connectionStateHash, MultiConnection *connection)
 static List *
 ConnectionStateList(HTAB *connectionStateHash)
 {
+elog(INFO, "TTT src/backend/distributed/commands/multi_copy.c:ConnectionStateListToNode");
 	List *connectionStateList = NIL;
 	HASH_SEQ_STATUS status;
 
@@ -3520,6 +3540,7 @@ GetShardState(uint64 shardId, HTAB *shardStateHash,
 			  shouldUseLocalCopy, CopyOutState copyOutState,
 			  bool isColocatedIntermediateResult)
 {
+elog(INFO, "TTT src/backend/distributed/commands/multi_copy.c:InitializeCopyShardState");
 	CopyShardState *shardState = (CopyShardState *) hash_search(shardStateHash, &shardId,
 																HASH_ENTER, found);
 	if (!*found)
@@ -3653,6 +3674,7 @@ InitializeCopyShardState(CopyShardState *shardState,
 static void
 CloneCopyOutStateForLocalCopy(CopyOutState from, CopyOutState to)
 {
+elog(INFO, "TTT src/backend/distributed/commands/multi_copy.c:LogLocalCopyToRelationExecution");
 	to->attnumlist = from->attnumlist;
 	to->binary = from->binary;
 	to->copy_dest = from->copy_dest;
@@ -3675,6 +3697,7 @@ LogLocalCopyToRelationExecution(uint64 shardId)
 {
 	if (!(LogRemoteCommands || LogLocalCommands))
 	{
+elog(INFO, "TTT src/backend/distributed/commands/multi_copy.c:CopyGetPlacementConnection");
 		return;
 	}
 	ereport(NOTICE, (errmsg("executing the copy locally for shard %lu", shardId)));
@@ -3896,6 +3919,7 @@ CopyGetPlacementConnection(HTAB *connectionStateHash, ShardPlacement *placement,
 		}
 		else
 		{
+elog(INFO, "TTT src/backend/distributed/commands/multi_copy.c:HasReachedAdaptiveExecutorPoolSize");
 			const bool raiseErrors = true;
 
 			HandleRemoteTransactionConnectionError(connection, raiseErrors);

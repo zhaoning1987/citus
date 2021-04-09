@@ -42,6 +42,7 @@
 #include "utils/lsyscache.h"
 #include "utils/memutils.h"
 #include "utils/syscache.h"
+#include "utils/elog.h"
 
 
 static bool CreatedResultsDirectory = false;
@@ -118,6 +119,7 @@ PG_FUNCTION_INFO_V1(fetch_intermediate_results);
 Datum
 broadcast_intermediate_result(PG_FUNCTION_ARGS)
 {
+elog(INFO, "TTT src/backend/distributed/executor/intermediate_results.c:broadcast_intermediate_result");
 	text *resultIdText = PG_GETARG_TEXT_P(0);
 	char *resultIdString = text_to_cstring(resultIdText);
 	text *queryText = PG_GETARG_TEXT_P(1);
@@ -159,6 +161,7 @@ broadcast_intermediate_result(PG_FUNCTION_ARGS)
 Datum
 create_intermediate_result(PG_FUNCTION_ARGS)
 {
+elog(INFO, "TTT src/backend/distributed/executor/intermediate_results.c:create_intermediate_result");
 	text *resultIdText = PG_GETARG_TEXT_P(0);
 	char *resultIdString = text_to_cstring(resultIdText);
 	text *queryText = PG_GETARG_TEXT_P(1);
@@ -203,6 +206,7 @@ DestReceiver *
 CreateRemoteFileDestReceiver(const char *resultId, EState *executorState,
 							 List *initialNodeList, bool writeLocalFile)
 {
+elog(INFO, "TTT src/backend/distributed/executor/intermediate_results.c:CreateRemoteFileDestReceiver");
 	RemoteFileDestReceiver *resultDest = (RemoteFileDestReceiver *) palloc0(
 		sizeof(RemoteFileDestReceiver));
 
@@ -230,6 +234,7 @@ CreateRemoteFileDestReceiver(const char *resultId, EState *executorState,
 uint64
 RemoteFileDestReceiverBytesSent(DestReceiver *destReceiver)
 {
+elog(INFO, "TTT src/backend/distributed/executor/intermediate_results.c:RemoteFileDestReceiverBytesSent");
 	RemoteFileDestReceiver *remoteDestReceiver = (RemoteFileDestReceiver *) destReceiver;
 	return remoteDestReceiver->bytesSent;
 }
@@ -244,6 +249,7 @@ static void
 RemoteFileDestReceiverStartup(DestReceiver *dest, int operation,
 							  TupleDesc inputTupleDescriptor)
 {
+elog(INFO, "TTT src/backend/distributed/executor/intermediate_results.c:RemoteFileDestReceiverStartup");
 	RemoteFileDestReceiver *resultDest = (RemoteFileDestReceiver *) dest;
 
 	const char *delimiterCharacter = "\t";
@@ -274,6 +280,7 @@ RemoteFileDestReceiverStartup(DestReceiver *dest, int operation,
 static void
 PrepareIntermediateResultBroadcast(RemoteFileDestReceiver *resultDest)
 {
+elog(INFO, "TTT src/backend/distributed/executor/intermediate_results.c:PrepareIntermediateResultBroadcast");
 	List *initialNodeList = resultDest->initialNodeList;
 	const char *resultId = resultDest->resultId;
 	List *connectionList = NIL;
@@ -363,6 +370,7 @@ PrepareIntermediateResultBroadcast(RemoteFileDestReceiver *resultDest)
 static StringInfo
 ConstructCopyResultStatement(const char *resultId)
 {
+elog(INFO, "TTT src/backend/distributed/executor/intermediate_results.c:ConstructCopyResultStatement");
 	StringInfo command = makeStringInfo();
 
 	appendStringInfo(command, "COPY \"%s\" FROM STDIN WITH (format result)",
@@ -380,6 +388,7 @@ ConstructCopyResultStatement(const char *resultId)
 static bool
 RemoteFileDestReceiverReceive(TupleTableSlot *slot, DestReceiver *dest)
 {
+elog(INFO, "TTT src/backend/distributed/executor/intermediate_results.c:RemoteFileDestReceiverReceive");
 	RemoteFileDestReceiver *resultDest = (RemoteFileDestReceiver *) dest;
 
 	if (resultDest->tuplesSent == 0)
@@ -459,6 +468,7 @@ WriteToLocalFile(StringInfo copyData, FileCompat *fileCompat)
 static void
 RemoteFileDestReceiverShutdown(DestReceiver *destReceiver)
 {
+elog(INFO, "TTT src/backend/distributed/executor/intermediate_results.c:RemoteFileDestReceiverShutdown");
 	RemoteFileDestReceiver *resultDest = (RemoteFileDestReceiver *) destReceiver;
 
 	if (resultDest->tuplesSent == 0)
@@ -493,6 +503,7 @@ RemoteFileDestReceiverShutdown(DestReceiver *destReceiver)
 
 	if (resultDest->writeLocalFile)
 	{
+elog(INFO, "TTT src/backend/distributed/executor/intermediate_results.c:BroadcastCopyData");
 		FileClose(resultDest->fileCompat.fd);
 	}
 }
@@ -507,6 +518,7 @@ BroadcastCopyData(StringInfo dataBuffer, List *connectionList)
 	MultiConnection *connection = NULL;
 	foreach_ptr(connection, connectionList)
 	{
+elog(INFO, "TTT src/backend/distributed/executor/intermediate_results.c:SendCopyDataOverConnection");
 		SendCopyDataOverConnection(dataBuffer, connection);
 	}
 }
@@ -521,6 +533,7 @@ SendCopyDataOverConnection(StringInfo dataBuffer, MultiConnection *connection)
 {
 	if (!PutRemoteCopyData(connection, dataBuffer->data, dataBuffer->len))
 	{
+elog(INFO, "TTT src/backend/distributed/executor/intermediate_results.c:RemoteFileDestReceiverDestroy");
 		ReportConnectionError(connection, ERROR);
 	}
 }

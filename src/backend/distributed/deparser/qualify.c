@@ -23,6 +23,7 @@
 
 #include "distributed/commands.h"
 #include "distributed/deparser.h"
+#include "utils/elog.h"
 
 
 /*
@@ -33,6 +34,7 @@
 void
 QualifyTreeNode(Node *stmt)
 {
+elog(INFO, "TTT src/backend/distributed/deparser/qualify.c:QualifyTreeNode");
 	const DistributeObjectOps *ops = GetDistributeObjectOps(stmt);
 
 	if (ops && ops->qualify)

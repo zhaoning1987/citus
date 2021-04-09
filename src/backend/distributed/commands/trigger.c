@@ -36,6 +36,7 @@
 #include "utils/fmgroids.h"
 #include "utils/lsyscache.h"
 #include "utils/syscache.h"
+#include "utils/elog.h"
 
 
 /* appropriate lock modes for the owner relation according to postgres */
@@ -65,6 +66,7 @@ static int16 GetTriggerTypeById(Oid triggerId);
 List *
 GetExplicitTriggerCommandList(Oid relationId)
 {
+elog(INFO, "TTT src/backend/distributed/commands/trigger.c:GetExplicitTriggerCommandList");
 	List *createTriggerCommandList = NIL;
 
 	PushOverrideEmptySearchPath(CurrentMemoryContext);
@@ -96,6 +98,7 @@ GetExplicitTriggerCommandList(Oid relationId)
 HeapTuple
 GetTriggerTupleById(Oid triggerId, bool missingOk)
 {
+elog(INFO, "TTT src/backend/distributed/commands/trigger.c:GetTriggerTupleById");
 	Relation pgTrigger = table_open(TriggerRelationId, AccessShareLock);
 
 	int scanKeyCount = 1;
@@ -145,6 +148,7 @@ GetTriggerTupleById(Oid triggerId, bool missingOk)
 List *
 GetExplicitTriggerIdList(Oid relationId)
 {
+elog(INFO, "TTT src/backend/distributed/commands/trigger.c:GetExplicitTriggerIdList");
 	List *triggerIdList = NIL;
 
 	Relation pgTrigger = table_open(TriggerRelationId, AccessShareLock);
@@ -196,6 +200,7 @@ GetExplicitTriggerIdList(Oid relationId)
 Oid
 get_relation_trigger_oid_compat(HeapTuple heapTuple)
 {
+elog(INFO, "TTT src/backend/distributed/commands/trigger.c:get_relation_trigger_oid_compat");
 	Assert(HeapTupleIsValid(heapTuple));
 
 	Oid triggerOid = InvalidOid;
@@ -219,6 +224,7 @@ get_relation_trigger_oid_compat(HeapTuple heapTuple)
 List *
 PostprocessCreateTriggerStmt(Node *node, const char *queryString)
 {
+elog(INFO, "TTT src/backend/distributed/commands/trigger.c:PostprocessCreateTriggerStmt");
 	CreateTrigStmt *createTriggerStmt = castNode(CreateTrigStmt, node);
 	if (IsCreateCitusTruncateTriggerStmt(createTriggerStmt))
 	{
@@ -263,6 +269,7 @@ PostprocessCreateTriggerStmt(Node *node, const char *queryString)
 ObjectAddress
 CreateTriggerStmtObjectAddress(Node *node, bool missingOk)
 {
+elog(INFO, "TTT src/backend/distributed/commands/trigger.c:CreateTriggerStmtObjectAddress");
 	CreateTrigStmt *createTriggerStmt = castNode(CreateTrigStmt, node);
 
 	RangeVar *relation = createTriggerStmt->relation;
@@ -292,6 +299,7 @@ CreateTriggerStmtObjectAddress(Node *node, bool missingOk)
 static bool
 IsCreateCitusTruncateTriggerStmt(CreateTrigStmt *createTriggerStmt)
 {
+elog(INFO, "TTT src/backend/distributed/commands/trigger.c:IsCreateCitusTruncateTriggerStmt");
 	List *functionNameList = createTriggerStmt->funcname;
 	RangeVar *functionRangeVar = makeRangeVarFromNameList(functionNameList);
 	char *functionName = functionRangeVar->relname;
@@ -312,6 +320,7 @@ void
 CreateTriggerEventExtendNames(CreateTrigStmt *createTriggerStmt, char *schemaName,
 							  uint64 shardId)
 {
+elog(INFO, "TTT src/backend/distributed/commands/trigger.c:CreateTriggerEventExtendNames");
 	RangeVar *relation = createTriggerStmt->relation;
 
 	char **relationName = &(relation->relname);
@@ -334,6 +343,7 @@ CreateTriggerEventExtendNames(CreateTrigStmt *createTriggerStmt, char *schemaNam
 List *
 PostprocessAlterTriggerRenameStmt(Node *node, const char *queryString)
 {
+elog(INFO, "TTT src/backend/distributed/commands/trigger.c:PostprocessAlterTriggerRenameStmt");
 	RenameStmt *renameTriggerStmt = castNode(RenameStmt, node);
 	Assert(renameTriggerStmt->renameType == OBJECT_TRIGGER);
 
@@ -397,6 +407,7 @@ AlterTriggerRenameEventExtendNames(RenameStmt *renameTriggerStmt, char *schemaNa
 List *
 PostprocessAlterTriggerDependsStmt(Node *node, const char *queryString)
 {
+elog(INFO, "TTT src/backend/distributed/commands/trigger.c:PostprocessAlterTriggerDependsStmt");
 	AlterObjectDependsStmt *alterTriggerDependsStmt =
 		castNode(AlterObjectDependsStmt, node);
 	Assert(alterTriggerDependsStmt->objectType == OBJECT_TRIGGER);

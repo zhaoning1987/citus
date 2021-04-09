@@ -46,6 +46,7 @@
 #include "utils/builtins.h"
 #include "utils/lsyscache.h"
 #include "utils/memutils.h"
+#include "utils/elog.h"
 
 
 /* Config variables managed via guc.c */
@@ -109,6 +110,7 @@ PG_FUNCTION_INFO_V1(worker_hash_partition_table);
 Datum
 worker_range_partition_table(PG_FUNCTION_ARGS)
 {
+elog(INFO, "TTT src/backend/distributed/worker/worker_partition_protocol.c:worker_range_partition_table");
 	uint64 jobId = PG_GETARG_INT64(0);
 	uint32 taskId = PG_GETARG_UINT32(1);
 	text *filterQueryText = PG_GETARG_TEXT_P(2);
@@ -188,6 +190,7 @@ worker_range_partition_table(PG_FUNCTION_ARGS)
 Datum
 worker_hash_partition_table(PG_FUNCTION_ARGS)
 {
+elog(INFO, "TTT src/backend/distributed/worker/worker_partition_protocol.c:worker_hash_partition_table");
 	uint64 jobId = PG_GETARG_INT64(0);
 	uint32 taskId = PG_GETARG_UINT32(1);
 	text *filterQueryText = PG_GETARG_TEXT_P(2);
@@ -266,6 +269,7 @@ PartitionColumnIndexOrPartitionColumnName(char *partitionColumnNameCandidate,
 										  char **partitionColumnName,
 										  uint32 *partitionColumnIndex)
 {
+elog(INFO, "TTT src/backend/distributed/worker/worker_partition_protocol.c:PartitionColumnIndexOrPartitionColumnName");
 	char *endptr = NULL;
 	uint32 partitionColumnIndexCandidate =
 		strtoul(partitionColumnNameCandidate, &endptr, 10 /*base*/);
@@ -301,6 +305,7 @@ PartitionColumnIndexOrPartitionColumnName(char *partitionColumnNameCandidate,
 static ShardInterval **
 SyntheticShardIntervalArrayForShardMinValues(Datum *shardMinValues, int shardCount)
 {
+elog(INFO, "TTT src/backend/distributed/worker/worker_partition_protocol.c:SyntheticShardIntervalArrayForShardMinValues");
 	Datum nextShardMaxValue = Int32GetDatum(PG_INT32_MAX);
 	ShardInterval **syntheticShardIntervalArray =
 		palloc(sizeof(ShardInterval *) * shardCount);
@@ -330,6 +335,7 @@ SyntheticShardIntervalArrayForShardMinValues(Datum *shardMinValues, int shardCou
 FmgrInfo *
 GetFunctionInfo(Oid typeId, Oid accessMethodId, int16 procedureId)
 {
+elog(INFO, "TTT src/backend/distributed/worker/worker_partition_protocol.c:GetFunctionInfo");
 	FmgrInfo *functionInfo = (FmgrInfo *) palloc0(sizeof(FmgrInfo));
 
 	/* get default operator class from pg_opclass for datum type */
@@ -361,6 +367,7 @@ GetFunctionInfo(Oid typeId, Oid accessMethodId, int16 procedureId)
 Datum *
 DeconstructArrayObject(ArrayType *arrayObject)
 {
+elog(INFO, "TTT src/backend/distributed/worker/worker_partition_protocol.c:DeconstructArrayObject");
 	Datum *datumArray = NULL;
 	bool *datumArrayNulls = NULL;
 	int datumArrayLength = 0;
@@ -393,6 +400,7 @@ DeconstructArrayObject(ArrayType *arrayObject)
 int32
 ArrayObjectCount(ArrayType *arrayObject)
 {
+elog(INFO, "TTT src/backend/distributed/worker/worker_partition_protocol.c:ArrayObjectCount");
 	int32 dimensionCount = ARR_NDIM(arrayObject);
 	int32 *dimensionLengthArray = ARR_DIMS(arrayObject);
 
@@ -423,6 +431,7 @@ ArrayObjectCount(ArrayType *arrayObject)
 StringInfo
 InitTaskDirectory(uint64 jobId, uint32 taskId)
 {
+elog(INFO, "TTT src/backend/distributed/worker/worker_partition_protocol.c:InitTaskDirectory");
 	StringInfo jobDirectoryName = JobDirectoryName(jobId);
 	StringInfo taskDirectoryName = TaskDirectoryName(jobId, taskId);
 
@@ -454,6 +463,7 @@ InitTaskDirectory(uint64 jobId, uint32 taskId)
 static StringInfo
 InitTaskAttemptDirectory(uint64 jobId, uint32 taskId)
 {
+elog(INFO, "TTT src/backend/distributed/worker/worker_partition_protocol.c:InitTaskAttemptDirectory");
 	StringInfo taskDirectoryName = TaskDirectoryName(jobId, taskId);
 	uint32 randomId = (uint32) random();
 
@@ -496,6 +506,7 @@ FileBufferSize(int partitionBufferSizeInKB, uint32 fileCount)
 static FileOutputStream *
 OpenPartitionFiles(StringInfo directoryName, uint32 fileCount)
 {
+elog(INFO, "TTT src/backend/distributed/worker/worker_partition_protocol.c:OpenPartitionFiles");
 	File fileDescriptor = 0;
 	const int fileFlags = (O_APPEND | O_CREAT | O_RDWR | O_TRUNC | PG_BINARY);
 	const int fileMode = (S_IRUSR | S_IWUSR);
@@ -693,6 +704,7 @@ CitusCreateDirectory(StringInfo directoryName)
 static bool
 FileIsLink(char *filename, struct stat filestat)
 {
+elog(INFO, "TTT src/backend/distributed/worker/worker_partition_protocol.c:FileIsLink");
 	return pgwin32_is_junction(filename);
 }
 
@@ -862,6 +874,7 @@ FileOutputStreamWrite(FileOutputStream *file, StringInfo dataToWrite)
 
 	if (newBufferSize > FileBufferSizeInBytes)
 	{
+elog(INFO, "TTT src/backend/distributed/worker/worker_partition_protocol.c:FileOutputStreamFlush");
 		FileOutputStreamFlush(file);
 
 		resetStringInfo(fileBuffer);
@@ -1039,6 +1052,7 @@ FilterAndPartitionTable(const char *filterQuery,
 	int finished = SPI_finish();
 	if (finished != SPI_OK_FINISH)
 	{
+elog(INFO, "TTT src/backend/distributed/worker/worker_partition_protocol.c:ColumnIndex");
 		ereport(ERROR, (errmsg("could not disconnect from SPI manager")));
 	}
 }

@@ -23,6 +23,7 @@
 #include "miscadmin.h"
 #include "storage/latch.h"
 #include "utils/palloc.h"
+#include "utils/elog.h"
 
 
 /*
@@ -52,6 +53,7 @@ static WaitEventSet * BuildWaitEventSet(MultiConnection **allConnections,
 bool
 IsResponseOK(PGresult *result)
 {
+elog(INFO, "TTT src/backend/distributed/connection/remote_commands.c:IsResponseOK");
 	ExecStatusType resultStatus = PQresultStatus(result);
 
 	if (resultStatus == PGRES_SINGLE_TUPLE || resultStatus == PGRES_TUPLES_OK ||
@@ -75,6 +77,7 @@ IsResponseOK(PGresult *result)
 void
 ForgetResults(MultiConnection *connection)
 {
+elog(INFO, "TTT src/backend/distributed/connection/remote_commands.c:ForgetResults");
 	ClearResults(connection, false);
 }
 
@@ -91,6 +94,7 @@ ForgetResults(MultiConnection *connection)
 bool
 ClearResults(MultiConnection *connection, bool raiseErrors)
 {
+elog(INFO, "TTT src/backend/distributed/connection/remote_commands.c:ClearResults");
 	return ClearResultsInternal(connection, raiseErrors, false);
 }
 
@@ -102,6 +106,7 @@ ClearResults(MultiConnection *connection, bool raiseErrors)
 bool
 ClearResultsDiscardWarnings(MultiConnection *connection, bool raiseErrors)
 {
+elog(INFO, "TTT src/backend/distributed/connection/remote_commands.c:ClearResultsDiscardWarnings");
 	return ClearResultsInternal(connection, raiseErrors, true);
 }
 
@@ -112,6 +117,7 @@ ClearResultsDiscardWarnings(MultiConnection *connection, bool raiseErrors)
 static bool
 ClearResultsInternal(MultiConnection *connection, bool raiseErrors, bool discardWarnings)
 {
+elog(INFO, "TTT src/backend/distributed/connection/remote_commands.c:ClearResultsInternal");
 	bool success = true;
 
 	while (true)
@@ -166,6 +172,7 @@ ClearResultsInternal(MultiConnection *connection, bool raiseErrors, bool discard
 bool
 ClearResultsIfReady(MultiConnection *connection)
 {
+elog(INFO, "TTT src/backend/distributed/connection/remote_commands.c:ClearResultsIfReady");
 	PGconn *pgConn = connection->pgConn;
 
 	if (PQstatus(pgConn) != CONNECTION_OK)
@@ -242,6 +249,7 @@ ClearResultsIfReady(MultiConnection *connection)
 void
 ReportConnectionError(MultiConnection *connection, int elevel)
 {
+elog(INFO, "TTT src/backend/distributed/connection/remote_commands.c:ReportConnectionError");
 	char *nodeName = connection->hostname;
 	int nodePort = connection->port;
 	PGconn *pgConn = connection->pgConn;
@@ -278,6 +286,7 @@ ReportConnectionError(MultiConnection *connection, int elevel)
 void
 ReportResultError(MultiConnection *connection, PGresult *result, int elevel)
 {
+elog(INFO, "TTT src/backend/distributed/connection/remote_commands.c:ReportResultError");
 	/* we release PQresult when throwing an error because the caller can't */
 	PG_TRY();
 	{
@@ -336,6 +345,7 @@ ReportResultError(MultiConnection *connection, PGresult *result, int elevel)
 void
 LogRemoteCommand(MultiConnection *connection, const char *command)
 {
+elog(INFO, "TTT src/backend/distributed/connection/remote_commands.c:LogRemoteCommand");
 	if (!LogRemoteCommands)
 	{
 		return;
@@ -358,6 +368,7 @@ LogRemoteCommand(MultiConnection *connection, const char *command)
 void
 ExecuteCriticalRemoteCommandList(MultiConnection *connection, List *commandList)
 {
+elog(INFO, "TTT src/backend/distributed/connection/remote_commands.c:ExecuteCriticalRemoteCommandList");
 	const char *command = NULL;
 	foreach_ptr(command, commandList)
 	{

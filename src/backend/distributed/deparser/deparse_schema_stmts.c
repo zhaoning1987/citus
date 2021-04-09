@@ -17,6 +17,7 @@
 #include "lib/stringinfo.h"
 #include "nodes/nodes.h"
 #include "utils/builtins.h"
+#include "utils/elog.h"
 
 static void AppendGrantOnSchemaStmt(StringInfo buf, GrantStmt *stmt);
 static void AppendGrantOnSchemaPrivileges(StringInfo buf, GrantStmt *stmt);
@@ -27,6 +28,7 @@ static void AppendAlterSchemaRenameStmt(StringInfo buf, RenameStmt *stmt);
 char *
 DeparseGrantOnSchemaStmt(Node *node)
 {
+elog(INFO, "TTT src/backend/distributed/deparser/deparse_schema_stmts.c:DeparseGrantOnSchemaStmt");
 	GrantStmt *stmt = castNode(GrantStmt, node);
 	Assert(stmt->objtype == OBJECT_SCHEMA);
 
@@ -42,6 +44,7 @@ DeparseGrantOnSchemaStmt(Node *node)
 char *
 DeparseAlterSchemaRenameStmt(Node *node)
 {
+elog(INFO, "TTT src/backend/distributed/deparser/deparse_schema_stmts.c:DeparseAlterSchemaRenameStmt");
 	RenameStmt *stmt = castNode(RenameStmt, node);
 
 	StringInfoData str = { 0 };
@@ -56,6 +59,7 @@ DeparseAlterSchemaRenameStmt(Node *node)
 static void
 AppendGrantOnSchemaStmt(StringInfo buf, GrantStmt *stmt)
 {
+elog(INFO, "TTT src/backend/distributed/deparser/deparse_schema_stmts.c:AppendGrantOnSchemaStmt");
 	Assert(stmt->objtype == OBJECT_SCHEMA);
 
 	appendStringInfo(buf, "%s ", stmt->is_grant ? "GRANT" : "REVOKE");
@@ -93,6 +97,7 @@ AppendGrantOnSchemaStmt(StringInfo buf, GrantStmt *stmt)
 static void
 AppendGrantOnSchemaPrivileges(StringInfo buf, GrantStmt *stmt)
 {
+elog(INFO, "TTT src/backend/distributed/deparser/deparse_schema_stmts.c:AppendGrantOnSchemaPrivileges");
 	if (list_length(stmt->privileges) == 0)
 	{
 		appendStringInfo(buf, "ALL PRIVILEGES");
@@ -116,6 +121,7 @@ AppendGrantOnSchemaPrivileges(StringInfo buf, GrantStmt *stmt)
 static void
 AppendGrantOnSchemaSchemas(StringInfo buf, GrantStmt *stmt)
 {
+elog(INFO, "TTT src/backend/distributed/deparser/deparse_schema_stmts.c:AppendGrantOnSchemaSchemas");
 	ListCell *cell = NULL;
 	appendStringInfo(buf, " ON SCHEMA ");
 
@@ -134,6 +140,7 @@ AppendGrantOnSchemaSchemas(StringInfo buf, GrantStmt *stmt)
 static void
 AppendGrantOnSchemaGrantees(StringInfo buf, GrantStmt *stmt)
 {
+elog(INFO, "TTT src/backend/distributed/deparser/deparse_schema_stmts.c:AppendGrantOnSchemaGrantees");
 	ListCell *cell = NULL;
 	appendStringInfo(buf, " %s ", stmt->is_grant ? "TO" : "FROM");
 

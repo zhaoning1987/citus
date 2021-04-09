@@ -24,6 +24,7 @@
 #include "libpq/libpq.h"
 #include "libpq/pqformat.h"
 #include "storage/fd.h"
+#include "utils/elog.h"
 
 
 /* Local functions forward declarations */
@@ -42,6 +43,7 @@ static bool ReceiveCopyData(StringInfo copyData);
 void
 RedirectCopyDataToRegularFile(const char *filename)
 {
+elog(INFO, "TTT src/backend/distributed/commands/transmit.c:RedirectCopyDataToRegularFile");
 	StringInfo copyData = makeStringInfo();
 	const int fileFlags = (O_APPEND | O_CREAT | O_RDWR | O_TRUNC | PG_BINARY);
 	const int fileMode = (S_IRUSR | S_IWUSR);
@@ -83,6 +85,7 @@ RedirectCopyDataToRegularFile(const char *filename)
 void
 SendRegularFile(const char *filename)
 {
+elog(INFO, "TTT src/backend/distributed/commands/transmit.c:SendRegularFile");
 	const uint32 fileBufferSize = 32768; /* 32 KB */
 	const int fileFlags = (O_RDONLY | PG_BINARY);
 	const int fileMode = 0;
@@ -124,6 +127,7 @@ SendRegularFile(const char *filename)
 void
 FreeStringInfo(StringInfo stringInfo)
 {
+elog(INFO, "TTT src/backend/distributed/commands/transmit.c:FreeStringInfo");
 	resetStringInfo(stringInfo);
 
 	pfree(stringInfo->data);
@@ -139,6 +143,7 @@ FreeStringInfo(StringInfo stringInfo)
 File
 FileOpenForTransmit(const char *filename, int fileFlags, int fileMode)
 {
+elog(INFO, "TTT src/backend/distributed/commands/transmit.c:FileOpenForTransmit");
 	struct stat fileStat;
 
 	int statOK = stat(filename, &fileStat);
@@ -169,6 +174,7 @@ FileOpenForTransmit(const char *filename, int fileFlags, int fileMode)
 static void
 SendCopyInStart(void)
 {
+elog(INFO, "TTT src/backend/distributed/commands/transmit.c:SendCopyInStart");
 	StringInfoData copyInStart = { NULL, 0, 0, 0 };
 	const char copyFormat = 1; /* binary copy format */
 
@@ -193,6 +199,7 @@ SendCopyInStart(void)
 static void
 SendCopyOutStart(void)
 {
+elog(INFO, "TTT src/backend/distributed/commands/transmit.c:SendCopyOutStart");
 	StringInfoData copyOutStart = { NULL, 0, 0, 0 };
 	const char copyFormat = 1; /* binary copy format */
 
@@ -225,6 +232,7 @@ SendCopyDone(void)
 static void
 SendCopyData(StringInfo fileBuffer)
 {
+elog(INFO, "TTT src/backend/distributed/commands/transmit.c:SendCopyData");
 	StringInfoData copyData = { NULL, 0, 0, 0 };
 
 	pq_beginmessage(&copyData, 'd');
@@ -244,6 +252,7 @@ SendCopyData(StringInfo fileBuffer)
 static bool
 ReceiveCopyData(StringInfo copyData)
 {
+elog(INFO, "TTT src/backend/distributed/commands/transmit.c:ReceiveCopyData");
 	bool copyDone = true;
 	const int unlimitedSize = 0;
 
@@ -343,6 +352,7 @@ IsTransmitStmt(Node *parsetree)
 char *
 TransmitStatementUser(CopyStmt *copyStatement)
 {
+elog(INFO, "TTT src/backend/distributed/commands/transmit.c:TransmitStatementUser");
 	AssertArg(IsTransmitStmt((Node *) copyStatement));
 
 	DefElem *lastUserDefElem = NULL;

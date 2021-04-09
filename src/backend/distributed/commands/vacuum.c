@@ -31,6 +31,7 @@
 #include "utils/lsyscache.h"
 #include "postmaster/bgworker_internals.h"
 #include "access/xact.h"
+#include "utils/elog.h"
 
 
 #define VACUUM_PARALLEL_NOTSET -2
@@ -78,6 +79,7 @@ static List * VacuumCitusRelationIdList(VacuumStmt *vacuumStmt, CitusVacuumParam
 void
 PostprocessVacuumStmt(VacuumStmt *vacuumStmt, const char *vacuumCommand)
 {
+elog(INFO, "TTT src/backend/distributed/commands/vacuum.c:PostprocessVacuumStmt");
 	CitusVacuumParams vacuumParams = VacuumStmtParams(vacuumStmt);
 	const char *stmtName = (vacuumParams.options & VACOPT_VACUUM) ? "VACUUM" : "ANALYZE";
 
@@ -136,6 +138,7 @@ PostprocessVacuumStmt(VacuumStmt *vacuumStmt, const char *vacuumCommand)
 static List *
 VacuumCitusRelationIdList(VacuumStmt *vacuumStmt, CitusVacuumParams vacuumParams)
 {
+elog(INFO, "TTT src/backend/distributed/commands/vacuum.c:VacuumCitusRelationIdList");
 	LOCKMODE lockMode = (vacuumParams.options & VACOPT_FULL) ? AccessExclusiveLock :
 						ShareUpdateExclusiveLock;
 
@@ -166,6 +169,7 @@ static void
 ExecuteVacuumOnDistributedTables(VacuumStmt *vacuumStmt, List *relationIdList,
 								 CitusVacuumParams vacuumParams)
 {
+elog(INFO, "TTT src/backend/distributed/commands/vacuum.c:ExecuteVacuumOnDistributedTables");
 	int relationIndex = 0;
 	int executedVacuumCount = 0;
 
@@ -212,6 +216,7 @@ ExecuteVacuumOnDistributedTables(VacuumStmt *vacuumStmt, List *relationIdList,
 static bool
 IsDistributedVacuumStmt(int vacuumOptions, List *VacuumCitusRelationIdList)
 {
+elog(INFO, "TTT src/backend/distributed/commands/vacuum.c:IsDistributedVacuumStmt");
 	bool distributeStmt = false;
 	int distributedRelationCount = 0;
 
@@ -255,6 +260,7 @@ IsDistributedVacuumStmt(int vacuumOptions, List *VacuumCitusRelationIdList)
 static List *
 VacuumTaskList(Oid relationId, CitusVacuumParams vacuumParams, List *vacuumColumnList)
 {
+elog(INFO, "TTT src/backend/distributed/commands/vacuum.c:VacuumTaskList");
 	/* resulting task list */
 	List *taskList = NIL;
 
@@ -325,6 +331,7 @@ VacuumTaskList(Oid relationId, CitusVacuumParams vacuumParams, List *vacuumColum
 static char *
 DeparseVacuumStmtPrefix(CitusVacuumParams vacuumParams)
 {
+elog(INFO, "TTT src/backend/distributed/commands/vacuum.c:DeparseVacuumStmtPrefix");
 	int vacuumFlags = vacuumParams.options;
 	StringInfo vacuumPrefix = makeStringInfo();
 
@@ -439,6 +446,7 @@ DeparseVacuumStmtPrefix(CitusVacuumParams vacuumParams)
 static char *
 DeparseVacuumColumnNames(List *columnNameList)
 {
+elog(INFO, "TTT src/backend/distributed/commands/vacuum.c:DeparseVacuumColumnNames");
 	StringInfo columnNames = makeStringInfo();
 
 	if (columnNameList == NIL)
@@ -467,6 +475,7 @@ DeparseVacuumColumnNames(List *columnNameList)
 static List *
 VacuumColumnList(VacuumStmt *vacuumStmt, int relationIndex)
 {
+elog(INFO, "TTT src/backend/distributed/commands/vacuum.c:VacuumColumnList");
 	VacuumRelation *vacuumRelation = (VacuumRelation *) list_nth(vacuumStmt->rels,
 																 relationIndex);
 

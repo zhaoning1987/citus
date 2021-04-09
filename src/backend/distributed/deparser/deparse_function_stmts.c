@@ -40,6 +40,7 @@
 #include "utils/memutils.h"
 #include "utils/syscache.h"
 #include "utils/regproc.h"
+#include "utils/elog.h"
 
 
 /* forward declaration for deparse functions */
@@ -74,6 +75,7 @@ static char * CopyAndConvertToUpperCase(const char *str);
 char *
 DeparseAlterFunctionStmt(Node *node)
 {
+elog(INFO, "TTT src/backend/distributed/deparser/deparse_function_stmts.c:DeparseAlterFunctionStmt");
 	AlterFunctionStmt *stmt = castNode(AlterFunctionStmt, node);
 	StringInfoData str = { 0 };
 	initStringInfo(&str);
@@ -91,6 +93,7 @@ DeparseAlterFunctionStmt(Node *node)
 static char *
 ObjectTypeToKeyword(ObjectType objtype)
 {
+elog(INFO, "TTT src/backend/distributed/deparser/deparse_function_stmts.c:ObjectTypeToKeyword");
 	switch (objtype)
 	{
 		case OBJECT_FUNCTION:
@@ -126,6 +129,7 @@ ObjectTypeToKeyword(ObjectType objtype)
 static void
 AppendAlterFunctionStmt(StringInfo buf, AlterFunctionStmt *stmt)
 {
+elog(INFO, "TTT src/backend/distributed/deparser/deparse_function_stmts.c:AppendAlterFunctionStmt");
 	ListCell *actionCell = NULL;
 
 	appendStringInfo(buf, "ALTER %s ", ObjectTypeToKeyword(stmt->objtype));
@@ -147,6 +151,7 @@ AppendAlterFunctionStmt(StringInfo buf, AlterFunctionStmt *stmt)
 static void
 AppendDefElem(StringInfo buf, DefElem *def)
 {
+elog(INFO, "TTT src/backend/distributed/deparser/deparse_function_stmts.c:AppendDefElem");
 	if (strcmp(def->defname, "strict") == 0)
 	{
 		AppendDefElemStrict(buf, def);
@@ -188,6 +193,7 @@ AppendDefElem(StringInfo buf, DefElem *def)
 static void
 AppendDefElemStrict(StringInfo buf, DefElem *def)
 {
+elog(INFO, "TTT src/backend/distributed/deparser/deparse_function_stmts.c:AppendDefElemStrict");
 	if (intVal(def->arg) == 1)
 	{
 		appendStringInfo(buf, " STRICT");
@@ -205,6 +211,7 @@ AppendDefElemStrict(StringInfo buf, DefElem *def)
 static void
 AppendDefElemVolatility(StringInfo buf, DefElem *def)
 {
+elog(INFO, "TTT src/backend/distributed/deparser/deparse_function_stmts.c:AppendDefElemVolatility");
 	appendStringInfo(buf, " %s", CopyAndConvertToUpperCase(strVal(def->arg)));
 }
 
@@ -215,6 +222,7 @@ AppendDefElemVolatility(StringInfo buf, DefElem *def)
 static void
 AppendDefElemLeakproof(StringInfo buf, DefElem *def)
 {
+elog(INFO, "TTT src/backend/distributed/deparser/deparse_function_stmts.c:AppendDefElemLeakproof");
 	if (intVal(def->arg) == 0)
 	{
 		appendStringInfo(buf, " NOT");
@@ -229,6 +237,7 @@ AppendDefElemLeakproof(StringInfo buf, DefElem *def)
 static void
 AppendDefElemSecurity(StringInfo buf, DefElem *def)
 {
+elog(INFO, "TTT src/backend/distributed/deparser/deparse_function_stmts.c:AppendDefElemSecurity");
 	if (intVal(def->arg) == 0)
 	{
 		appendStringInfo(buf, " SECURITY INVOKER");
@@ -246,6 +255,7 @@ AppendDefElemSecurity(StringInfo buf, DefElem *def)
 static void
 AppendDefElemParallel(StringInfo buf, DefElem *def)
 {
+elog(INFO, "TTT src/backend/distributed/deparser/deparse_function_stmts.c:AppendDefElemParallel");
 	appendStringInfo(buf, " PARALLEL %s", CopyAndConvertToUpperCase(strVal(def->arg)));
 }
 
@@ -256,6 +266,7 @@ AppendDefElemParallel(StringInfo buf, DefElem *def)
 static void
 AppendDefElemCost(StringInfo buf, DefElem *def)
 {
+elog(INFO, "TTT src/backend/distributed/deparser/deparse_function_stmts.c:AppendDefElemRows");
 	appendStringInfo(buf, " COST %lf", defGetNumeric(def));
 }
 
@@ -266,6 +277,7 @@ AppendDefElemCost(StringInfo buf, DefElem *def)
 static void
 AppendDefElemRows(StringInfo buf, DefElem *def)
 {
+elog(INFO, "TTT src/backend/distributed/deparser/deparse_function_stmts.c:AppendDefElemSet");
 	appendStringInfo(buf, " ROWS %lf", defGetNumeric(def));
 }
 
@@ -276,6 +288,7 @@ AppendDefElemRows(StringInfo buf, DefElem *def)
 static void
 AppendDefElemSet(StringInfo buf, DefElem *def)
 {
+elog(INFO, "TTT src/backend/distributed/deparser/deparse_function_stmts.c:AppendVariableSet");
 	VariableSetStmt *setStmt = castNode(VariableSetStmt, def->arg);
 
 	AppendVariableSet(buf, setStmt);
@@ -603,6 +616,7 @@ AppendDropFunctionStmt(StringInfo buf, DropStmt *stmt)
 
 	if (stmt->behavior == DROP_CASCADE)
 	{
+elog(INFO, "TTT src/backend/distributed/deparser/deparse_function_stmts.c:AppendFunctionNameList");
 		appendStringInfoString(buf, " CASCADE");
 	}
 

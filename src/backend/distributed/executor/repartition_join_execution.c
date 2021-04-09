@@ -42,6 +42,7 @@
 #include "distributed/transmit.h"
 #include "distributed/worker_manager.h"
 #include "distributed/worker_transaction.h"
+#include "utils/elog.h"
 
 
 static List * CreateTemporarySchemasForMergeTasks(Job *topLevelJob);
@@ -61,6 +62,7 @@ static void EnsureCompatibleLocalExecutionState(List *taskList);
 List *
 ExecuteDependentTasks(List *topLevelTasks, Job *topLevelJob)
 {
+elog(INFO, "TTT src/backend/distributed/executor/repartition_join_execution.c:ExecuteDependentTasks");
 	EnsureNoModificationsHaveBeenDone();
 
 	List *allTasks = CreateTaskListForJobTree(topLevelTasks);
@@ -82,6 +84,7 @@ ExecuteDependentTasks(List *topLevelTasks, Job *topLevelJob)
 static void
 EnsureCompatibleLocalExecutionState(List *taskList)
 {
+elog(INFO, "TTT src/backend/distributed/executor/repartition_join_execution.c:EnsureCompatibleLocalExecutionState");
 	/*
 	 * We have LOCAL_EXECUTION_REQUIRED check here to avoid unnecessarily
 	 * iterating the task list in AnyTaskAccessesLocalNode.
@@ -101,6 +104,7 @@ EnsureCompatibleLocalExecutionState(List *taskList)
 static List *
 CreateTemporarySchemasForMergeTasks(Job *topLeveLJob)
 {
+elog(INFO, "TTT src/backend/distributed/executor/repartition_join_execution.c:CreateTemporarySchemasForMergeTasks");
 	List *jobIds = ExtractJobsInJobTree(topLeveLJob);
 	char *createSchemasCommand = GenerateCreateSchemasCommand(jobIds, CurrentUserName());
 	SendCommandToWorkersInParallel(ALL_SHARD_NODES, createSchemasCommand,
@@ -116,6 +120,7 @@ CreateTemporarySchemasForMergeTasks(Job *topLeveLJob)
 static List *
 ExtractJobsInJobTree(Job *job)
 {
+elog(INFO, "TTT src/backend/distributed/executor/repartition_join_execution.c:ExtractJobsInJobTree");
 	List *jobIds = NIL;
 	TraverseJobTree(job, &jobIds);
 	return jobIds;
@@ -129,6 +134,7 @@ ExtractJobsInJobTree(Job *job)
 static void
 TraverseJobTree(Job *curJob, List **jobIds)
 {
+elog(INFO, "TTT src/backend/distributed/executor/repartition_join_execution.c:TraverseJobTree");
 	uint64 *jobIdPointer = palloc(sizeof(uint64));
 	*jobIdPointer = curJob->jobId;
 
@@ -148,6 +154,7 @@ TraverseJobTree(Job *curJob, List **jobIds)
 static char *
 GenerateCreateSchemasCommand(List *jobIds, char *ownerName)
 {
+elog(INFO, "TTT src/backend/distributed/executor/repartition_join_execution.c:GenerateCreateSchemasCommand");
 	StringInfo createSchemaCommand = makeStringInfo();
 
 	uint64 *jobIdPointer = NULL;
@@ -171,6 +178,7 @@ GenerateCreateSchemasCommand(List *jobIds, char *ownerName)
 static char *
 GenerateJobCommands(List *jobIds, char *templateCommand)
 {
+elog(INFO, "TTT src/backend/distributed/executor/repartition_join_execution.c:GenerateJobCommands");
 	StringInfo createSchemaCommand = makeStringInfo();
 
 	uint64 *jobIdPointer = NULL;
@@ -190,6 +198,7 @@ GenerateJobCommands(List *jobIds, char *templateCommand)
 void
 DoRepartitionCleanup(List *jobIds)
 {
+elog(INFO, "TTT src/backend/distributed/executor/repartition_join_execution.c:DoRepartitionCleanup");
 	SendCommandToWorkersOptionalInParallel(ALL_SHARD_NODES, GenerateDeleteJobsCommand(
 											   jobIds),
 										   CitusExtensionOwnerName());

@@ -17,6 +17,7 @@
 #include "distributed/deparser.h"
 #include "catalog/objectaddress.h"
 #include "catalog/pg_extension_d.h"
+#include "utils/elog.h"
 
 
 /*
@@ -26,6 +27,7 @@
 ObjectAddress
 GetObjectAddressFromParseTree(Node *parseTree, bool missing_ok)
 {
+elog(INFO, "TTT src/backend/distributed/deparser/objectaddress.c:GetObjectAddressFromParseTree");
 	const DistributeObjectOps *ops = GetDistributeObjectOps(parseTree);
 
 	if (!ops->address)
@@ -40,6 +42,7 @@ GetObjectAddressFromParseTree(Node *parseTree, bool missing_ok)
 ObjectAddress
 RenameAttributeStmtObjectAddress(Node *node, bool missing_ok)
 {
+elog(INFO, "TTT src/backend/distributed/deparser/objectaddress.c:RenameAttributeStmtObjectAddress");
 	RenameStmt *stmt = castNode(RenameStmt, node);
 	Assert(stmt->renameType == OBJECT_ATTRIBUTE);
 

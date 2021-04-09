@@ -22,11 +22,13 @@
 
 #ifdef HAS_TABLEAM
 #include "columnar/columnar_tableam.h"
+#include "utils/elog.h"
 #endif
 
 void
 columnar_init(void)
 {
+elog(INFO, "TTT src/backend/columnar/mod.c:columnar_init");
 	columnar_init_gucs();
 #ifdef HAS_TABLEAM
 	columnar_tableam_init();

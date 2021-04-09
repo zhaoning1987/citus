@@ -52,6 +52,7 @@
 #include "utils/builtins.h"
 #include "utils/lsyscache.h"
 #include "utils/rel.h"
+#include "utils/elog.h"
 
 
 static DistributedPlan * CreateInsertSelectPlanInternal(uint64 planId,
@@ -109,6 +110,7 @@ static int insertSelectPlannerLevel = 0;
 bool
 InsertSelectIntoCitusTable(Query *query)
 {
+elog(INFO, "TTT src/backend/distributed/planner/insert_select_planner.c:InsertSelectIntoCitusTable");
 	bool insertSelectQuery = CheckInsertSelectQuery(query);
 
 	if (insertSelectQuery)
@@ -132,6 +134,7 @@ InsertSelectIntoCitusTable(Query *query)
 bool
 InsertSelectIntoLocalTable(Query *query)
 {
+elog(INFO, "TTT src/backend/distributed/planner/insert_select_planner.c:InsertSelectIntoLocalTable");
 	bool insertSelectQuery = CheckInsertSelectQuery(query);
 
 	if (insertSelectQuery)
@@ -157,6 +160,7 @@ InsertSelectIntoLocalTable(Query *query)
 bool
 CheckInsertSelectQuery(Query *query)
 {
+elog(INFO, "TTT src/backend/distributed/planner/insert_select_planner.c:CheckInsertSelectQuery");
 	CmdType commandType = query->commandType;
 
 	if (commandType != CMD_INSERT)
@@ -204,6 +208,7 @@ CreateInsertSelectPlan(uint64 planId, Query *originalQuery,
 					   PlannerRestrictionContext *plannerRestrictionContext,
 					   ParamListInfo boundParams)
 {
+elog(INFO, "TTT src/backend/distributed/planner/insert_select_planner.c:CreateInsertSelectPlan");
 	DistributedPlan *result = NULL;
 	insertSelectPlannerLevel++;
 
@@ -235,6 +240,7 @@ CreateInsertSelectPlanInternal(uint64 planId, Query *originalQuery,
 							   PlannerRestrictionContext *plannerRestrictionContext,
 							   ParamListInfo boundParams)
 {
+elog(INFO, "TTT src/backend/distributed/planner/insert_select_planner.c:CreateInsertSelectPlanInternal");
 	DeferredErrorMessage *deferredError = ErrorIfOnConflictNotSupported(originalQuery);
 	if (deferredError != NULL)
 	{
@@ -271,6 +277,7 @@ static DistributedPlan *
 CreateDistributedInsertSelectPlan(Query *originalQuery,
 								  PlannerRestrictionContext *plannerRestrictionContext)
 {
+elog(INFO, "TTT src/backend/distributed/planner/insert_select_planner.c:CreateDistributedInsertSelectPlan");
 	List *sqlTaskList = NIL;
 	uint32 taskIdIndex = 1;     /* 0 is reserved for invalid taskId */
 	uint64 jobId = INVALID_JOB_ID;
@@ -378,6 +385,7 @@ CreateInsertSelectIntoLocalTablePlan(uint64 planId, Query *originalQuery, ParamL
 									 boundParams, bool hasUnresolvedParams,
 									 PlannerRestrictionContext *plannerRestrictionContext)
 {
+elog(INFO, "TTT src/backend/distributed/planner/insert_select_planner.c:CreateInsertSelectIntoLocalTablePlan");
 	RangeTblEntry *selectRte = ExtractSelectRangeTableEntry(originalQuery);
 
 	Query *selectQuery = BuildSelectForInsertSelect(originalQuery);
@@ -434,6 +442,7 @@ CreateInsertSelectIntoLocalTablePlan(uint64 planId, Query *originalQuery, ParamL
 static Query *
 CreateCombineQueryForRouterPlan(DistributedPlan *distPlan)
 {
+elog(INFO, "TTT src/backend/distributed/planner/insert_select_planner.c:CreateCombineQueryForRouterPlan");
 	const Index insertTableId = 1;
 	List *tableIdList = list_make1(makeInteger(insertTableId));
 	Job *dependentJob = distPlan->workerJob;
@@ -502,6 +511,7 @@ CreateCombineQueryForRouterPlan(DistributedPlan *distPlan)
 static List *
 CreateTargetListForCombineQuery(List *targetList)
 {
+elog(INFO, "TTT src/backend/distributed/planner/insert_select_planner.c:CreateTargetListForCombineQuery");
 	List *newTargetEntryList = NIL;
 	const uint32 masterTableId = 1;
 	int columnId = 1;
@@ -1459,6 +1469,7 @@ CreateNonPushableInsertSelectPlan(uint64 planId, Query *parse, ParamListInfo bou
 static DeferredErrorMessage *
 NonPushableInsertSelectSupported(Query *insertSelectQuery)
 {
+elog(INFO, "TTT src/backend/distributed/planner/insert_select_planner.c:NonPushableInsertSelectSupported");
 	DeferredErrorMessage *deferredError = ErrorIfOnConflictNotSupported(
 		insertSelectQuery);
 	if (deferredError)

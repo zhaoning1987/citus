@@ -42,6 +42,7 @@
 #include "utils/guc.h"
 #include "utils/memutils.h"
 #include "storage/fd.h"
+#include "utils/elog.h"
 
 
 CoordinatedTransactionState CurrentCoordinatedTransactionState = COORD_TRANS_NONE;
@@ -135,6 +136,7 @@ static void ResetGlobalVariables(void);
 void
 UseCoordinatedTransaction(void)
 {
+elog(INFO, "TTT src/backend/distributed/transaction/transaction_management.c:UseCoordinatedTransaction");
 	if (CurrentCoordinatedTransactionState == COORD_TRANS_STARTED)
 	{
 		return;
@@ -169,6 +171,7 @@ UseCoordinatedTransaction(void)
 void
 EnsureDistributedTransactionId(void)
 {
+elog(INFO, "TTT src/backend/distributed/transaction/transaction_management.c:EnsureDistributedTransactionId");
 	DistributedTransactionId *transactionId = GetCurrentDistributedTransactionId();
 	if (transactionId->transactionNumber == 0)
 	{
@@ -184,6 +187,7 @@ EnsureDistributedTransactionId(void)
 bool
 InCoordinatedTransaction(void)
 {
+elog(INFO, "TTT src/backend/distributed/transaction/transaction_management.c:InCoordinatedTransaction");
 	return CurrentCoordinatedTransactionState != COORD_TRANS_NONE &&
 		   CurrentCoordinatedTransactionState != COORD_TRANS_IDLE;
 }
@@ -199,6 +203,7 @@ InCoordinatedTransaction(void)
 void
 CoordinatedTransactionShouldUse2PC(void)
 {
+elog(INFO, "TTT src/backend/distributed/transaction/transaction_management.c:CoordinatedTransactionShouldUse2PC");
 	Assert(InCoordinatedTransaction());
 
 	ShouldCoordinatedTransactionUse2PC = true;
@@ -212,6 +217,7 @@ CoordinatedTransactionShouldUse2PC(void)
 bool
 GetCoordinatedTransactionShouldUse2PC(void)
 {
+elog(INFO, "TTT src/backend/distributed/transaction/transaction_management.c:GetCoordinatedTransactionShouldUse2PC");
 	return ShouldCoordinatedTransactionUse2PC;
 }
 
@@ -245,6 +251,7 @@ InitializeTransactionManagement(void)
 static void
 CoordinatedTransactionCallback(XactEvent event, void *arg)
 {
+elog(INFO, "TTT src/backend/distributed/transaction/transaction_management.c:CoordinatedTransactionCallback");
 	switch (event)
 	{
 		case XACT_EVENT_COMMIT:
@@ -480,6 +487,7 @@ CoordinatedTransactionCallback(XactEvent event, void *arg)
 static void
 ResetGlobalVariables()
 {
+elog(INFO, "TTT src/backend/distributed/transaction/transaction_management.c:ResetGlobalVariables");
 	CurrentCoordinatedTransactionState = COORD_TRANS_NONE;
 	XactModificationLevel = XACT_MODIFICATION_NONE;
 	SetLocalExecutionStatus(LOCAL_EXECUTION_OPTIONAL);
@@ -500,6 +508,7 @@ ResetGlobalVariables()
 static void
 ResetShardPlacementTransactionState(void)
 {
+elog(INFO, "TTT src/backend/distributed/transaction/transaction_management.c:ResetShardPlacementTransactionState");
 	if (MultiShardCommitProtocol == COMMIT_PROTOCOL_BARE)
 	{
 		MultiShardCommitProtocol = SavedMultiShardCommitProtocol;
@@ -516,6 +525,7 @@ static void
 CoordinatedSubTransactionCallback(SubXactEvent event, SubTransactionId subId,
 								  SubTransactionId parentSubid, void *arg)
 {
+elog(INFO, "TTT src/backend/distributed/transaction/transaction_management.c:CoordinatedSubTransactionCallback");
 	switch (event)
 	{
 		/*
@@ -586,6 +596,7 @@ CoordinatedSubTransactionCallback(SubXactEvent event, SubTransactionId subId,
 static void
 AdjustMaxPreparedTransactions(void)
 {
+elog(INFO, "TTT src/backend/distributed/transaction/transaction_management.c:AdjustMaxPreparedTransactions");
 	/*
 	 * As Citus uses 2PC internally, there always should be some available. As
 	 * the default is 0, we increase it to something appropriate

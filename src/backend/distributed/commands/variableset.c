@@ -24,6 +24,7 @@
 #include "lib/ilist.h"
 #include "utils/varlena.h"
 #include "distributed/remote_commands.h"
+#include "utils/elog.h"
 
 
 static bool IsSettingSafeToPropagate(char *name);
@@ -41,6 +42,7 @@ static bool IsSettingSafeToPropagate(char *name);
 bool
 ShouldPropagateSetCommand(VariableSetStmt *setStmt)
 {
+elog(INFO, "TTT src/backend/distributed/commands/variableset.c:ShouldPropagateSetCommand");
 	if (PropagateSetCommands != PROPSETCMD_LOCAL)
 	{
 		/* SET propagation is disabled */
@@ -89,6 +91,7 @@ ShouldPropagateSetCommand(VariableSetStmt *setStmt)
 static bool
 IsSettingSafeToPropagate(char *name)
 {
+elog(INFO, "TTT src/backend/distributed/commands/variableset.c:IsSettingSafeToPropagate");
 	/* if this list grows considerably we should switch to bsearch */
 	const char *skipSettings[] = {
 		"citus.propagate_set_commands",

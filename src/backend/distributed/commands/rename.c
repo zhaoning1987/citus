@@ -16,6 +16,7 @@
 #include "distributed/commands/utility_hook.h"
 #include "distributed/metadata_cache.h"
 #include "nodes/parsenodes.h"
+#include "utils/elog.h"
 
 
 /*
@@ -29,6 +30,7 @@ List *
 PreprocessRenameStmt(Node *node, const char *renameCommand,
 					 ProcessUtilityContext processUtilityContext)
 {
+elog(INFO, "TTT src/backend/distributed/commands/rename.c:PreprocessRenameStmt");
 	RenameStmt *renameStmt = castNode(RenameStmt, node);
 	Oid objectRelationId = InvalidOid; /* SQL Object OID */
 	Oid tableRelationId = InvalidOid; /* Relation OID, maybe not the same. */
@@ -136,6 +138,7 @@ PreprocessRenameStmt(Node *node, const char *renameCommand,
 void
 ErrorIfUnsupportedRenameStmt(RenameStmt *renameStmt)
 {
+elog(INFO, "TTT src/backend/distributed/commands/rename.c:ErrorIfUnsupportedRenameStmt");
 	if (IsAlterTableRenameStmt(renameStmt) &&
 		renameStmt->renameType == OBJECT_TABCONSTRAINT)
 	{

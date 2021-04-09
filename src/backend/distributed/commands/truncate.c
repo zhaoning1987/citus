@@ -37,6 +37,7 @@
 #include "utils/lsyscache.h"
 #include "utils/regproc.h"
 #include "utils/rel.h"
+#include "utils/elog.h"
 
 
 #define LOCK_RELATION_IF_EXISTS "SELECT lock_relation_if_exists(%s, '%s');"
@@ -65,6 +66,7 @@ void EnsureLocalTableCanBeTruncated(Oid relationId);
 Datum
 citus_truncate_trigger(PG_FUNCTION_ARGS)
 {
+elog(INFO, "TTT src/backend/distributed/commands/truncate.c:citus_truncate_trigger");
 	if (!CALLED_AS_TRIGGER(fcinfo))
 	{
 		ereport(ERROR, (errcode(ERRCODE_E_R_I_E_TRIGGER_PROTOCOL_VIOLATED),
@@ -119,6 +121,7 @@ citus_truncate_trigger(PG_FUNCTION_ARGS)
 static List *
 TruncateTaskList(Oid relationId)
 {
+elog(INFO, "TTT src/backend/distributed/commands/truncate.c:TruncateTaskList");
 	/* resulting task list */
 	List *taskList = NIL;
 
@@ -174,6 +177,7 @@ TruncateTaskList(Oid relationId)
 Datum
 truncate_local_data_after_distributing_table(PG_FUNCTION_ARGS)
 {
+elog(INFO, "TTT src/backend/distributed/commands/truncate.c:truncate_local_data_after_distributing_table");
 	Oid relationId = PG_GETARG_OID(0);
 
 	CheckCitusVersion(ERROR);
@@ -207,6 +211,7 @@ truncate_local_data_after_distributing_table(PG_FUNCTION_ARGS)
 void
 EnsureLocalTableCanBeTruncated(Oid relationId)
 {
+elog(INFO, "TTT src/backend/distributed/commands/truncate.c:EnsureLocalTableCanBeTruncated");
 	/* error out if the relation is not a distributed table */
 	if (!IsCitusTable(relationId))
 	{
@@ -246,6 +251,7 @@ EnsureLocalTableCanBeTruncated(Oid relationId)
 void
 PreprocessTruncateStatement(TruncateStmt *truncateStatement)
 {
+elog(INFO, "TTT src/backend/distributed/commands/truncate.c:PreprocessTruncateStatement");
 	ErrorIfUnsupportedTruncateStmt(truncateStatement);
 	EnsurePartitionTableNotReplicatedForTruncate(truncateStatement);
 	ExecuteTruncateStmtSequentialIfNecessary(truncateStatement);
@@ -260,6 +266,7 @@ PreprocessTruncateStatement(TruncateStmt *truncateStatement)
 static void
 ErrorIfUnsupportedTruncateStmt(TruncateStmt *truncateStatement)
 {
+elog(INFO, "TTT src/backend/distributed/commands/truncate.c:ErrorIfUnsupportedTruncateStmt");
 	List *relationList = truncateStatement->relations;
 	RangeVar *rangeVar = NULL;
 	foreach_ptr(rangeVar, relationList)
@@ -286,6 +293,7 @@ ErrorIfUnsupportedTruncateStmt(TruncateStmt *truncateStatement)
 static void
 EnsurePartitionTableNotReplicatedForTruncate(TruncateStmt *truncateStatement)
 {
+elog(INFO, "TTT src/backend/distributed/commands/truncate.c:EnsurePartitionTableNotReplicatedForTruncate");
 	RangeVar *rangeVar = NULL;
 	foreach_ptr(rangeVar, truncateStatement->relations)
 	{
@@ -311,6 +319,7 @@ EnsurePartitionTableNotReplicatedForTruncate(TruncateStmt *truncateStatement)
 static void
 ExecuteTruncateStmtSequentialIfNecessary(TruncateStmt *command)
 {
+elog(INFO, "TTT src/backend/distributed/commands/truncate.c:ExecuteTruncateStmtSequentialIfNecessary");
 	List *relationList = command->relations;
 	bool failOK = false;
 
@@ -359,6 +368,7 @@ ExecuteTruncateStmtSequentialIfNecessary(TruncateStmt *command)
 static void
 LockTruncatedRelationMetadataInWorkers(TruncateStmt *truncateStatement)
 {
+elog(INFO, "TTT src/backend/distributed/commands/truncate.c:LockTruncatedRelationMetadataInWorkers");
 	List *distributedRelationList = NIL;
 
 	/* nothing to do if there is no metadata at worker nodes */

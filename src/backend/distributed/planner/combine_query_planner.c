@@ -25,6 +25,7 @@
 #include "optimizer/clauses.h"
 #include "optimizer/planner.h"
 #include "rewrite/rewriteManip.h"
+#include "utils/elog.h"
 
 static List * RemoteScanTargetList(List *workerTargetList);
 static PlannedStmt * BuildSelectStatementViaStdPlanner(Query *combineQuery,
@@ -60,6 +61,7 @@ static CustomPathMethods CitusCustomScanPathMethods = {
 PlannedStmt *
 PlanCombineQuery(DistributedPlan *distributedPlan, CustomScan *remoteScan)
 {
+elog(INFO, "TTT src/backend/distributed/planner/combine_query_planner.c:PlanCombineQuery");
 	Query *combineQuery = distributedPlan->combineQuery;
 
 	Job *workerJob = distributedPlan->workerJob;
@@ -77,6 +79,7 @@ PlanCombineQuery(DistributedPlan *distributedPlan, CustomScan *remoteScan)
 static List *
 RemoteScanTargetList(List *workerTargetList)
 {
+elog(INFO, "TTT src/backend/distributed/planner/combine_query_planner.c:RemoteScanTargetList");
 	List *remoteScanTargetList = NIL;
 	const Index tableId = 1;
 	AttrNumber columnId = 1;
@@ -129,6 +132,7 @@ CreateCitusCustomScanPath(PlannerInfo *root, RelOptInfo *relOptInfo,
 						  Index restrictionIndex, RangeTblEntry *rte,
 						  CustomScan *remoteScan)
 {
+elog(INFO, "TTT src/backend/distributed/planner/combine_query_planner.c:CreateCitusCustomScanPath");
 	CitusCustomScanPath *path = (CitusCustomScanPath *) newNode(
 		sizeof(CitusCustomScanPath), T_CustomPath);
 	path->custom_path.methods = &CitusCustomScanPathMethods;
@@ -175,6 +179,7 @@ CitusCustomScanPathPlan(PlannerInfo *root,
 						List *clauses,
 						List *custom_plans)
 {
+elog(INFO, "TTT src/backend/distributed/planner/combine_query_planner.c:CitusCustomScanPathPlan");
 	CitusCustomScanPath *citusPath = (CitusCustomScanPath *) best_path;
 
 	/*
@@ -242,6 +247,7 @@ static PlannedStmt *
 BuildSelectStatementViaStdPlanner(Query *combineQuery, List *remoteScanTargetList,
 								  CustomScan *remoteScan)
 {
+elog(INFO, "TTT src/backend/distributed/planner/combine_query_planner.c:BuildSelectStatementViaStdPlanner");
 	/*
 	 * the standard planner will scribble on the target list. Since it is essential to not
 	 * change the custom_scan_tlist we copy the target list before adding them to any.

@@ -107,6 +107,7 @@
 #endif
 #include "nodes/params.h"
 #include "utils/snapmgr.h"
+#include "utils/elog.h"
 
 /* controlled via a GUC */
 bool EnableLocalExecution = true;
@@ -139,6 +140,7 @@ static void EnsureTransitionPossible(LocalExecutionStatus from,
 LocalExecutionStatus
 GetCurrentLocalExecutionStatus(void)
 {
+elog(INFO, "TTT src/backend/distributed/executor/local_executor.c:GetCurrentLocalExecutionStatus");
 	return CurrentLocalExecutionStatus;
 }
 
@@ -154,6 +156,7 @@ GetCurrentLocalExecutionStatus(void)
 uint64
 ExecuteLocalTaskList(List *taskList, TupleDestination *defaultTupleDest)
 {
+elog(INFO, "TTT src/backend/distributed/executor/local_executor.c:ExecuteLocalTaskList");
 	if (list_length(taskList) == 0)
 	{
 		return 0;
@@ -174,6 +177,7 @@ ExecuteLocalTaskList(List *taskList, TupleDestination *defaultTupleDest)
 uint64
 ExecuteLocalUtilityTaskList(List *utilityTaskList)
 {
+elog(INFO, "TTT src/backend/distributed/executor/local_executor.c:ExecuteLocalUtilityTaskList");
 	if (list_length(utilityTaskList) == 0)
 	{
 		return 0;
@@ -204,6 +208,7 @@ ExecuteLocalTaskListExtended(List *taskList,
 							 TupleDestination *defaultTupleDest,
 							 bool isUtilityCommand)
 {
+elog(INFO, "TTT src/backend/distributed/executor/local_executor.c:ExecuteLocalTaskListExtended");
 	ParamListInfo paramListInfo = copyParamList(orig_paramListInfo);
 	int numParams = 0;
 	Oid *parameterTypes = NULL;
@@ -361,6 +366,7 @@ static uint64
 LocallyPlanAndExecuteMultipleQueries(List *queryStrings, TupleDestination *tupleDest,
 									 Task *task)
 {
+elog(INFO, "TTT src/backend/distributed/executor/local_executor.c:LocallyPlanAndExecuteMultipleQueries");
 	char *queryString = NULL;
 	uint64 totalProcessedRows = 0;
 	foreach_ptr(queryString, queryStrings)
@@ -390,6 +396,7 @@ static void
 ExtractParametersForLocalExecution(ParamListInfo paramListInfo, Oid **parameterTypes,
 								   const char ***parameterValues)
 {
+elog(INFO, "TTT src/backend/distributed/executor/local_executor.c:ExtractParametersForLocalExecution");
 	ExtractParametersFromParamList(paramListInfo, parameterTypes,
 								   parameterValues, true);
 }
@@ -402,6 +409,7 @@ ExtractParametersForLocalExecution(ParamListInfo paramListInfo, Oid **parameterT
 void
 ExecuteUtilityCommand(const char *taskQueryCommand)
 {
+elog(INFO, "TTT src/backend/distributed/executor/local_executor.c:ExecuteUtilityCommand");
 	List *parseTreeList = pg_parse_query(taskQueryCommand);
 	RawStmt *taskRawStmt = NULL;
 
@@ -445,6 +453,7 @@ ExecuteUtilityCommand(const char *taskQueryCommand)
 static void
 ExecuteUdfTaskQuery(Query *udfTaskQuery)
 {
+elog(INFO, "TTT src/backend/distributed/executor/local_executor.c:ExecuteUdfTaskQuery");
 	/* we do not expect any results */
 	ExecuteQueryIntoDestReceiver(udfTaskQuery, NULL, None_Receiver);
 }
@@ -459,6 +468,7 @@ ExecuteUdfTaskQuery(Query *udfTaskQuery)
 static void
 LogLocalCommand(Task *task)
 {
+elog(INFO, "TTT src/backend/distributed/executor/local_executor.c:LogLocalCommand");
 	if (!(LogRemoteCommands || LogLocalCommands))
 	{
 		return;
@@ -694,6 +704,7 @@ RecordNonDistTableAccessesForTask(Task *task)
 void
 SetLocalExecutionStatus(LocalExecutionStatus newStatus)
 {
+elog(INFO, "TTT src/backend/distributed/executor/local_executor.c:SetLocalExecutionStatus");
 	EnsureTransitionPossible(GetCurrentLocalExecutionStatus(), newStatus);
 
 	CurrentLocalExecutionStatus = newStatus;

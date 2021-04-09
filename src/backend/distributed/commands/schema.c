@@ -38,6 +38,7 @@
 #include "utils/fmgroids.h"
 #include "utils/lsyscache.h"
 #include "utils/relcache.h"
+#include "utils/elog.h"
 
 
 static List * FilterDistributedSchemas(List *schemas);
@@ -52,6 +53,7 @@ List *
 PreprocessDropSchemaStmt(Node *node, const char *queryString,
 						 ProcessUtilityContext processUtilityContext)
 {
+elog(INFO, "TTT src/backend/distributed/commands/schema.c:PreprocessDropSchemaStmt");
 	DropStmt *dropStatement = castNode(DropStmt, node);
 	Relation pgClass = NULL;
 	HeapTuple heapTuple = NULL;
@@ -137,6 +139,7 @@ List *
 PreprocessGrantOnSchemaStmt(Node *node, const char *queryString,
 							ProcessUtilityContext processUtilityContext)
 {
+elog(INFO, "TTT src/backend/distributed/commands/schema.c:PreprocessGrantOnSchemaStmt");
 	GrantStmt *stmt = castNode(GrantStmt, node);
 	Assert(stmt->objtype == OBJECT_SCHEMA);
 
@@ -171,6 +174,7 @@ List *
 PreprocessAlterSchemaRenameStmt(Node *node, const char *queryString,
 								ProcessUtilityContext processUtilityContext)
 {
+elog(INFO, "TTT src/backend/distributed/commands/schema.c:PreprocessAlterSchemaRenameStmt");
 	ObjectAddress schemaAddress = GetObjectAddressFromParseTree(node, false);
 	if (!ShouldPropagateObject(&schemaAddress))
 	{
@@ -201,6 +205,7 @@ PreprocessAlterSchemaRenameStmt(Node *node, const char *queryString,
 ObjectAddress
 AlterSchemaRenameStmtObjectAddress(Node *node, bool missing_ok)
 {
+elog(INFO, "TTT src/backend/distributed/commands/schema.c:AlterSchemaRenameStmtObjectAddress");
 	RenameStmt *stmt = castNode(RenameStmt, node);
 	Assert(stmt->renameType == OBJECT_SCHEMA);
 
@@ -221,6 +226,7 @@ AlterSchemaRenameStmtObjectAddress(Node *node, bool missing_ok)
 static List *
 FilterDistributedSchemas(List *schemas)
 {
+elog(INFO, "TTT src/backend/distributed/commands/schema.c:FilterDistributedSchemas");
 	List *distributedSchemas = NIL;
 
 	Value *schemaValue = NULL;

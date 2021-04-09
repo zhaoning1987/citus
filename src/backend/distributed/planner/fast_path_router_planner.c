@@ -56,6 +56,7 @@
 #include "optimizer/clauses.h"
 #endif
 #include "tcop/pquery.h"
+#include "utils/elog.h"
 
 bool EnableFastPathRouterPlanner = true;
 
@@ -77,6 +78,7 @@ static bool DistKeyInSimpleOpExpression(Expr *clause, Var *distColumn,
 PlannedStmt *
 FastPathPlanner(Query *originalQuery, Query *parse, ParamListInfo boundParams)
 {
+elog(INFO, "TTT src/backend/distributed/planner/fast_path_router_planner.c:FastPathPlanner");
 	/*
 	 * Citus planner relies on some of the transformations on constant
 	 * evaluation on the parse tree.
@@ -107,6 +109,7 @@ FastPathPlanner(Query *originalQuery, Query *parse, ParamListInfo boundParams)
 PlannedStmt *
 GeneratePlaceHolderPlannedStmt(Query *parse)
 {
+elog(INFO, "TTT src/backend/distributed/planner/fast_path_router_planner.c:GeneratePlaceHolderPlannedStmt");
 	PlannedStmt *result = makeNode(PlannedStmt);
 	SeqScan *seqScanNode = makeNode(SeqScan);
 	Plan *plan = &seqScanNode->plan;
@@ -160,6 +163,7 @@ GeneratePlaceHolderPlannedStmt(Query *parse)
 bool
 FastPathRouterQuery(Query *query, Node **distributionKeyValue)
 {
+elog(INFO, "TTT src/backend/distributed/planner/fast_path_router_planner.c:FastPathRouterQuery");
 	FromExpr *joinTree = query->jointree;
 	Node *quals = NULL;
 
@@ -264,6 +268,7 @@ FastPathRouterQuery(Query *query, Node **distributionKeyValue)
 static bool
 ColumnAppearsMultipleTimes(Node *quals, Var *distributionKey)
 {
+elog(INFO, "TTT src/backend/distributed/planner/fast_path_router_planner.c:ColumnAppearsMultipleTimes");
 	ListCell *varClauseCell = NULL;
 	int partitionColumnReferenceCount = 0;
 
@@ -297,6 +302,7 @@ ColumnAppearsMultipleTimes(Node *quals, Var *distributionKey)
 static bool
 ConjunctionContainsColumnFilter(Node *node, Var *column, Node **distributionKeyValue)
 {
+elog(INFO, "TTT src/backend/distributed/planner/fast_path_router_planner.c:ConjunctionContainsColumnFilter");
 	if (node == NULL)
 	{
 		return false;

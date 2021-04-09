@@ -19,6 +19,7 @@
 #include "distributed/worker_transaction.h"
 #include "utils/builtins.h"
 #include "utils/lsyscache.h"
+#include "utils/elog.h"
 
 
 /* local function forward declarations */
@@ -46,6 +47,7 @@ PG_FUNCTION_INFO_V1(notify_constraint_dropped);
 Datum
 master_drop_distributed_table_metadata(PG_FUNCTION_ARGS)
 {
+elog(INFO, "TTT src/backend/distributed/commands/drop_distributed_table.c:master_drop_distributed_table_metadata");
 	ereport(INFO, (errmsg("this function is deprecated and no longer is used")));
 
 	PG_RETURN_VOID();
@@ -59,6 +61,7 @@ master_drop_distributed_table_metadata(PG_FUNCTION_ARGS)
 Datum
 master_remove_partition_metadata(PG_FUNCTION_ARGS)
 {
+elog(INFO, "TTT src/backend/distributed/commands/drop_distributed_table.c:master_remove_partition_metadata");
 	Oid relationId = PG_GETARG_OID(0);
 	text *schemaNameText = PG_GETARG_TEXT_P(1);
 	text *tableNameText = PG_GETARG_TEXT_P(2);
@@ -97,6 +100,7 @@ master_remove_partition_metadata(PG_FUNCTION_ARGS)
 Datum
 master_remove_distributed_table_metadata_from_workers(PG_FUNCTION_ARGS)
 {
+elog(INFO, "TTT src/backend/distributed/commands/drop_distributed_table.c:master_remove_distributed_table_metadata_from_workers");
 	Oid relationId = PG_GETARG_OID(0);
 	text *schemaNameText = PG_GETARG_TEXT_P(1);
 	text *tableNameText = PG_GETARG_TEXT_P(2);
@@ -128,6 +132,7 @@ static void
 MasterRemoveDistributedTableMetadataFromWorkers(Oid relationId, char *schemaName,
 												char *tableName)
 {
+elog(INFO, "TTT src/backend/distributed/commands/drop_distributed_table.c:MasterRemoveDistributedTableMetadataFromWorkers");
 	/*
 	 * The SQL_DROP trigger calls this function even for tables that are
 	 * not distributed. In that case, silently ignore. This is not very

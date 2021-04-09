@@ -73,6 +73,7 @@
 #include "utils/errcodes.h"
 #include "utils/lsyscache.h"
 #include "utils/varlena.h"
+#include "utils/elog.h"
 
 
 /* Local functions forward declarations */
@@ -116,6 +117,7 @@ PG_FUNCTION_INFO_V1(master_drop_sequences);
 Datum
 master_apply_delete_command(PG_FUNCTION_ARGS)
 {
+elog(INFO, "TTT src/backend/distributed/operations/delete_protocol.c:master_apply_delete_command");
 	text *queryText = PG_GETARG_TEXT_P(0);
 	char *queryString = text_to_cstring(queryText);
 	List *deletableShardIntervalList = NIL;
@@ -215,6 +217,7 @@ master_apply_delete_command(PG_FUNCTION_ARGS)
 Datum
 citus_drop_all_shards(PG_FUNCTION_ARGS)
 {
+elog(INFO, "TTT src/backend/distributed/operations/delete_protocol.c:citus_drop_all_shards");
 	Oid relationId = PG_GETARG_OID(0);
 	text *schemaNameText = PG_GETARG_TEXT_P(1);
 	text *relationNameText = PG_GETARG_TEXT_P(2);
@@ -258,6 +261,7 @@ citus_drop_all_shards(PG_FUNCTION_ARGS)
 Datum
 master_drop_all_shards(PG_FUNCTION_ARGS)
 {
+elog(INFO, "TTT src/backend/distributed/operations/delete_protocol.c:master_drop_all_shards");
 	return citus_drop_all_shards(fcinfo);
 }
 
@@ -272,6 +276,7 @@ master_drop_all_shards(PG_FUNCTION_ARGS)
 Datum
 master_drop_sequences(PG_FUNCTION_ARGS)
 {
+elog(INFO, "TTT src/backend/distributed/operations/delete_protocol.c:master_drop_sequences");
 	PG_RETURN_VOID();
 }
 
@@ -285,6 +290,7 @@ master_drop_sequences(PG_FUNCTION_ARGS)
 void
 CheckTableSchemaNameForDrop(Oid relationId, char **schemaName, char **tableName)
 {
+elog(INFO, "TTT src/backend/distributed/operations/delete_protocol.c:CheckTableSchemaNameForDrop");
 	char *tempTableName = get_rel_name(relationId);
 
 	if (tempTableName != NULL)
@@ -311,6 +317,7 @@ static int
 DropShards(Oid relationId, char *schemaName, char *relationName,
 		   List *deletableShardIntervalList)
 {
+elog(INFO, "TTT src/backend/distributed/operations/delete_protocol.c:DropShards");
 	Assert(OidIsValid(relationId));
 	Assert(schemaName != NULL);
 	Assert(relationName != NULL);
@@ -426,6 +433,7 @@ static List *
 DropTaskList(Oid relationId, char *schemaName, char *relationName,
 			 List *deletableShardIntervalList)
 {
+elog(INFO, "TTT src/backend/distributed/operations/delete_protocol.c:DropTaskList");
 	/* resulting task list */
 	List *taskList = NIL;
 
@@ -475,6 +483,7 @@ ExecuteDropShardPlacementCommandRemotely(ShardPlacement *shardPlacement,
 										 const char *relationName,
 										 const char *dropShardPlacementCommand)
 {
+elog(INFO, "TTT src/backend/distributed/operations/delete_protocol.c:ExecuteDropShardPlacementCommandRemotely");
 	Assert(shardPlacement != NULL);
 	Assert(relationName != NULL);
 	Assert(dropShardPlacementCommand != NULL);
@@ -531,6 +540,7 @@ static char *
 CreateDropShardPlacementCommand(const char *schemaName, const char *shardRelationName,
 								char storageType)
 {
+elog(INFO, "TTT src/backend/distributed/operations/delete_protocol.c:CreateDropShardPlacementCommand");
 	Assert(schemaName != NULL);
 	Assert(shardRelationName != NULL);
 
@@ -625,6 +635,7 @@ CheckDeleteCriteria(Node *deleteCriteria)
 static void
 CheckPartitionColumn(Oid relationId, Node *whereClause)
 {
+elog(INFO, "TTT src/backend/distributed/operations/delete_protocol.c:CheckPartitionColumn");
 	Var *partitionColumn = DistPartitionKeyOrError(relationId);
 
 	List *columnList = pull_var_clause_default(whereClause);

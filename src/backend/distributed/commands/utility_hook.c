@@ -68,6 +68,7 @@
 #include "utils/builtins.h"
 #include "utils/lsyscache.h"
 #include "utils/syscache.h"
+#include "utils/elog.h"
 
 bool EnableDDLPropagation = true; /* ddl propagation is enabled */
 PropSetCmdBehavior PropagateSetCommands = PROPSETCMD_NONE; /* SET prop off */
@@ -107,6 +108,7 @@ ProcessUtilityParseTree(Node *node, const char *queryString, ProcessUtilityConte
 						ParamListInfo params, DestReceiver *dest,
 						QueryCompletionCompat *completionTag)
 {
+elog(INFO, "TTT src/backend/distributed/commands/utility_hook.c:ProcessUtilityParseTree");
 	PlannedStmt *plannedStmt = makeNode(PlannedStmt);
 	plannedStmt->commandType = CMD_UTILITY;
 	plannedStmt->utilityStmt = node;
@@ -134,6 +136,7 @@ multi_ProcessUtility(PlannedStmt *pstmt,
 					 DestReceiver *dest,
 					 QueryCompletionCompat *completionTag)
 {
+elog(INFO, "TTT src/backend/distributed/commands/utility_hook.c:multi_ProcessUtility");
 	Node *parsetree = pstmt->utilityStmt;
 
 	if (IsA(parsetree, TransactionStmt) ||
@@ -299,6 +302,7 @@ ProcessUtilityInternal(PlannedStmt *pstmt,
 					   DestReceiver *dest,
 					   QueryCompletionCompat *completionTag)
 {
+elog(INFO, "TTT src/backend/distributed/commands/utility_hook.c:ProcessUtilityInternal");
 	Node *parsetree = pstmt->utilityStmt;
 	List *ddlJobs = NIL;
 
@@ -695,6 +699,7 @@ ProcessUtilityInternal(PlannedStmt *pstmt,
 void
 UndistributeDisconnectedCitusLocalTables(void)
 {
+elog(INFO, "TTT src/backend/distributed/commands/utility_hook.c:UndistributeDisconnectedCitusLocalTables");
 	List *citusLocalTableIdList = CitusTableTypeIdList(CITUS_LOCAL_TABLE);
 	citusLocalTableIdList = SortList(citusLocalTableIdList, CompareOids);
 
@@ -754,6 +759,7 @@ UndistributeDisconnectedCitusLocalTables(void)
 static bool
 ShouldUndistributeCitusLocalTables(void)
 {
+elog(INFO, "TTT src/backend/distributed/commands/utility_hook.c:ShouldUndistributeCitusLocalTables");
 	if (!ConstraintDropped)
 	{
 		/*
@@ -813,6 +819,7 @@ ShouldUndistributeCitusLocalTables(void)
 void
 NotifyUtilityHookConstraintDropped(void)
 {
+elog(INFO, "TTT src/backend/distributed/commands/utility_hook.c:NotifyUtilityHookConstraintDropped");
 	ConstraintDropped = true;
 }
 
@@ -823,6 +830,7 @@ NotifyUtilityHookConstraintDropped(void)
 void
 ResetConstraintDropped(void)
 {
+elog(INFO, "TTT src/backend/distributed/commands/utility_hook.c:ResetConstraintDropped");
 	ConstraintDropped = false;
 }
 
@@ -834,6 +842,7 @@ ResetConstraintDropped(void)
 static bool
 IsDropSchemaOrDB(Node *parsetree)
 {
+elog(INFO, "TTT src/backend/distributed/commands/utility_hook.c:IsDropSchemaOrDB");
 	if (!IsA(parsetree, DropStmt))
 	{
 		return false;
@@ -860,6 +869,7 @@ IsDropSchemaOrDB(Node *parsetree)
 void
 ExecuteDistributedDDLJob(DDLJob *ddlJob)
 {
+elog(INFO, "TTT src/backend/distributed/commands/utility_hook.c:ExecuteDistributedDDLJob");
 	bool shouldSyncMetadata = false;
 
 	EnsureCoordinator();
@@ -999,6 +1009,7 @@ ExecuteDistributedDDLJob(DDLJob *ddlJob)
 DDLJob *
 CreateCustomDDLTaskList(Oid relationId, TableDDLCommand *command)
 {
+elog(INFO, "TTT src/backend/distributed/commands/utility_hook.c:CreateCustomDDLTaskList");
 	List *taskList = NIL;
 	List *shardIntervalList = LoadShardIntervalList(relationId);
 	uint64 jobId = INVALID_JOB_ID;
@@ -1178,6 +1189,7 @@ DecrementUtilityHookCountersIfNecessary(Node *parsetree)
 void
 MarkInvalidateForeignKeyGraph()
 {
+elog(INFO, "TTT src/backend/distributed/commands/utility_hook.c:InvalidateForeignKeyGraphForDDL");
 	shouldInvalidateForeignKeyGraph = true;
 }
 

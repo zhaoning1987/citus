@@ -81,6 +81,7 @@
 #include "utils/snapmgr.h"
 #include "utils/syscache.h"
 #include "utils/inval.h"
+#include "utils/elog.h"
 
 /*
  * once every LOG_PER_TUPLE_AMOUNT, the copy will be logged.
@@ -146,6 +147,7 @@ PG_FUNCTION_INFO_V1(create_reference_table);
 Datum
 master_create_distributed_table(PG_FUNCTION_ARGS)
 {
+elog(INFO, "TTT src/backend/distributed/commands/create_distributed_table.c:master_create_distributed_table");
 	Oid relationId = PG_GETARG_OID(0);
 	text *distributionColumnText = PG_GETARG_TEXT_P(1);
 	Oid distributionMethodOid = PG_GETARG_OID(2);
@@ -193,6 +195,7 @@ master_create_distributed_table(PG_FUNCTION_ARGS)
 Datum
 create_distributed_table(PG_FUNCTION_ARGS)
 {
+elog(INFO, "TTT src/backend/distributed/commands/create_distributed_table.c:create_distributed_table");
 	bool viaDeprecatedAPI = false;
 
 	Oid relationId = PG_GETARG_OID(0);
@@ -244,6 +247,7 @@ create_distributed_table(PG_FUNCTION_ARGS)
 Datum
 create_reference_table(PG_FUNCTION_ARGS)
 {
+elog(INFO, "TTT src/backend/distributed/commands/create_distributed_table.c:create_reference_table");
 	Oid relationId = PG_GETARG_OID(0);
 
 	char *colocateWithTableName = NULL;
@@ -300,6 +304,7 @@ create_reference_table(PG_FUNCTION_ARGS)
 static void
 EnsureCitusTableCanBeCreated(Oid relationOid)
 {
+elog(INFO, "TTT src/backend/distributed/commands/create_distributed_table.c:EnsureCitusTableCanBeCreated");
 	EnsureCoordinator();
 	EnsureRelationExists(relationOid);
 	EnsureTableOwner(relationOid);
@@ -320,6 +325,7 @@ EnsureCitusTableCanBeCreated(Oid relationOid)
 void
 EnsureRelationExists(Oid relationId)
 {
+elog(INFO, "TTT src/backend/distributed/commands/create_distributed_table.c:EnsureRelationExists");
 	if (!RelationExists(relationId))
 	{
 		ereport(ERROR, (errcode(ERRCODE_INVALID_PARAMETER_VALUE),
@@ -345,6 +351,7 @@ void
 CreateDistributedTable(Oid relationId, Var *distributionColumn, char distributionMethod,
 					   int shardCount, char *colocateWithTableName, bool viaDeprecatedAPI)
 {
+elog(INFO, "TTT src/backend/distributed/commands/create_distributed_table.c:CreateDistributedTable");
 	/*
 	 * EnsureTableNotDistributed errors out when relation is a citus table but
 	 * we don't want to ask user to first undistribute their citus local tables
@@ -525,6 +532,7 @@ CreateDistributedTable(Oid relationId, Var *distributionColumn, char distributio
 static List *
 GetFKeyCreationCommandsRelationInvolvedWithTableType(Oid relationId, int tableTypeFlag)
 {
+elog(INFO, "TTT src/backend/distributed/commands/create_distributed_table.c:GetFKeyCreationCommandsRelationInvolvedWithTableType");
 	int referencingFKeysFlag = INCLUDE_REFERENCING_CONSTRAINTS |
 							   tableTypeFlag;
 	List *referencingFKeyCreationCommands =
@@ -551,6 +559,7 @@ GetFKeyCreationCommandsRelationInvolvedWithTableType(Oid relationId, int tableTy
 static Oid
 DropFKeysAndUndistributeTable(Oid relationId)
 {
+elog(INFO, "TTT src/backend/distributed/commands/create_distributed_table.c:DropFKeysAndUndistributeTable");
 	DropFKeysRelationInvolvedWithTableType(relationId, INCLUDE_ALL_TABLE_TYPES);
 
 	/* store them before calling UndistributeTable as it changes relationId */
@@ -584,6 +593,7 @@ DropFKeysAndUndistributeTable(Oid relationId)
 static void
 DropFKeysRelationInvolvedWithTableType(Oid relationId, int tableTypeFlag)
 {
+elog(INFO, "TTT src/backend/distributed/commands/create_distributed_table.c:DropFKeysRelationInvolvedWithTableType");
 	int referencingFKeysFlag = INCLUDE_REFERENCING_CONSTRAINTS |
 							   tableTypeFlag;
 	DropRelationForeignKeys(relationId, referencingFKeysFlag);
@@ -605,6 +615,7 @@ DropFKeysRelationInvolvedWithTableType(Oid relationId, int tableTypeFlag)
 static char
 DecideReplicationModel(char distributionMethod, bool viaDeprecatedAPI)
 {
+elog(INFO, "TTT src/backend/distributed/commands/create_distributed_table.c:DecideReplicationModel");
 	if (viaDeprecatedAPI)
 	{
 		if (ReplicationModel != REPLICATION_MODEL_COORDINATOR)

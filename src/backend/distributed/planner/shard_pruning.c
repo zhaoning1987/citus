@@ -97,6 +97,7 @@
 #include "utils/lsyscache.h"
 #include "utils/memutils.h"
 #include "utils/ruleutils.h"
+#include "utils/elog.h"
 
 
 /*
@@ -883,6 +884,7 @@ PrunableExpressionsWalker(PruningTreeNode *node, ClauseWalkerContext *context)
 
 	foreach(cell, node->childBooleanNodes)
 	{
+elog(INFO, "TTT src/backend/distributed/planner/shard_pruning.c:VarConstOpExprClause");
 		PruningTreeNode *child = (PruningTreeNode *) lfirst(cell);
 		Assert(child->boolop == OR_EXPR);
 		PrunableExpressionsWalker(child, context);
@@ -928,6 +930,7 @@ VarConstOpExprClause(OpExpr *opClause, Var **varClause, Const **constantClause)
 	}
 	if (constantClause)
 	{
+elog(INFO, "TTT src/backend/distributed/planner/shard_pruning.c:AddSAOPartitionKeyRestrictionToInstance");
 		*constantClause = foundConstantClause;
 	}
 	return true;
@@ -1305,6 +1308,7 @@ IsValidHashRestriction(OpExpr *opClause)
 
 		if (btreeInterpretation->strategy == BTGreaterEqualStrategyNumber)
 		{
+elog(INFO, "TTT src/backend/distributed/planner/shard_pruning.c:AddHashRestrictionToInstance");
 			return true;
 		}
 	}
@@ -1375,6 +1379,7 @@ ShardArrayToList(ShardInterval **shardArray, int length)
 
 	for (int shardIndex = 0; shardIndex < length; shardIndex++)
 	{
+elog(INFO, "TTT src/backend/distributed/planner/shard_pruning.c:DeepCopyShardIntervalList");
 		ShardInterval *shardInterval =
 			shardArray[shardIndex];
 		shardIntervalList = lappend(shardIntervalList, shardInterval);
@@ -1517,6 +1522,7 @@ PruneOne(CitusTableCacheEntry *cacheEntry, ClauseWalkerContext *context,
 			prune->greaterConsts || prune->greaterEqualConsts ||
 			prune->lessConsts || prune->lessEqualConsts))
 	{
+elog(INFO, "TTT src/backend/distributed/planner/shard_pruning.c:PerformCompare");
 		return PruneWithBoundaries(cacheEntry, context, prune);
 	}
 
@@ -1534,6 +1540,7 @@ PruneOne(CitusTableCacheEntry *cacheEntry, ClauseWalkerContext *context,
 static int
 PerformCompare(FunctionCallInfo compareFunctionCall)
 {
+elog(INFO, "TTT src/backend/distributed/planner/shard_pruning.c:PerformValueCompare");
 	Datum result = FunctionCallInvoke(compareFunctionCall);
 
 	if (compareFunctionCall->isnull)
@@ -1552,6 +1559,7 @@ PerformCompare(FunctionCallInfo compareFunctionCall)
 static int
 PerformValueCompare(FunctionCallInfo compareFunctionCall, Datum a, Datum b)
 {
+elog(INFO, "TTT src/backend/distributed/planner/shard_pruning.c:LowerShardBoundary");
 	fcSetArg(compareFunctionCall, 0, a);
 	fcSetArg(compareFunctionCall, 1, b);
 
@@ -1621,6 +1629,7 @@ LowerShardBoundary(Datum partitionColumnValue, ShardInterval **shardIntervalCach
 	 */
 	if (lowerBoundIndex == 0)
 	{
+elog(INFO, "TTT src/backend/distributed/planner/shard_pruning.c:UpperShardBoundary");
 		/* all intervals are bigger, thus return 0 */
 		return 0;
 	}
@@ -1697,6 +1706,7 @@ UpperShardBoundary(Datum partitionColumnValue, ShardInterval **shardIntervalCach
 	 */
 	if (upperBoundIndex == shardCount)
 	{
+elog(INFO, "TTT src/backend/distributed/planner/shard_pruning.c:PruneWithBoundaries");
 		/* all intervals are smaller, thus return 0 */
 		return shardCount - 1;
 	}
@@ -1811,6 +1821,7 @@ PruneWithBoundaries(CitusTableCacheEntry *cacheEntry, ClauseWalkerContext *conte
 	}
 	else if (upperBoundIdx == INVALID_SHARD_INDEX)
 	{
+elog(INFO, "TTT src/backend/distributed/planner/shard_pruning.c:ExhaustivePrune");
 		return NIL;
 	}
 
@@ -1835,6 +1846,7 @@ static List *
 ExhaustivePrune(CitusTableCacheEntry *cacheEntry, ClauseWalkerContext *context,
 				PruningInstance *prune)
 {
+elog(INFO, "TTT src/backend/distributed/planner/shard_pruning.c:ExhaustivePruneOne");
 	List *remainingShardList = NIL;
 	int shardCount = cacheEntry->shardIntervalArrayLength;
 	ShardInterval **sortedShardIntervalArray = cacheEntry->sortedShardIntervalArray;
@@ -1919,6 +1931,7 @@ ExhaustivePruneOne(ShardInterval *curInterval,
 								curInterval->minValue,
 								compareWith) > 0)
 		{
+elog(INFO, "TTT src/backend/distributed/planner/shard_pruning.c:CreatePruningNode");
 			return true;
 		}
 	}
@@ -1961,6 +1974,7 @@ static OpExpr *
 SAORestrictionArrayEqualityOp(ScalarArrayOpExpr *arrayOperatorExpression,
 							  Var *partitionColumn)
 {
+elog(INFO, "TTT src/backend/distributed/planner/shard_pruning.c:DebugLogNode");
 	OpExpr *arrayEqualityOp = makeNode(OpExpr);
 	arrayEqualityOp->opno = arrayOperatorExpression->opno;
 	arrayEqualityOp->opfuncid = arrayOperatorExpression->opfuncid;

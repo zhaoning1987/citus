@@ -24,6 +24,7 @@
 #include "distributed/worker_transaction.h"
 #include "storage/lmgr.h"
 #include "utils/lsyscache.h"
+#include "utils/elog.h"
 
 typedef bool (*AddressPredicate)(const ObjectAddress *);
 
@@ -51,6 +52,7 @@ bool EnableDependencyCreation = true;
 void
 EnsureDependenciesExistOnAllNodes(const ObjectAddress *target)
 {
+elog(INFO, "TTT src/backend/distributed/commands/dependencies.c:EnsureDependenciesExistOnAllNodes");
 	List *dependenciesWithCommands = NIL;
 	List *ddlCommands = NULL;
 
@@ -133,6 +135,7 @@ EnsureDependenciesExistOnAllNodes(const ObjectAddress *target)
 List *
 GetDistributableDependenciesForObject(const ObjectAddress *target)
 {
+elog(INFO, "TTT src/backend/distributed/commands/dependencies.c:GetDistributableDependenciesForObject");
 	/* local variables to work with dependencies */
 	List *distributableDependencies = NIL;
 
@@ -169,6 +172,7 @@ GetDistributableDependenciesForObject(const ObjectAddress *target)
 static List *
 GetDependencyCreateDDLCommands(const ObjectAddress *dependency)
 {
+elog(INFO, "TTT src/backend/distributed/commands/dependencies.c:GetDependencyCreateDDLCommands");
 	switch (getObjectClass(dependency))
 	{
 		case OCLASS_CLASS:
@@ -251,6 +255,7 @@ GetDependencyCreateDDLCommands(const ObjectAddress *dependency)
 void
 ReplicateAllDependenciesToNode(const char *nodeName, int nodePort)
 {
+elog(INFO, "TTT src/backend/distributed/commands/dependencies.c:ReplicateAllDependenciesToNode");
 	List *ddlCommands = NIL;
 
 	/*
@@ -308,6 +313,7 @@ ReplicateAllDependenciesToNode(const char *nodeName, int nodePort)
 bool
 ShouldPropagate(void)
 {
+elog(INFO, "TTT src/backend/distributed/commands/dependencies.c:ShouldPropagate");
 	if (creating_extension)
 	{
 		/*
@@ -336,6 +342,7 @@ ShouldPropagate(void)
 bool
 ShouldPropagateObject(const ObjectAddress *address)
 {
+elog(INFO, "TTT src/backend/distributed/commands/dependencies.c:ShouldPropagateObject");
 	if (!ShouldPropagate())
 	{
 		return false;
